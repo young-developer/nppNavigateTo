@@ -1,0 +1,14 @@
+bin/
+bin64/
+vs.proj/Debug
+vs.proj/Release
+vs.proj/x64
+vs.proj/NppPluginNavigateTo.opensdf
+vs.proj/NppPluginNavigateTo.sdf
+*.suo
+*.sln
+vs.proj/NppPluginNavigateTo.exp
+vs.proj/NppPluginNavigateTo.lib
+*.aps
+vs.proj/NppPluginNavigateTo.vcxproj.user
+*.zip
