@@ -52,6 +52,16 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 			{
 				case IDOK :
 				{
+                    std::string editValue = getFilterEditValue();
+                    /*
+                    
+                    cmdParser.parse(editValue);
+                    if(cmdParser.cmdDetected())
+                    {
+                        cmdParser.execute();
+                    }
+                    else
+                    */
 					openSelectedFile();
 					return TRUE;
 				}
@@ -86,83 +96,46 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 	}
 }
 
-void NavigateToDlg::loadFileNamesToList(std::string filter)
+void NavigateToDlg::loadFileNamesToList(const std::string &filter)
 {
-	int nbFile = (int)::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, 0);
-	if(nbFile == 0)
-		return;
-	
-	TCHAR **fileNames = (TCHAR **)new TCHAR*[nbFile];
-	for (int i = 0 ; i < nbFile ; i++)
-	{
-		fileNames[i] = new TCHAR[MAX_PATH];
-	}
-
-	if (::SendMessage(nppData._nppHandle, NPPM_GETOPENFILENAMES, (WPARAM)fileNames, (LPARAM)nbFile))
-	{ 
-		HWND hwndListBox = ::GetDlgItem(_hSelf, IDC_RESULTS_LIST);  
-		SendMessage(hwndListBox, LB_RESETCONTENT, 0, 0);
-		int filesCount = nbFile;
-		for (int i = 0 ; i < nbFile ; i++)
-		{
-			std::wstring temp(&fileNames[i][0]); //convert to wstring
-			std::string fileName(temp.begin(), temp.end()); //and convert to string.
-			std::transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
-			std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
-			std::size_t found = fileName.find(filter);
-
-			if(filter.empty() || found!=std::string::npos)
-			{
-				SendMessage(hwndListBox, LB_ADDSTRING, 0, (LPARAM)fileNames[i]);
-			}
-			else
-			{
-				--filesCount;
-			}
-		}
-		TCHAR toto[10];
-		::SetDlgItemText(_hSelf, ID_UGO_RESULTS_CNT_LABEL, generic_itoa(filesCount, toto, 10));
-	}
-
-	for (int i = 0 ; i < nbFile ; i++)
-	{
-		delete [] fileNames[i];
-	}
-	delete [] fileNames;
+    std::vector<std::string> fileNameList = nppManager->getOpenedFileNames(filter);
+    TCHAR toto[10];
+    //show count
+    ::SetDlgItemText(_hSelf, ID_UGO_RESULTS_CNT_LABEL, generic_itoa(fileNameList.size(), toto, 10));
+    //reset list
+    HWND hwndListBox = ::GetDlgItem(_hSelf, IDC_RESULTS_LIST);  
+	SendMessage(hwndListBox, LB_RESETCONTENT, 0, 0);
+    if(fileNameList.size() == 0)
+    {
+        return;
+    }
+    else
+    {
+        //add filenames
+        for(std::vector<std::string>::iterator it = fileNameList.begin(); it != fileNameList.end(); ++it) 
+        {
+            std::wstring fileName = NppManager::strToWStr(*it);
+            //add to list
+            if(!fileName.empty())
+            {
+                SendMessage(hwndListBox, LB_ADDSTRING, 0, (LPARAM)fileName.c_str());
+            }
+        }
+    }
 }
 
-void NavigateToDlg::gotToLine(int line)
-{
-	if (line != -1)
-	{
-		// Get the current scintilla
-		int which = -1;
-		::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
-		if (which == -1)
-			return;
-		HWND curScintilla = (which == 0)?nppData._scintillaMainHandle:nppData._scintillaSecondHandle;
-
-		::SendMessage(curScintilla, SCI_ENSUREVISIBLE, line-1, 0);
-		::SendMessage(curScintilla, SCI_GOTOLINE, line-1, 0);
-	}
-}
 int NavigateToDlg::getSelectedFileId()
 {
 	HWND hListBox = GetDlgItem(_hSelf, IDC_RESULTS_LIST);
 	return (int)SendMessage(hListBox, LB_GETCURSEL, 0, 0);
 }
+
 void NavigateToDlg::openSelectedFile()
 {
 	TCHAR filePath[MAX_PATH];
-	TCHAR currentPath[MAX_PATH];
 	HWND hListBox = GetDlgItem(_hSelf, IDC_RESULTS_LIST);
 	int pos = getSelectedFileId();
-	SendMessage(hListBox, LB_GETTEXT, pos, (LPARAM)filePath);	
-	::SendMessage(nppData._nppHandle, NPPM_GETFULLCURRENTPATH, 0, (LPARAM)currentPath);
-	if(_tcscmp(filePath, currentPath) != 0)
-	{
-		//::MessageBox(nppData._nppHandle, filePath , TEXT("selected file path"), MB_OK);
-		::SendMessage(nppData._nppHandle, NPPM_SWITCHTOFILE, 0, (LPARAM)filePath);
-	}
+	SendMessage(hListBox, LB_GETTEXT, pos, (LPARAM)filePath);
+    nppManager->switchToFile(NppManager::wStrToStr(filePath));
 	::SetFocus(::GetDlgItem(_hSelf, IDC_RESULTS_LIST));
 }

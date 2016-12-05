@@ -21,12 +21,21 @@
 
 #include "DockingDlgInterface.h"
 #include "resource.h"
+#include "../NppManager.h"
 #include <string>
 
 class NavigateToDlg : public DockingDlgInterface
 {
 public :
-	NavigateToDlg() : DockingDlgInterface(IDD_PLUGINGOLINE_NAVTO){};
+	NavigateToDlg() : DockingDlgInterface(IDD_PLUGINGOLINE_NAVTO)
+    {
+        nppManager = new NppManager();
+    };
+
+    virtual ~NavigateToDlg()
+    {
+        delete nppManager;
+    }
 
     virtual void display(bool toShow = true) const {
         DockingDlgInterface::display(toShow);
@@ -41,8 +50,7 @@ public :
 protected :
 	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
 private :
-	void loadFileNamesToList(std::string filter);
-	void gotToLine(int line);
+	void loadFileNamesToList(const std::string &filter);
 	void openSelectedFile();
 	int getSelectedFileId();
     int getLine() const {
@@ -53,12 +61,11 @@ private :
 
 	std::string getFilterEditValue() const 
 	{
-		TCHAR buf[30];
-        GetDlgItemText(_hSelf, ID_GOLINE_EDIT, buf, 29);
-		std::wstring test(&buf[0]); //convert to wstring
-		std::string test2(test.begin(), test.end()); //and convert to string.
-        return std::string(test2);
+		TCHAR buf[MAX_PATH];
+        GetDlgItemText(_hSelf, ID_GOLINE_EDIT, buf, MAX_PATH);
+        return NppManager::wStrToStr(&buf[0]);
     };
-
+private:
+    NppManager *nppManager;
 };
 #endif //GOTILINE_DLG_H

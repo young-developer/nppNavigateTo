@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\catch.hpp" />
+    <ClInclude Include="..\src\Command.h" />
+    <ClInclude Include="..\src\CommandParser.h" />
     <ClInclude Include="..\src\DockingFeature\Docking.h" />
     <ClInclude Include="..\src\DockingFeature\DockingDlgInterface.h" />
     <ClInclude Include="..\src\DockingFeature\dockingResource.h" />
@@ -28,14 +31,18 @@
     <ClInclude Include="..\src\DockingFeature\Window.h" />
     <ClInclude Include="..\src\menuCmdID.h" />
     <ClInclude Include="..\src\Notepad_plus_msgs.h" />
+    <ClInclude Include="..\src\NppManager.h" />
     <ClInclude Include="..\src\PluginDefinition.h" />
     <ClInclude Include="..\src\PluginInterface.h" />
     <ClInclude Include="..\src\resource.h" />
     <ClInclude Include="..\src\Scintilla.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\Command.cpp" />
+    <ClCompile Include="..\src\CommandParser.cpp" />
     <ClCompile Include="..\src\DockingFeature\NavigateToDlg.cpp" />
     <ClCompile Include="..\src\DockingFeature\StaticDialog.cpp" />
+    <ClCompile Include="..\src\NppManager.cpp" />
     <ClCompile Include="..\src\NppPlugin.cpp" />
     <ClCompile Include="..\src\PluginDefinition.cpp" />
   </ItemGroup>

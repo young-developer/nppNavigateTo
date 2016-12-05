@@ -57,8 +57,8 @@ bool doCloseTag = false;
 // It will be called while plugin loading   
 void pluginInit(HANDLE hModule)
 {
-        // Initialize navigateto dialog
-        _navigateToForm.init((HINSTANCE)hModule, NULL);
+    // Initialize navigateto dialog
+    _navigateToForm.init((HINSTANCE)hModule, NULL);
 }
 
 //
@@ -66,7 +66,7 @@ void pluginInit(HANDLE hModule)
 //
 void pluginCleanUp()
 {
-        ::WritePrivateProfileString(sectionName, keyName, doCloseTag?TEXT("1"):TEXT("0"), iniFilePath);
+     ::WritePrivateProfileString(sectionName, keyName, doCloseTag?TEXT("1"):TEXT("0"), iniFilePath);
 }
 
 //
@@ -74,43 +74,43 @@ void pluginCleanUp()
 // You should fill your plugins commands here
 void commandMenuInit()
 {
-        //
-        // Firstly we get the parameters from your plugin config file (if any)
-        //
-        // get path of plugin configuration
-        ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)iniFilePath);
+    //
+    // Firstly we get the parameters from your plugin config file (if any)
+    //
+    // get path of plugin configuration
+    ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)iniFilePath);
 
-        // if config path doesn't exist, we create it
-        if (PathFileExists(iniFilePath) == FALSE)
-        {
-                ::CreateDirectory(iniFilePath, NULL);
-        }
+    // if config path doesn't exist, we create it
+    if (PathFileExists(iniFilePath) == FALSE)
+    {
+            ::CreateDirectory(iniFilePath, NULL);
+    }
 
-        // make your plugin config file full file path name
-        PathAppend(iniFilePath, configFileName);
+    // make your plugin config file full file path name
+    PathAppend(iniFilePath, configFileName);
 
-        // get the parameter value from plugin config
-        doCloseTag = (::GetPrivateProfileInt(sectionName, keyName, 0, iniFilePath) != 0);
+    // get the parameter value from plugin config
+    doCloseTag = (::GetPrivateProfileInt(sectionName, keyName, 0, iniFilePath) != 0);
 
-        //--------------------------------------------//
-        //-- STEP 3. CUSTOMIZE YOUR PLUGIN COMMANDS --//
-        //--------------------------------------------//
-        // with function :
-        // setCommand(int index,                      // zero based number to indicate the order of command
-        //            TCHAR *commandName,             // the command name that you want to see in plugin menu
-        //            PFUNCPLUGINCMD functionPointer, // the symbol of function (function pointer) associated with this command. The body should be defined below. See Step 4.
-        //            ShortcutKey *shortcut,          // optional. Define a shortcut to trigger this command
-        //            bool check0nInit                // optional. Make this menu item be checked visually
-        //            );
+    //--------------------------------------------//
+    //-- STEP 3. CUSTOMIZE YOUR PLUGIN COMMANDS --//
+    //--------------------------------------------//
+    // with function :
+    // setCommand(int index,                      // zero based number to indicate the order of command
+    //            TCHAR *commandName,             // the command name that you want to see in plugin menu
+    //            PFUNCPLUGINCMD functionPointer, // the symbol of function (function pointer) associated with this command. The body should be defined below. See Step 4.
+    //            ShortcutKey *shortcut,          // optional. Define a shortcut to trigger this command
+    //            bool check0nInit                // optional. Make this menu item be checked visually
+    //            );
    
-        //ShortCut CTRL+,
-        ShortcutKey *dialogShKey = new ShortcutKey;
-        dialogShKey->_isAlt = false;
-        dialogShKey->_isCtrl = true;
-        dialogShKey->_isShift = false;
-        dialogShKey->_key = VK_OEM_COMMA;
+    //ShortCut CTRL+,
+    ShortcutKey *dialogShKey = new ShortcutKey;
+    dialogShKey->_isAlt = false;
+    dialogShKey->_isCtrl = true;
+    dialogShKey->_isShift = false;
+    dialogShKey->_key = VK_OEM_COMMA;
 
-        setCommand(NAVIGATETO_FORM_INDEX, TEXT("Show form"), NavigateToDlgForm, dialogShKey, false);
+    setCommand(NAVIGATETO_FORM_INDEX, TEXT("Show form"), NavigateToDlgForm, dialogShKey, false);
 }
 
 
@@ -120,8 +120,6 @@ void commandMenuInit()
 void commandMenuCleanUp()
 {
 	// Don't forget to deallocate your shortcut here
-	//delete funcItem[4]._pShKey;
-	//delete funcItem[9]._pShKey;
 	delete funcItem[NAVIGATETO_FORM_INDEX]._pShKey;
 }
 
