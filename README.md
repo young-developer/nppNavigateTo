@@ -1,5 +1,9 @@
 # NavigateTo Plugin for Notepad++
 
+## Navigate To Form
+
+![alt text](https://github.com/young-developer/nppNavigateTo/blob/master/Navigate%20To.png)
+
 ## Installation
 
 ### Manual
