@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "NppManager.h"
 
 extern NppData nppData;
@@ -11,7 +12,7 @@ NppManager::~NppManager(void)
 {
 }
 
-void showMessageBox(const std::string& text)
+void NppManager::showMessageBox(const std::string& text)
 {
     ::MessageBox(nppData._nppHandle, NppManager::strToWStr(text).c_str() , TEXT("NppManager::logInfo"), MB_OK);
 }
@@ -23,7 +24,7 @@ bool NppManager::switchToFile(const std::string& filePath)
     ::SendMessage(nppData._nppHandle, NPPM_GETFULLCURRENTPATH, 0, (LPARAM)currentPath);
     std::string strCurrentFilePath = wStrToStr(&currentPath[0]);
     std::transform(strCurrentFilePath.begin(), strCurrentFilePath.end(), strCurrentFilePath.begin(), ::tolower);
-    if(filePath.compare(strCurrentFilePath) != 0)
+    if(filePath.compare(strCurrentFilePath) != 0 && filePath.empty() != true)
 	{
         ::SendMessage(nppData._nppHandle, NPPM_SWITCHTOFILE, 0, (LPARAM)NppManager::strToWStr(filePath).c_str());
         res = true;

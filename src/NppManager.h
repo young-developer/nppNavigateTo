@@ -16,7 +16,7 @@ public:
     bool switchToFile(const std::string& filePath);
     void showMessageBox(const std::string& text);
 
-//static string helper
+//static string helper //todo: should be moved from here
 public:
     static std::string wStrToStr(TCHAR *wStr)
     {

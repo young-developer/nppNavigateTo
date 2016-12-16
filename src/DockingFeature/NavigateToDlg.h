@@ -26,11 +26,19 @@
 
 class NavigateToDlg : public DockingDlgInterface
 {
+    LVCOLUMN LvCol;
+    LVITEM LvItem;
 public :
 	NavigateToDlg() : DockingDlgInterface(IDD_PLUGINGOLINE_NAVTO)
     {
         nppManager = new NppManager();
+        cmdComboBoxEdit = (CComboBox *)(GetDlgItem(_hSelf, ID_GOLINE_EDIT));
     };
+
+    CComboBox * CmdComboBoxEdit() const
+    {
+        return cmdComboBoxEdit;
+    }
 
     virtual ~NavigateToDlg()
     {
@@ -67,5 +75,6 @@ private :
     };
 private:
     NppManager *nppManager;
+    CComboBox *cmdComboBoxEdit;
 };
 #endif //GOTILINE_DLG_H

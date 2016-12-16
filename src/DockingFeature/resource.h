@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by NavigateTo.rc
 //
-#pragma warning( disable : 4005) 
 #define SW_HIDE                         0
 #define HIDE_WINDOW                     0
 #define WM_NULL                         0x0000
@@ -37,9 +36,7 @@
 #define _USE_DECLSPECS_FOR_SAL          0
 #define _USE_ATTRIBUTES_FOR_SAL         0
 #define __drv_typeConst                 0
-#define PSAPI_VERSION                   1
-#define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
-#define MINIMUM_RESERVED_MANIFEST_RESOURCE_ID 1
+#define WINAPI_PARTITION_DESKTOP        0x00000001
 #define SW_SHOWNORMAL                   1
 #define SW_NORMAL                       1
 #define SHOW_OPENWINDOW                 1
@@ -75,6 +72,7 @@
 #define LWS_TRANSPARENT                 0x0001
 #define LVS_REPORT                      0x0001
 #define TVS_HASBUTTONS                  0x0001
+#define TVS_EX_NOSINGLECOLLAPSE         0x0001
 #define TCS_SCROLLOPPOSITE              0x0001
 #define ACS_CENTER                      0x0001
 #define MCS_DAYSTATE                    0x0001
@@ -93,6 +91,8 @@
 #define SUBLANG_ARMENIAN_ARMENIA        0x01
 #define SUBLANG_ASSAMESE_INDIA          0x01
 #define SUBLANG_AZERI_LATIN             0x01
+#define SUBLANG_AZERBAIJANI_AZERBAIJAN_LATIN 0x01
+#define SUBLANG_BANGLA_INDIA            0x01
 #define SUBLANG_BASHKIR_RUSSIA          0x01
 #define SUBLANG_BASQUE_BASQUE           0x01
 #define SUBLANG_BELARUSIAN_BELARUS      0x01
@@ -100,6 +100,8 @@
 #define SUBLANG_BRETON_FRANCE           0x01
 #define SUBLANG_BULGARIAN_BULGARIA      0x01
 #define SUBLANG_CATALAN_CATALAN         0x01
+#define SUBLANG_CENTRAL_KURDISH_IRAQ    0x01
+#define SUBLANG_CHEROKEE_CHEROKEE       0x01
 #define SUBLANG_CHINESE_TRADITIONAL     0x01
 #define SUBLANG_CORSICAN_FRANCE         0x01
 #define SUBLANG_CZECH_CZECH_REPUBLIC    0x01
@@ -122,6 +124,7 @@
 #define SUBLANG_GREENLANDIC_GREENLAND   0x01
 #define SUBLANG_GUJARATI_INDIA          0x01
 #define SUBLANG_HAUSA_NIGERIA_LATIN     0x01
+#define SUBLANG_HAWAIIAN_US             0x01
 #define SUBLANG_HEBREW_ISRAEL           0x01
 #define SUBLANG_HINDI_INDIA             0x01
 #define SUBLANG_HUNGARIAN_HUNGARY       0x01
@@ -155,6 +158,7 @@
 #define SUBLANG_NEPALI_NEPAL            0x01
 #define SUBLANG_NORWEGIAN_BOKMAL        0x01
 #define SUBLANG_OCCITAN_FRANCE          0x01
+#define SUBLANG_ODIA_INDIA              0x01
 #define SUBLANG_ORIYA_INDIA             0x01
 #define SUBLANG_PASHTO_AFGHANISTAN      0x01
 #define SUBLANG_PERSIAN_IRAN            0x01
@@ -165,6 +169,7 @@
 #define SUBLANG_ROMANIAN_ROMANIA        0x01
 #define SUBLANG_ROMANSH_SWITZERLAND     0x01
 #define SUBLANG_RUSSIAN_RUSSIA          0x01
+#define SUBLANG_SAKHA_RUSSIA            0x01
 #define SUBLANG_SAMI_NORTHERN_NORWAY    0x01
 #define SUBLANG_SANSKRIT_INDIA          0x01
 #define SUBLANG_SCOTTISH_GAELIC         0x01
@@ -184,6 +189,7 @@
 #define SUBLANG_TELUGU_INDIA            0x01
 #define SUBLANG_THAI_THAILAND           0x01
 #define SUBLANG_TIBETAN_PRC             0x01
+#define SUBLANG_TIGRINYA_ETHIOPIA       0x01
 #define SUBLANG_TSWANA_SOUTH_AFRICA     0x01
 #define SUBLANG_TURKISH_TURKEY          0x01
 #define SUBLANG_TURKMEN_TURKMENISTAN    0x01
@@ -212,7 +218,10 @@
 #define VFFF_ISSHAREDFILE               0x0001
 #define VFF_CURNEDEST                   0x0001
 #define VIFF_FORCEINSTALL               0x0001
-#define ISOLATIONAWARE_MANIFEST_RESOURCE_ID 2
+#define PSAPI_VERSION                   1
+#define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
+#define MINIMUM_RESERVED_MANIFEST_RESOURCE_ID 1
+#define WINAPI_PARTITION_APP            0x00000002
 #define SW_SHOWMINIMIZED                2
 #define SHOW_ICONWINDOW                 2
 #define SW_OTHERZOOM                    2
@@ -259,11 +268,14 @@
 #define SUBLANG_SYS_DEFAULT             0x02
 #define SUBLANG_ARABIC_IRAQ             0x02
 #define SUBLANG_AZERI_CYRILLIC          0x02
+#define SUBLANG_AZERBAIJANI_AZERBAIJAN_CYRILLIC 0x02
+#define SUBLANG_BANGLA_BANGLADESH       0x02
 #define SUBLANG_BENGALI_BANGLADESH      0x02
 #define SUBLANG_CHINESE_SIMPLIFIED      0x02
 #define SUBLANG_DUTCH_BELGIAN           0x02
 #define SUBLANG_ENGLISH_UK              0x02
 #define SUBLANG_FRENCH_BELGIAN          0x02
+#define SUBLANG_FULAH_SENEGAL           0x02
 #define SUBLANG_GERMAN_SWISS            0x02
 #define SUBLANG_INUKTITUT_CANADA_LATIN  0x02
 #define SUBLANG_IRISH_IRELAND           0x02
@@ -276,6 +288,8 @@
 #define SUBLANG_NEPALI_INDIA            0x02
 #define SUBLANG_NORWEGIAN_NYNORSK       0x02
 #define SUBLANG_PORTUGUESE              0x02
+#define SUBLANG_PULAR_SENEGAL           0x02
+#define SUBLANG_PUNJABI_PAKISTAN        0x02
 #define SUBLANG_QUECHUA_ECUADOR         0x02
 #define SUBLANG_SAMI_NORTHERN_SWEDEN    0x02
 #define SUBLANG_SERBIAN_LATIN           0x02
@@ -284,14 +298,18 @@
 #define SUBLANG_SPANISH_MEXICAN         0x02
 #define SUBLANG_SWEDISH_FINLAND         0x02
 #define SUBLANG_TAMAZIGHT_ALGERIA_LATIN 0x02
+#define SUBLANG_TAMIL_SRI_LANKA         0x02
 #define SUBLANG_TIGRIGNA_ERITREA        0x02
+#define SUBLANG_TIGRINYA_ERITREA        0x02
+#define SUBLANG_TSWANA_BOTSWANA         0x02
 #define SUBLANG_URDU_INDIA              0x02
 #define SUBLANG_UZBEK_CYRILLIC          0x02
+#define SUBLANG_VALENCIAN_VALENCIA      0x02
 #define SORT_CHINESE_PRC                0x2
 #define __drv_typeBitset                2
 #define VFF_FILEINUSE                   0x0002
 #define VIFF_DONTDELETEOLD              0x0002
-#define ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID 3
+#define ISOLATIONAWARE_MANIFEST_RESOURCE_ID 2
 #define SW_SHOWMAXIMIZED                3
 #define SW_MAXIMIZE                     3
 #define SHOW_FULLSCREEN                 3
@@ -311,6 +329,7 @@
 #define LVS_LIST                        0x0003
 #define LVS_TYPEMASK                    0x0003
 #define LANG_CATALAN                    0x03
+#define LANG_VALENCIAN                  0x03
 #define SUBLANG_CUSTOM_DEFAULT          0x03
 #define SUBLANG_ARABIC_EGYPT            0x03
 #define SUBLANG_CHINESE_HONGKONG        0x03
@@ -323,6 +342,7 @@
 #define SUBLANG_SPANISH_MODERN          0x03
 #define SORT_CHINESE_BOPOMOFO           0x3
 #define __drv_typeExpr                  3
+#define ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID 3
 #define SW_SHOWNOACTIVATE               4
 #define SHOW_OPENNOACTIVATE             4
 #define SW_OTHERUNZOOM                  4
@@ -367,6 +387,7 @@
 #define SUBLANG_GERMAN_LUXEMBOURG       0x04
 #define SUBLANG_SAMI_LULE_NORWAY        0x04
 #define SUBLANG_SPANISH_GUATEMALA       0x04
+#define SUBLANG_TAMAZIGHT_MOROCCO_TIFINAGH 0x04
 #define SORT_JAPANESE_RADICALSTROKE     0x4
 #define SORT_CHINESE_RADICALSTROKE      0x4
 #define VFF_BUFFTOOSMALL                0x0004
@@ -515,7 +536,6 @@
 #define LANG_ICELANDIC                  0x0f
 #define SUBLANG_ARABIC_BAHRAIN          0x0f
 #define SUBLANG_SPANISH_PARAGUAY        0x0f
-#define MAXIMUM_RESERVED_MANIFEST_RESOURCE_ID 16
 #define VK_SHIFT                        0x10
 #define WM_CLOSE                        0x0010
 #define HTBOTTOMLEFT                    16
@@ -541,6 +561,7 @@
 #define SUBLANG_ARABIC_QATAR            0x10
 #define SUBLANG_ENGLISH_INDIA           0x10
 #define SUBLANG_SPANISH_BOLIVIA         0x10
+#define MAXIMUM_RESERVED_MANIFEST_RESOURCE_ID 16
 #define VK_CONTROL                      0x11
 #define WM_QUERYENDSESSION              0x0011
 #define HTBOTTOMRIGHT                   17
@@ -578,10 +599,10 @@
 #define LANG_PORTUGUESE                 0x16
 #define VK_JUNJA                        0x17
 #define LANG_ROMANSH                    0x17
-#define RT_MANIFEST                     24
 #define VK_FINAL                        0x18
 #define WM_SHOWWINDOW                   0x0018
 #define LANG_ROMANIAN                   0x18
+#define RT_MANIFEST                     24
 #define VK_HANJA                        0x19
 #define VK_KANJI                        0x19
 #define LANG_RUSSIAN                    0x19
@@ -657,6 +678,7 @@
 #define VK_SNAPSHOT                     0x2C
 #define WM_MEASUREITEM                  0x002C
 #define LANG_AZERI                      0x2c
+#define LANG_AZERBAIJANI                0x2c
 #define VK_INSERT                       0x2D
 #define WM_DELETEITEM                   0x002D
 #define LANG_BASQUE                     0x2d
@@ -706,12 +728,14 @@
 #define LANG_UZBEK                      0x43
 #define WM_COMMNOTIFY                   0x0044
 #define LANG_TATAR                      0x44
+#define LANG_BANGLA                     0x45
 #define LANG_BENGALI                    0x45
 #define WM_WINDOWPOSCHANGING            0x0046
 #define LANG_PUNJABI                    0x46
 #define WM_WINDOWPOSCHANGED             0x0047
 #define LANG_GUJARATI                   0x47
 #define WM_POWER                        0x0048
+#define LANG_ODIA                       0x48
 #define LANG_ORIYA                      0x48
 #define LANG_TAMIL                      0x49
 #define WM_COPYDATA                     0x004A
@@ -742,6 +766,7 @@
 #define VK_LWIN                         0x5B
 #define LANG_SINHALESE                  0x5b
 #define VK_RWIN                         0x5C
+#define LANG_CHEROKEE                   0x5c
 #define VK_APPS                         0x5D
 #define LANG_INUKTITUT                  0x5d
 #define LANG_AMHARIC                    0x5e
@@ -762,6 +787,8 @@
 #define LANG_DIVEHI                     0x65
 #define VK_NUMPAD6                      0x66
 #define VK_NUMPAD7                      0x67
+#define LANG_FULAH                      0x67
+#define LANG_PULAR                      0x67
 #define VK_NUMPAD8                      0x68
 #define LANG_HAUSA                      0x68
 #define VK_NUMPAD9                      0x69
@@ -783,8 +810,10 @@
 #define VK_F3                           0x72
 #define VK_F4                           0x73
 #define LANG_TIGRIGNA                   0x73
+#define LANG_TIGRINYA                   0x73
 #define VK_F5                           0x74
 #define VK_F6                           0x75
+#define LANG_HAWAIIAN                   0x75
 #define VK_F7                           0x76
 #define VK_F8                           0x77
 #define VK_F9                           0x78
@@ -839,6 +868,7 @@
 #define LANG_ALSATIAN                   0x84
 #define VK_F22                          0x85
 #define WM_NCPAINT                      0x0085
+#define LANG_SAKHA                      0x85
 #define LANG_YAKUT                      0x85
 #define VK_F23                          0x86
 #define WM_NCACTIVATE                   0x0086
@@ -855,6 +885,7 @@
 #define LANG_SCOTTISH_GAELIC            0x91
 #define VK_OEM_NEC_EQUAL                0x92
 #define VK_OEM_FJ_JISHO                 0x92
+#define LANG_CENTRAL_KURDISH            0x92
 #define VK_OEM_FJ_MASSHOU               0x93
 #define VK_OEM_FJ_TOUROKU               0x94
 #define VK_OEM_FJ_LOYA                  0x95
@@ -1097,7 +1128,23 @@
 #define WM_EXITSIZEMOVE                 0x0232
 #define WM_DROPFILES                    0x0233
 #define WM_MDIREFRESHMENU               0x0234
+#define WM_POINTERDEVICECHANGE          0x238
+#define WM_POINTERDEVICEINRANGE         0x239
+#define WM_POINTERDEVICEOUTOFRANGE      0x23A
 #define WM_TOUCH                        0x0240
+#define WM_NCPOINTERUPDATE              0x0241
+#define WM_NCPOINTERDOWN                0x0242
+#define WM_NCPOINTERUP                  0x0243
+#define WM_POINTERUPDATE                0x0245
+#define WM_POINTERDOWN                  0x0246
+#define WM_POINTERUP                    0x0247
+#define WM_POINTERENTER                 0x0249
+#define WM_POINTERLEAVE                 0x024A
+#define WM_POINTERACTIVATE              0x024B
+#define WM_POINTERCAPTURECHANGED        0x024C
+#define WM_TOUCHHITTESTING              0x024D
+#define WM_POINTERWHEEL                 0x024E
+#define WM_POINTERHWHEEL                0x024F
 #define WM_IME_SETCONTEXT               0x0281
 #define WM_IME_NOTIFY                   0x0282
 #define WM_IME_CONTROL                  0x0283
@@ -1158,6 +1205,13 @@
 #define WM_DDE_FIRST                    0x03E0
 #define IDC_RESULTS                     1000
 #define IDC_RESULTS_LIST                1000
+#define IDC_MFCBUTTON1                  1002
+#define IDC_MFCVSLISTBOX2               1003
+#define IDC_CHECK1                      1005
+#define IDC_MFCMASKEDEDIT1              1006
+#define IDC_LIST2                       1009
+#define IDC_LIST1                       1010
+#define IDC_COMBO1                      1011
 #define CF_GDIOBJLAST                   0x03FF
 #define _WIN32_WINNT_NT4                0x0400
 #define _WIN32_IE_IE40                  0x0400
@@ -1342,10 +1396,11 @@
 #define FILEOPENORD                     1536
 #define _WIN32_WINNT_WIN7               0x0601
 #define _WIN32_IE_IE60SP1               0x0601
-#define _WIN32_WINNT                    0x0601
 #define MULTIFILEOPENORD                1537
+#define _WIN32_WINNT_WIN8               0x0602
 #define _WIN32_IE_WS03                  0x0602
 #define PRINTDLGORD                     1538
+#define _WIN32_WINNT                    0x0602
 #define _WIN32_IE_IE60SP2               0x0603
 #define PRNSETUPDLGORD                  1539
 #define FINDDLGORD                      1540
@@ -1365,7 +1420,6 @@
 #define IDC_MANAGE_LINK                 1592
 #define _WIN32_IE_IE70                  0x0700
 #define _WIN32_IE_IE80                  0x0800
-#define _WIN32_IE                       0x0800
 #define CS_SAVEBITS                     0x0800
 #define HDS_NOSIZING                    0x0800
 #define TBSTYLE_FLAT                    0x0800
@@ -1376,7 +1430,8 @@
 #define LVS_ALIGNLEFT                   0x0800
 #define TVS_INFOTIP                     0x0800
 #define TCS_RAGGEDRIGHT                 0x0800
-#define IDD_PLUGINGOLINE_NAVTO           2500
+#define _WIN32_IE_IE90                  0x0900
+#define IDD_PLUGINGOLINE_NAVTO          2500
 #define IDD_SMARTCOMMAND_FORM           2500
 #define IDD_NAGATETO_FORM               2500
 #define IDD_NAVIGATETO_FORM             2500
@@ -1387,6 +1442,7 @@
 #define ID_UGO_RESULTS_LABEL            2506
 #define ID_UGO_RESULTS_LABEL2           2507
 #define ID_UGO_RESULTS_CNT_LABEL        2507
+#define _WIN32_IE_IE100                 0x0A00
 #define LVS_ALIGNMASK                   0x0c00
 #define CS_BYTEALIGNCLIENT              0x1000
 #define HDS_OVERFLOW                    0x1000
@@ -1513,17 +1569,17 @@
 #define SPVERSION_MASK                  0x0000FF00
 #define HTERROR                         -2
 #define UNICODE_NOCHAR                  0xFFFF
+#define IDC_STATIC                      -1
 #define PWR_FAIL                        -1
 #define HTTRANSPARENT                   -1
-#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        101
+#define _APS_NEXT_RESOURCE_VALUE        103
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1001
+#define _APS_NEXT_CONTROL_VALUE         1012
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
