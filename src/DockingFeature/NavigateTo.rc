@@ -1,7 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "windows.h"
 #include "resource.h"
+#include <windows.h>
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
@@ -20,11 +20,11 @@ EXSTYLE WS_EX_TOPMOST | WS_EX_COMPOSITED
 CAPTION "Navigate To"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    EDITTEXT        ID_COMMAND_EDIT,8,13,361,12
     DEFPUSHBUTTON   "&>",IDOK,373,12,20,14,BS_ICON | BS_NOTIFY
-    LISTBOX         IDC_RESULTS_LIST,6,44,387,124,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Results:",ID_UGO_RESULTS_LABEL,8,33,30,8
     LTEXT           "",ID_UGO_RESULTS_CNT_LABEL,37,33,8,8
+    CONTROL         "",IDC_RESULTS_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | WS_TABSTOP,7,44,385,123,WS_EX_STATICEDGE
+    COMBOBOX        ID_COMMAND_EDIT,9,12,359,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
 END
 
 
