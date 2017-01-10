@@ -7,6 +7,8 @@
 class NppManager
 {
 public:
+    LangType detectLanguageFromTextBegining(const unsigned char *data, size_t dataLen);
+public:
     NppManager(void);
     virtual ~NppManager(void);
 //public functions
@@ -15,7 +17,7 @@ public:
     bool goToLine(const int& line);
     bool switchToFile(const std::string& filePath);
     void showMessageBox(const std::string& text);
-
+    int getBufferIdByFilePath(const std::string& filePath);
 //static string helper //todo: should be moved from here
 public:
     static std::string wStrToStr(TCHAR *wStr)

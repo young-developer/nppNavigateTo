@@ -23,22 +23,31 @@
 #include "resource.h"
 #include "../NppManager.h"
 #include <string>
+#include <forward_list>
+#include <Windowsx.h>
+
+typedef struct{ std::wstring fullPath; std::wstring fileName; } fileData;
 
 class NavigateToDlg : public DockingDlgInterface
 {
-    LVCOLUMN LvCol;
-    LVITEM LvItem;
 public :
 	NavigateToDlg() : DockingDlgInterface(IDD_PLUGINGOLINE_NAVTO)
     {
         nppManager = new NppManager();
-        cmdComboBoxEdit = (CComboBox *)(GetDlgItem(_hSelf, ID_GOLINE_EDIT));
+        history.resize(10);
+        isDropDownOpened = false;
     };
 
-    CComboBox * CmdComboBoxEdit() const
+    bool IsDropDownOpened() const
     {
-        return cmdComboBoxEdit;
+        return isDropDownOpened;
     }
+    bool DropDownIsNotOpened() const
+    {
+        return !isDropDownOpened;
+    }
+    
+    void beNotified(SCNotification *notifyCode);
 
     virtual ~NavigateToDlg()
     {
@@ -48,33 +57,72 @@ public :
     virtual void display(bool toShow = true) const {
         DockingDlgInterface::display(toShow);
         if (toShow)
-            ::SetFocus(::GetDlgItem(_hSelf, ID_GOLINE_EDIT));
+            ::SetFocus(hwndGoLineEdit);
     };
 
 	void setParent(HWND parent2set){
 		_hParent = parent2set;
 	};
 
+    void hide()
+    {
+        if(isVisible())
+            display(false);
+    }
+
 protected :
 	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
+    static int CALLBACK CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+    static LRESULT CALLBACK ComboBoxProc( HWND, UINT, WPARAM, LPARAM );
 private :
-	void loadFileNamesToList(const std::string &filter);
+	virtual void loadFileNamesToList(const std::string &filter);
 	void openSelectedFile();
+    void updateHistory(const std::string &value);
 	int getSelectedFileId();
+    fileData* getFileByFullPath(std::wstring text);
+    void AddListViewItem(int item, const std::wstring &text);
     int getLine() const {
         BOOL isSuccessful;
         int line = ::GetDlgItemInt(_hSelf, ID_GOLINE_EDIT, &isSuccessful, FALSE);
         return (isSuccessful?line:-1);
     };
 
+    void refreshResultsList()
+    {
+        loadFileNamesToList(getFilterEditValue());
+        selectFirstRowInList();
+    }
+
+    void selectFirstRowInList()
+    {
+        //select first row in grid
+        ListView_SetItemState(hwndListView, 0, LVIS_SELECTED, LVIS_SELECTED);
+        ListView_SetItemState(hwndListView, 0, LVIS_FOCUSED, LVIS_FOCUSED);
+    }
+
+    bool isListViewFocused()
+    {
+       return ::GetFocus() != hwndListView;
+    }
+
 	std::string getFilterEditValue() const 
 	{
 		TCHAR buf[MAX_PATH];
-        GetDlgItemText(_hSelf, ID_GOLINE_EDIT, buf, MAX_PATH);
+        ComboBox_GetText(hwndGoLineEdit, buf, MAX_PATH);
         return NppManager::wStrToStr(&buf[0]);
     };
 private:
+    //Events
+    void SortOnColumnClick(LPNMLISTVIEW pLVInfo);
+private:
+    HWND hwndListView;
+    HWND hwndGoLineEdit;
     NppManager *nppManager;
-    CComboBox *cmdComboBoxEdit;
+    bool isDropDownOpened;
+    std::forward_list<std::string> history; //TODO: should be changed to HistoryManager class
+    std::vector<fileData> fileList;
+    
+    LVITEM lis;
 };
+
 #endif //GOTILINE_DLG_H

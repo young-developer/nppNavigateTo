@@ -69,6 +69,10 @@ extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF)
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 {
+    //notify form
+    _navigateToForm.beNotified(notifyCode);
+    
+    //place general notification here
 	switch (notifyCode->nmhdr.code) 
 	{
 		case NPPN_SHUTDOWN:
@@ -76,71 +80,6 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 			commandMenuCleanUp();
 		}
 		break;
-
-		case SCN_CHARADDED:
-		{
-			LangType docType;
-			::SendMessage(nppData._nppHandle, NPPM_GETCURRENTLANGTYPE, 0, (LPARAM)&docType);
-			bool isDocTypeHTML = (docType == L_HTML || docType == L_XML || docType == L_PHP);
-			if (doCloseTag && isDocTypeHTML)
-			{
-				if (notifyCode->ch == '>')
-				{
-					char buf[512];
-					int currentEdit;
-					::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&currentEdit);
-					HWND hCurrentEditView = (currentEdit == 0)?nppData._scintillaMainHandle:nppData._scintillaSecondHandle;
-					int currentPos = int(::SendMessage(hCurrentEditView, SCI_GETCURRENTPOS, 0, 0));
-					int beginPos = currentPos - (sizeof(buf) - 1);
-					int startPos = (beginPos > 0)?beginPos:0;
-					int size = currentPos - startPos;
-					char insertString[516] = "</";
-
-					if (size >= 3) 
-					{
-						struct TextRange tr = {{startPos, currentPos}, buf};
-
-						::SendMessage(hCurrentEditView, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
-
-						if (buf[size-2] != '/') 
-						{
-
-							const char *pBegin = &buf[0];
-							const char *pCur = &buf[size - 2];
-							int  insertStringSize = 2;
-
-							for (; pCur > pBegin && *pCur != '<' && *pCur != '>' ;)
-								pCur--;
-								
-
-							if (*pCur == '<')
-							{
-								pCur++;
-								
-								while (StrChrA(":_-.", *pCur) || IsCharAlphaNumeric(*pCur))
-								{
-									insertString[insertStringSize++] = *pCur;
-									pCur++;
-								}
-							}
-
-							insertString[insertStringSize++] = '>';
-							insertString[insertStringSize] = '\0';
-
-							if (insertStringSize > 3)
-							{				
-								::SendMessage(hCurrentEditView, SCI_BEGINUNDOACTION, 0, 0);
-								::SendMessage(hCurrentEditView, SCI_REPLACESEL, 0, (LPARAM)insertString);
-								::SendMessage(hCurrentEditView, SCI_SETSEL, currentPos, currentPos);
-								::SendMessage(hCurrentEditView, SCI_ENDUNDOACTION, 0, 0);
-							}
-						}
-					}	
-				}
-			}
-		}
-		break;
-
 		default:
 			return;
 	}

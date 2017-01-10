@@ -72,7 +72,7 @@ public:
 	};
 
 protected :
-	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM /*wParam*/, LPARAM lParam)
+	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		switch (message) 
 		{
@@ -103,8 +103,16 @@ protected :
 							break;
 					}
 				}
-				break;
+				break; 
 			}
+            case WM_ACTIVATE:
+            {
+                if (LOWORD(wParam) == WA_INACTIVE && isVisible())
+		        {
+                    display(false);
+		        }
+                return TRUE;
+            }
 			default:
 				break;
 		}

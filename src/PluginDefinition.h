@@ -23,13 +23,14 @@
 // All difinitions of plugin interface
 //
 #include "PluginInterface.h"
-
+#include <string>
 //-------------------------------------//
 //-- STEP 1. DEFINE YOUR PLUGIN NAME --//
 //-------------------------------------//
 // Here define your plugin name
 //
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("Navigate To");
+const TCHAR NPP_PLUGIN_VERSION[] = TEXT("1.4.2.0");
 
 //-----------------------------------------------//
 //-- STEP 2. DEFINE YOUR PLUGIN COMMAND NUMBER --//
@@ -37,7 +38,7 @@ const TCHAR NPP_PLUGIN_NAME[] = TEXT("Navigate To");
 //
 // Here define the number of your plugin commands
 //
-const int nbFunc = 1;
+const int nbFunc = 2;
 
 
 //
@@ -72,6 +73,8 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 // Plugin command functions
 //
 void NavigateToDlgForm();
-
+void ShowAboutDlgForm();
+//additional functions
+int MsgBoxPrint(HWND hWnd, int Type, char *Caption, char *Format, ...);
 
 #endif //PLUGINDEFINITION_H

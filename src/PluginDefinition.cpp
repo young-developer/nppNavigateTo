@@ -52,6 +52,7 @@ TCHAR iniFilePath[MAX_PATH];
 bool doCloseTag = false;
 
 #define NAVIGATETO_FORM_INDEX 0
+#define ABOUT_FORM_INDEX 1
 
 //
 // Initialize your plugin data here
@@ -111,7 +112,8 @@ void commandMenuInit()
     dialogShKey->_isShift = false;
     dialogShKey->_key = VK_OEM_COMMA;
 
-    setCommand(NAVIGATETO_FORM_INDEX, TEXT("Show form"), NavigateToDlgForm, dialogShKey, false);
+    setCommand(NAVIGATETO_FORM_INDEX, TEXT("Tabs - (Opened Files)"), NavigateToDlgForm, dialogShKey, false);
+    setCommand(ABOUT_FORM_INDEX, TEXT("About"), ShowAboutDlgForm, 0, false);
 }
 
 
@@ -172,3 +174,19 @@ void NavigateToDlgForm()
         _navigateToForm.display();
 }
 
+int MsgBoxPrint(HWND hWnd, int Type, char *Caption, char *Format, ...)
+{
+    va_list ArgList;
+    char Temp[4096];
+
+    va_start(ArgList, Format);
+    vsnprintf(Temp, 4096, Format, ArgList); 
+    va_end(ArgList);
+
+    return MessageBox(hWnd, NppManager::strToWStr(Temp).c_str(), NppManager::strToWStr(Caption).c_str(), Type);
+}
+
+void ShowAboutDlgForm()
+{
+    MsgBoxPrint(nppData._nppHandle, MB_OK | MB_ICONINFORMATION, "About - NavigateTo v.1.4.2.0", "Plugin allows to navigate between opened files(tabs)\nCreated by Oleksii Maryshchenko \nEmail: young_developer@mail.ru\nWebsite: http://omaryshchenko.info");
+}
