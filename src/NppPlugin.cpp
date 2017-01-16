@@ -25,6 +25,7 @@ extern NppData nppData;
 extern bool doCloseTag;
 
 extern NavigateToDlg _navigateToForm;
+extern "C" { int _afxForceUSRDLL; }
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID /*lpReserved*/)
 {

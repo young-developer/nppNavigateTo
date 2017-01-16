@@ -19,6 +19,19 @@
 #include <stdio.h>
 #include "StaticDialog.h"
 
+typedef struct {
+	WORD    dlgVer;
+	WORD    signature;
+	DWORD  helpID;
+	DWORD  exStyle;
+	DWORD  style;
+	WORD    cDlgItems;
+	short  x;
+	short  y;
+	short  cx;
+	short  cy;
+} DLGTEMPLATEEX, *LPDLGTEMPLATEEX;
+
 void StaticDialog::goToCenter()
 {
 	RECT rc;
@@ -55,6 +68,8 @@ HGLOBAL StaticDialog::makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplat
 	*ppMyDlgTemplate = reinterpret_cast<DLGTEMPLATE *>(::GlobalLock(hMyDlgTemplate));
 
 	::memcpy(*ppMyDlgTemplate, pDlgTemplate, sizeDlg);
+	
+	
 
 	DLGTEMPLATEEX *pMyDlgTemplateEx = reinterpret_cast<DLGTEMPLATEEX *>(*ppMyDlgTemplate);
 	if (pMyDlgTemplateEx->signature == 0xFFFF)
@@ -153,4 +168,3 @@ void StaticDialog::alignWith(HWND handle, HWND handle2Align, PosAlign pos, POINT
 
 	::ScreenToClient(_hSelf, &point);
 }
-

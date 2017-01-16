@@ -133,7 +133,7 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 			{
                 //  Get the edit window handle to each combo box. 
                 HWND hwndEdit1 = GetWindow(hwndGoLineEdit, GW_CHILD);
-				lpfnEditWndProcCombo = (WNDPROC) SetWindowLong(hwndEdit1, GWL_WNDPROC, (DWORD) ComboBoxProc); 
+				lpfnEditWndProcCombo = (WNDPROC)SetWindowLongPtr(hwndEdit1, GWLP_WNDPROC, (DWORD) ComboBoxProc);
 			}
             LVCOLUMN LvCol;
             memset(&LvCol,0,sizeof(LvCol));                  // Zero Members
