@@ -1,0 +1,73 @@
+version: 1.4.2.{build}
+image: Visual Studio 2015
+
+
+environment:
+  matrix:
+  - PlatformToolset: v140_xp
+  - PlatformToolset: v120_xp
+
+platform:
+    - x64
+    - Win32
+
+configuration:
+    - Release
+    - Debug
+
+install:
+    - if "%platform%"=="x64" set archi=amd64
+    - if "%platform%"=="Win32" set archi=x86
+    - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
+
+build:
+    parallel: true                  # enable MSBuild parallel builds
+    verbosity: minimal
+
+build_script:
+    - cd "%APPVEYOR_BUILD_FOLDER%"/vs.proj
+    - msbuild NppPluginNavigateTo.vcxproj /p:configuration="%configuration%" /p:platform="%platform%" /p:PlatformToolset="%PlatformToolset%"
+
+after_build:
+    - cd "%APPVEYOR_BUILD_FOLDER%"
+    - ps: >-
+
+        if ($env:PLATFORM -eq "x64" -and $env:CONFIGURATION -eq "Release") {
+            Push-AppveyorArtifact "bin64\NavigateTo.dll" -FileName NavigateTo.dll
+        }
+
+        if ($env:PLATFORM -eq "Win32" -and $env:CONFIGURATION -eq "Release") {
+            Push-AppveyorArtifact "bin\NavigateTo.dll" -FileName NavigateTo.dll
+        }
+
+        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v120_xp") {
+            if($env:PLATFORM -eq "x64"){
+            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
+            Remove-Item bin64\*.ipdb
+            Remove-Item bin64\*.iobj
+            7z a $ZipFileName bin64\*
+            }
+            if($env:PLATFORM -eq "Win32"){
+            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_x86.zip"
+            Remove-Item bin\*.ipdb
+            Remove-Item bin\*.iobj
+            7z a $ZipFileName bin\*
+            }
+        }
+
+artifacts:
+  - path: NavigateTo_*.zip
+    name: releases
+
+deploy:
+    provider: GitHub
+    auth_token:
+        secure: !!TODO, see https://www.appveyor.com/docs/deployment/github/#provider-settings!!
+    artifact: releases
+    draft: false
+    prerelease: false
+    force_update: true
+    on:
+        appveyor_repo_tag: true
+        PlatformToolset: v120_xp
+        configuration: Release
