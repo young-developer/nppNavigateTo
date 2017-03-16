@@ -2,8 +2,8 @@
 
 ## "Navigate To" Form
 
-
-![alt text](https://github.com/young-developer/nppNavigateTo/blob/master/NavigateTo_Search.png)
+![NavigateTo_Search](https://github.com/young-developer/nppNavigateTo/blob/master/NavigateTo_Search.png)  
+![NavigateTo_Main](https://github.com/young-developer/nppNavigateTo/blob/master/Navigate%20To.PNG)
 
 ## Installation
 
