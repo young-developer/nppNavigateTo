@@ -15,17 +15,23 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include "stdafx.h"
+#include "stdafx.h"      //Pre-compiled header for compiler
 #include "PluginDefinition.h"
-#include <shlwapi.h>
 #include "DockingFeature/NavigateToDlg.h"
+#include "ScintillaGateway.h"
 
 extern FuncItem funcItem[nbFunc];
 extern NppData nppData;
 extern bool doCloseTag;
 
 extern NavigateToDlg _navigateToForm;
-extern "C" { int _afxForceUSRDLL; }
+
+#ifdef _WIN64
+#define BITNESS TEXT("(64 bit)")
+#else
+#define BITNESS TEXT("(32 bit)")
+extern "C" { int _afxForceUSRDLL; } 
+#endif
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID /*lpReserved*/)
 {
@@ -52,8 +58,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  reasonForCall, LPVOID /*lpReserved*
 
 extern "C" __declspec(dllexport) void setInfo(NppData notpadPlusData)
 {
-	nppData = notpadPlusData;
-	commandMenuInit();
+    setNppInfo(notpadPlusData);
 }
 
 extern "C" __declspec(dllexport) const TCHAR * getName()

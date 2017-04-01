@@ -15,22 +15,24 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include "stdafx.h"
-#include <stdio.h>
+#include "stdafx.h"      //Pre-compiled header for compiler
+#include <cstdio>
 #include "StaticDialog.h"
 
-typedef struct {
-	WORD    dlgVer;
-	WORD    signature;
-	DWORD  helpID;
-	DWORD  exStyle;
-	DWORD  style;
-	WORD    cDlgItems;
-	short  x;
-	short  y;
-	short  cx;
-	short  cy;
-} DLGTEMPLATEEX, *LPDLGTEMPLATEEX;
+struct DLGTEMPLATEEX_Static
+{
+      WORD   dlgVer;
+      WORD   signature;
+      DWORD  helpID;
+      DWORD  exStyle;
+      DWORD  style;
+      WORD   cDlgItems;
+      short  x;
+      short  y;
+      short  cx;
+      short  cy;
+      // The structure has more fields but are variable length
+};
 
 void StaticDialog::goToCenter()
 {
@@ -68,10 +70,8 @@ HGLOBAL StaticDialog::makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplat
 	*ppMyDlgTemplate = reinterpret_cast<DLGTEMPLATE *>(::GlobalLock(hMyDlgTemplate));
 
 	::memcpy(*ppMyDlgTemplate, pDlgTemplate, sizeDlg);
-	
-	
 
-	DLGTEMPLATEEX *pMyDlgTemplateEx = reinterpret_cast<DLGTEMPLATEEX *>(*ppMyDlgTemplate);
+	DLGTEMPLATEEX_Static *pMyDlgTemplateEx = reinterpret_cast<DLGTEMPLATEEX_Static *>(*ppMyDlgTemplate);
 	if (pMyDlgTemplateEx->signature == 0xFFFF)
 		pMyDlgTemplateEx->exStyle |= WS_EX_LAYOUTRTL;
 	else

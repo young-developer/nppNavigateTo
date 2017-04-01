@@ -19,25 +19,22 @@
 #ifndef GOTILINE_DLG_H
 #define GOTILINE_DLG_H
 
-#include "DockingDlgInterface.h"
+#pragma once
+
+#include "../SizeableFeature/SizeableDlg.h"
 #include "resource.h"
 #include "../NppManager.h"
+#include "../File.h"
 #include <string>
 #include <forward_list>
+#include <unordered_map>
 #include <Windowsx.h>
 
-typedef struct{ std::wstring fullPath; std::wstring fileName; } fileData;
-
-class NavigateToDlg : public DockingDlgInterface
+class NavigateToDlg : public SizeableDlg
 {
 public :
-	NavigateToDlg() : DockingDlgInterface(IDD_PLUGINGOLINE_NAVTO)
-    {
-        nppManager = new NppManager();
-        history.resize(10);
-        isDropDownOpened = false;
-    };
-
+    NavigateToDlg();
+    void doDialog();
     bool IsDropDownOpened() const
     {
         return isDropDownOpened;
@@ -54,8 +51,16 @@ public :
         delete nppManager;
     }
 
+    virtual void init(HINSTANCE hInst, NppData nppData)
+	{
+        if(nppManager == nullptr)
+            nppManager = new NppManager(nppData);
+        
+        SizeableDlg::init(hInst, nppData._nppHandle);
+    }
+
     virtual void display(bool toShow = true) const {
-        DockingDlgInterface::display(toShow);
+        SizeableDlg::display(toShow);
         if (toShow)
             ::SetFocus(hwndGoLineEdit);
     };
@@ -63,6 +68,24 @@ public :
 	void setParent(HWND parent2set){
 		_hParent = parent2set;
 	};
+
+    virtual void onSize(UINT nType, int cx, int cy)
+    {
+	    SizeableDlg::onSize(nType, cx, cy);
+	    fitColumnsToSize();
+    }
+
+    void fitColumnsToSize()
+    {
+	    RECT rc;
+	    if (GetClientRect(hwndListView, &rc))
+	    {
+		    int len = (rc.right - rc.left);
+		    len -= static_cast<int>(SendMessage(hwndListView, LVM_GETCOLUMNWIDTH, 0, 0));
+		    len -= 2;
+		    SendMessage(hwndListView, LVM_SETCOLUMNWIDTH, 1, len);
+	    }
+    }
 
     void hide()
     {
@@ -73,24 +96,32 @@ public :
 protected :
 	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
     static int CALLBACK CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
-    static LRESULT CALLBACK ComboBoxProc( HWND, UINT, WPARAM, LPARAM );
 private :
-	virtual void loadFileNamesToList(const std::string &filter);
+    //File list functions
+	void loadFileNamesToList(const std::wstring &filter);
+    void updateFileBufferStatus(int bufferID, FileStatus status);
+    void updateCurrentFileStatus(FileStatus status);
+    void addFileToListView(const File& file);
+    void addFileToListView(int bufferID);
+    void removeFileFromListView(int bufferID);
+    //
+
 	void openSelectedFile();
-    void updateHistory(const std::string &value);
+    void previewHighlightedFile();
+    void updateHistory(const std::wstring &value);
 	int getSelectedFileId();
-    fileData* getFileByFullPath(std::wstring text);
-    void AddListViewItem(int item, const std::wstring &text);
+    File* NavigateToDlg::getSelectedFile();
     int getLine() const {
         BOOL isSuccessful;
         int line = ::GetDlgItemInt(_hSelf, ID_GOLINE_EDIT, &isSuccessful, FALSE);
         return (isSuccessful?line:-1);
     };
 
-    void refreshResultsList()
+    void refreshResultsList(bool selectFirstRow = true)
     {
         loadFileNamesToList(getFilterEditValue());
-        selectFirstRowInList();
+        if(selectFirstRow)
+            selectFirstRowInList();
     }
 
     void selectFirstRowInList()
@@ -105,11 +136,11 @@ private :
        return ::GetFocus() != hwndListView;
     }
 
-	std::string getFilterEditValue() const 
+	std::wstring getFilterEditValue() const 
 	{
 		TCHAR buf[MAX_PATH];
         ComboBox_GetText(hwndGoLineEdit, buf, MAX_PATH);
-        return NppManager::wStrToStr(&buf[0]);
+        return std::wstring(&buf[0]);
     };
 private:
     //Events
@@ -119,10 +150,10 @@ private:
     HWND hwndGoLineEdit;
     NppManager *nppManager;
     bool isDropDownOpened;
-    std::forward_list<std::string> history; //TODO: should be changed to HistoryManager class
-    std::vector<fileData> fileList;
-    
-    LVITEM lis;
+    std::forward_list<std::wstring> history; //TODO: should be changed to HistoryManager class
+    std::unordered_map<int, File> fileList;
 };
+
+LRESULT ProcessCustomDraw (LPARAM lParam);
 
 #endif //GOTILINE_DLG_H

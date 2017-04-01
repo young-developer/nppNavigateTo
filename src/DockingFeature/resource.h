@@ -37,6 +37,8 @@
 #define _USE_ATTRIBUTES_FOR_SAL         0
 #define __drv_typeConst                 0
 #define WINAPI_PARTITION_DESKTOP        0x00000001
+#define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
+#define MINIMUM_RESERVED_MANIFEST_RESOURCE_ID 1
 #define SW_SHOWNORMAL                   1
 #define SW_NORMAL                       1
 #define SHOW_OPENWINDOW                 1
@@ -218,10 +220,8 @@
 #define VFFF_ISSHAREDFILE               0x0001
 #define VFF_CURNEDEST                   0x0001
 #define VIFF_FORCEINSTALL               0x0001
-#define PSAPI_VERSION                   1
-#define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
-#define MINIMUM_RESERVED_MANIFEST_RESOURCE_ID 1
 #define WINAPI_PARTITION_APP            0x00000002
+#define ISOLATIONAWARE_MANIFEST_RESOURCE_ID 2
 #define SW_SHOWMINIMIZED                2
 #define SHOW_ICONWINDOW                 2
 #define SW_OTHERZOOM                    2
@@ -309,7 +309,7 @@
 #define __drv_typeBitset                2
 #define VFF_FILEINUSE                   0x0002
 #define VIFF_DONTDELETEOLD              0x0002
-#define ISOLATIONAWARE_MANIFEST_RESOURCE_ID 2
+#define ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID 3
 #define SW_SHOWMAXIMIZED                3
 #define SW_MAXIMIZE                     3
 #define SHOW_FULLSCREEN                 3
@@ -342,7 +342,6 @@
 #define SUBLANG_SPANISH_MODERN          0x03
 #define SORT_CHINESE_BOPOMOFO           0x3
 #define __drv_typeExpr                  3
-#define ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID 3
 #define SW_SHOWNOACTIVATE               4
 #define SHOW_OPENNOACTIVATE             4
 #define SW_OTHERUNZOOM                  4
@@ -536,6 +535,7 @@
 #define LANG_ICELANDIC                  0x0f
 #define SUBLANG_ARABIC_BAHRAIN          0x0f
 #define SUBLANG_SPANISH_PARAGUAY        0x0f
+#define MAXIMUM_RESERVED_MANIFEST_RESOURCE_ID 16
 #define VK_SHIFT                        0x10
 #define WM_CLOSE                        0x0010
 #define HTBOTTOMLEFT                    16
@@ -561,7 +561,6 @@
 #define SUBLANG_ARABIC_QATAR            0x10
 #define SUBLANG_ENGLISH_INDIA           0x10
 #define SUBLANG_SPANISH_BOLIVIA         0x10
-#define MAXIMUM_RESERVED_MANIFEST_RESOURCE_ID 16
 #define VK_CONTROL                      0x11
 #define WM_QUERYENDSESSION              0x0011
 #define HTBOTTOMRIGHT                   17
@@ -599,10 +598,10 @@
 #define LANG_PORTUGUESE                 0x16
 #define VK_JUNJA                        0x17
 #define LANG_ROMANSH                    0x17
+#define RT_MANIFEST                     24
 #define VK_FINAL                        0x18
 #define WM_SHOWWINDOW                   0x0018
 #define LANG_ROMANIAN                   0x18
-#define RT_MANIFEST                     24
 #define VK_HANJA                        0x19
 #define VK_KANJI                        0x19
 #define LANG_RUSSIAN                    0x19
@@ -1203,15 +1202,7 @@
 #define WM_PENWINFIRST                  0x0380
 #define WM_PENWINLAST                   0x038F
 #define WM_DDE_FIRST                    0x03E0
-#define IDC_RESULTS                     1000
-#define IDC_RESULTS_LIST                1000
-#define IDC_MFCBUTTON1                  1002
-#define IDC_MFCVSLISTBOX2               1003
-#define IDC_CHECK1                      1005
-#define IDC_MFCMASKEDEDIT1              1006
-#define IDC_LIST2                       1009
-#define IDC_LIST1                       1010
-#define IDC_COMBO1                      1011
+#define IDC_SYSLINK1                    1000
 #define CF_GDIOBJLAST                   0x03FF
 #define _WIN32_WINNT_NT4                0x0400
 #define _WIN32_IE_IE40                  0x0400
@@ -1399,8 +1390,8 @@
 #define MULTIFILEOPENORD                1537
 #define _WIN32_WINNT_WIN8               0x0602
 #define _WIN32_IE_WS03                  0x0602
-#define PRINTDLGORD                     1538
 #define _WIN32_WINNT                    0x0602
+#define PRINTDLGORD                     1538
 #define _WIN32_IE_IE60SP2               0x0603
 #define PRNSETUPDLGORD                  1539
 #define FINDDLGORD                      1540
@@ -1419,6 +1410,12 @@
 #define NEWFORMATDLGWITHLINK            1591
 #define IDC_MANAGE_LINK                 1592
 #define _WIN32_IE_IE70                  0x0700
+#define IDD_NAVIGATETO_FORM             1994
+#define IDC_RESULTS_LIST                1995
+#define ID_OK_BTN                       1995
+#define ID_GOLINE_EDIT                  1996
+#define IDC_STATIC_TEXT                 1996
+#define IDC_STATIC_TEXT2                1997
 #define _WIN32_IE_IE80                  0x0800
 #define CS_SAVEBITS                     0x0800
 #define HDS_NOSIZING                    0x0800
@@ -1431,18 +1428,8 @@
 #define TVS_INFOTIP                     0x0800
 #define TCS_RAGGEDRIGHT                 0x0800
 #define _WIN32_IE_IE90                  0x0900
-#define IDD_PLUGINGOLINE_NAVTO          2500
-#define IDD_SMARTCOMMAND_FORM           2500
-#define IDD_NAGATETO_FORM               2500
-#define IDD_NAVIGATETO_FORM             2500
-#define ID_GOLINE_EDIT                  2501
-#define ID_COMMAND_EDIT                 2501
-#define ID_UGO_STATIC                   2505
-#define ID_UGO_IWANT_LABEL              2505
-#define ID_UGO_RESULTS_LABEL            2506
-#define ID_UGO_RESULTS_LABEL2           2507
-#define ID_UGO_RESULTS_CNT_LABEL        2507
 #define _WIN32_IE_IE100                 0x0A00
+#define IDD_ABOUTDIALOG                 2994
 #define LVS_ALIGNMASK                   0x0c00
 #define CS_BYTEALIGNCLIENT              0x1000
 #define HDS_OVERFLOW                    0x1000
@@ -1569,7 +1556,6 @@
 #define SPVERSION_MASK                  0x0000FF00
 #define HTERROR                         -2
 #define UNICODE_NOCHAR                  0xFFFF
-#define IDC_STATIC                      -1
 #define PWR_FAIL                        -1
 #define HTTRANSPARENT                   -1
 
@@ -1577,9 +1563,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        103
+#define _APS_NEXT_RESOURCE_VALUE        101
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

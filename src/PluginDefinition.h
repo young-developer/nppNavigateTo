@@ -30,7 +30,7 @@
 // Here define your plugin name
 //
 const TCHAR NPP_PLUGIN_NAME[] = TEXT("Navigate To");
-const TCHAR NPP_PLUGIN_VERSION[] = TEXT("1.4.2.0");
+const TCHAR NPP_PLUGIN_VERSION[] = TEXT("1.8.2");
 
 //-----------------------------------------------//
 //-- STEP 2. DEFINE YOUR PLUGIN COMMAND NUMBER --//
@@ -38,7 +38,7 @@ const TCHAR NPP_PLUGIN_VERSION[] = TEXT("1.4.2.0");
 //
 // Here define the number of your plugin commands
 //
-const int nbFunc = 2;
+const int nbFunc = 4;
 
 
 //
@@ -74,6 +74,8 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 //
 void NavigateToDlgForm();
 void ShowAboutDlgForm();
+void CheckUpdates();
+void setNppInfo(NppData notpadPlusData);
 //additional functions
 int MsgBoxPrint(HWND hWnd, int Type, char *Caption, char *Format, ...);
 

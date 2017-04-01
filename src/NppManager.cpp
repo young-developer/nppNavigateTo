@@ -1,35 +1,51 @@
-#include "stdafx.h"
+#include "stdafx.h"      //Pre-compiled header for compiler
 #include "NppManager.h"
+#include "File.h"
 
-extern NppData nppData;
-
-NppManager::NppManager(void)
+NppManager::NppManager(const NppData& pNppData)
 {
+    nppData = pNppData;
+    editor.SetScintillaInstance(nppData._scintillaMainHandle);
 }
-
 
 NppManager::~NppManager(void)
 {
 }
 
-void NppManager::showMessageBox(const std::string& text)
+void NppManager::showMessageBox(const std::wstring& text)
 {
-    ::MessageBox(nppData._nppHandle, NppManager::strToWStr(text).c_str() , TEXT("Info"), MB_OK);
+    ::MessageBox(nppData._nppHandle, text.c_str() , TEXT("Info"), MB_OK);
 }
 
-bool NppManager::switchToFile(const std::string& filePath)
+bool NppManager::switchToFile(const File* file)
+{
+    return (file != nullptr)?switchToFile(file->getIndex(),file->getView()):false;
+}
+
+bool NppManager::switchToFile(const std::wstring& filePath)
 {
     bool res = false;
     TCHAR currentPath[MAX_PATH];
     ::SendMessage(nppData._nppHandle, NPPM_GETFULLCURRENTPATH, 0, (LPARAM)currentPath);
-    std::string strCurrentFilePath = wStrToStr(&currentPath[0]);
+    std::wstring strCurrentFilePath(&currentPath[0]);
     std::transform(strCurrentFilePath.begin(), strCurrentFilePath.end(), strCurrentFilePath.begin(), ::tolower);
     if(filePath.compare(strCurrentFilePath) != 0 && filePath.empty() != true)
 	{
-        ::SendMessage(nppData._nppHandle, NPPM_SWITCHTOFILE, 0, (LPARAM)NppManager::strToWStr(filePath).c_str());
+        ::SendMessage(nppData._nppHandle, NPPM_SWITCHTOFILE, 0, (LPARAM)filePath.c_str());
         res = true;
 	}
+
     return res;
+}
+
+bool NppManager::switchToFile(const int index,const int view)
+{
+    return ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, view, index) != -1;
+}
+
+bool NppManager::openContextMenu(const int index,const int view)
+{
+    return ::SendMessage(nppData._nppHandle, NPPM_TRIGGERTABBARCONTEXTMENU, view, index) != -1;
 }
 
 bool NppManager::goToLine(const int& line)
@@ -50,65 +66,195 @@ bool NppManager::goToLine(const int& line)
     return false;
 }
 
-std::vector<std::string> NppManager::getOpenedFileNames(std::string filterPath)
+
+void NppManager::setFocus()
 {
-    int nbFile = (int)::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, 0);
-    std::vector<std::string> fileNamesList;
-	if(nbFile == 0)
-		return fileNamesList;
-	
-	TCHAR **fileNames = (TCHAR **)new TCHAR*[nbFile];
-	for (int i = 0 ; i < nbFile ; i++)
-	{
-		fileNames[i] = new TCHAR[MAX_PATH];
-	}
-
-	if (::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, (WPARAM)fileNames, (LPARAM)nbFile))
-	{ 
-		for (int i = 0 ; i < nbFile ; i++)
-		{
-			std::string fileName = wStrToStr(&fileNames[i][0]);
-            //hard coded 'new  0' file name because it is not availiable
-            if(fileName == std::string("new  0"))
-                continue;
-
-			std::transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
-			std::transform(filterPath.begin(), filterPath.end(), filterPath.begin(), ::tolower);
-			std::size_t found = fileName.find(filterPath);
-
-			if(filterPath.empty() || found!=std::string::npos)
-			{
-                fileNamesList.push_back(fileName);
-			}
-		}
-	}
-
-	for (int i = 0 ; i < nbFile ; i++)
-	{
-		delete [] fileNames[i];
-	}
-	delete [] fileNames;
-
-    return fileNamesList;
+	// Get the current scintilla
+	int which = -1;
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, (LPARAM)&which);
+	if (which == -1)
+		return;
+	HWND curScintilla = (which == 0)?nppData._scintillaMainHandle:nppData._scintillaSecondHandle;
+    //::SendMessage(curScintilla, SCI_ENSUREVISIBLE, 0, 0);
+	::SendMessage(curScintilla, SCI_SETFOCUS, 0, (LPARAM)true);
+    ::SetFocus(nppData._nppHandle);
 }
 
 
-int NppManager::getBufferIdByFilePath(const std::string& filePath)
+std::vector<std::wstring> NppManager::getOpenedFileNames(std::wstring filterPath)
 {
-    std::vector<std::string> fileNamesList = getOpenedFileNames();
+    bool inverseLogic = false;
+    std::vector<std::wstring> fileNamesList;
+    int nbFile[2];
+	nbFile[0] = (int)::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, PRIMARY_VIEW);
+	nbFile[1] = (int)::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, SECOND_VIEW);
+
+	int selectedTab[2];
+	selectedTab[0] = (INT)::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDOCINDEX, 0, MAIN_VIEW);
+	selectedTab[1] = (INT)::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDOCINDEX, 0, SUB_VIEW);
+
+    if((nbFile[0]+nbFile[1]) == 0)
+		return fileNamesList;
+
+	int currentView;
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, reinterpret_cast<LPARAM>(&currentView));
+
+    //invert logic search string trimming
+    if(filterPath[0] == '|')
+    {
+        inverseLogic = true;
+        filterPath.erase(0, filterPath.find_first_not_of('|'));       //prefixing spaces
+        filterPath.erase(0, filterPath.find_first_not_of(' '));       //prefixing spaces
+        filterPath.erase(filterPath.find_last_not_of(' ')+1);         //surfixing spaces
+    }
+
+	for(int view = 0; view < 2; view++)
+	{
+		if (nbFile[view] && selectedTab[view] >= 0)
+		{
+			TCHAR **fileNames = (TCHAR **)new TCHAR*[nbFile[view]];
+			for (int i = 0 ; i < nbFile[view] ; i++)
+			{
+				fileNames[i] = new TCHAR[MAX_PATH];
+			}
+
+			if (::SendMessage(nppData._nppHandle, view ? NPPM_GETOPENFILENAMESSECOND : NPPM_GETOPENFILENAMESPRIMARY, 
+							reinterpret_cast<WPARAM>(fileNames), static_cast<LPARAM>(nbFile[view])))
+			{
+				for(int position = 0; position < nbFile[view]; position++)
+				{
+					//int bufferID = (int)::SendMessage(nppData._nppHandle, NPPM_GETBUFFERIDFROMPOS, position, view);	
+                    std::wstring fileName(fileNames[position]);
+			        std::transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
+			        std::transform(filterPath.begin(), filterPath.end(), filterPath.begin(), ::tolower);
+			        std::size_t found = fileName.find(filterPath);
+                    bool subStringLogic = inverseLogic?(found==std::wstring::npos):(found!=std::wstring::npos);
+                    int winSearchLogic = PathMatchSpec((LPCWSTR)fileName.c_str(),(LPCWSTR)filterPath.c_str());
+                    if(filterPath.empty() || subStringLogic || winSearchLogic)
+			        {
+                        fileNamesList.push_back(fileName);
+			        }
+				}
+			}
+            for (int i = 0 ; i < nbFile[view] ; i++)
+	        {
+		        delete [] fileNames[i];
+	        }
+	        delete [] fileNames;
+		}
+	}
+    return fileNamesList;
+}
+
+std::vector<File> NppManager::getOpenedFiles(std::wstring filterPath)
+{
+    bool inverseLogic = false;
+    std::vector<File> fileNamesList;
+    int nbFile[2];
+	nbFile[0] = (int)::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, PRIMARY_VIEW);
+	nbFile[1] = (int)::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, SECOND_VIEW);
+
+	int selectedTab[2];
+	selectedTab[0] = (INT)::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDOCINDEX, 0, MAIN_VIEW);
+	selectedTab[1] = (INT)::SendMessage(nppData._nppHandle, NPPM_GETCURRENTDOCINDEX, 0, SUB_VIEW);
+
+    if((nbFile[0]+nbFile[1]) == 0)
+		return fileNamesList;
+
+	int currentView;
+	::SendMessage(nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0, reinterpret_cast<LPARAM>(&currentView));
+
+    //invert logic search string trimming
+    if(filterPath[0] == '|')
+    {
+        inverseLogic = true;
+        filterPath.erase(0, filterPath.find_first_not_of('|'));       //prefixing spaces
+        filterPath.erase(0, filterPath.find_first_not_of(' '));       //prefixing spaces
+        filterPath.erase(filterPath.find_last_not_of(' ')+1);         //surfixing spaces
+    }
+
+	for(int view = 0; view < 2; view++)
+	{
+		if (nbFile[view] && selectedTab[view] >= 0)
+		{
+			TCHAR **fileNames = (TCHAR **)new TCHAR*[nbFile[view]];
+			for (int i = 0 ; i < nbFile[view] ; i++)
+			{
+				fileNames[i] = new TCHAR[MAX_PATH];
+			}
+
+			if (::SendMessage(nppData._nppHandle, view ? NPPM_GETOPENFILENAMESSECOND : NPPM_GETOPENFILENAMESPRIMARY, 
+							reinterpret_cast<WPARAM>(fileNames), static_cast<LPARAM>(nbFile[view])))
+			{
+				for(int position = 0; position < nbFile[view]; position++)
+				{
+					//int bufferID = (int)::SendMessage(nppData._nppHandle, NPPM_GETBUFFERIDFROMPOS, position, view);	
+                    std::wstring fileName(fileNames[position]);
+			        std::transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
+			        std::transform(filterPath.begin(), filterPath.end(), filterPath.begin(), ::tolower);
+			        std::size_t found = fileName.find(filterPath);
+                    bool subStringLogic = inverseLogic?(found==std::wstring::npos):(found!=std::wstring::npos);
+                    int winSearchLogic = PathMatchSpec((LPCWSTR)fileName.c_str(),(LPCWSTR)filterPath.c_str());
+                    if(filterPath.empty() || subStringLogic || winSearchLogic)
+			        {
+                        File file(fileNames[position], position, getBufferIdByFilePath(fileName), view);
+                        //file.setFileStatus(getFileStatus(file));
+                        fileNamesList.push_back(file);
+			        }
+				}
+			}
+            for (int i = 0 ; i < nbFile[view] ; i++)
+	        {
+		        delete [] fileNames[i];
+	        }
+	        delete [] fileNames;
+		}
+	}
+    return fileNamesList;
+}
+
+HWND NppManager::getCurrentHScintilla(int which)
+{
+	return (which == 0)?nppData._scintillaMainHandle:nppData._scintillaSecondHandle;
+}
+
+FileStatus NppManager::getFileStatus(const File& file)
+{
+    FileStatus fileStatus = SAVED;
+    BOOL readonly = ::SendMessage(getCurrentHScintilla(VIEW(file.getIndex())), SCI_GETREADONLY, 0, 0);
+	
+	if (readonly)
+		fileStatus = READONLY;
+	else
+	{
+		int modified = ::SendMessage(getCurrentHScintilla(VIEW(file.getIndex())), SCI_GETMODIFY, 0, 0);
+		if (modified)
+			fileStatus = UNSAVED;
+	}
+    return fileStatus;
+}
+
+
+int NppManager::getIndexByFilePath(const std::wstring& filePath)
+{
+    std::vector<std::wstring> fileNamesList = getOpenedFileNames();
 	if(fileNamesList.size() == 0)
 		return -1;
     auto iter = std::find(fileNamesList.begin(), fileNamesList.end(), filePath);
     if(iter == fileNamesList.end())
         return -1;
-    int index = iter - fileNamesList.begin();
-    int pos = ::SendMessage(nppData._nppHandle, NPPM_GETBUFFERIDFROMPOS, (LPARAM)index, 0);
+    int index = (int)(iter - fileNamesList.begin());
 
-    if (pos)
+    if (index)
     {
-        return pos;
+        return index;
     }
     return -1;
+}
+
+int NppManager::getBufferIdByFilePath(const std::wstring& filePath)
+{
+    return (int)::SendMessage(nppData._nppHandle, NPPM_GETBUFFERIDFROMPOS, (LPARAM)getIndexByFilePath(filePath), 0);
 }
 
  LangType NppManager::detectLanguageFromTextBegining(const unsigned char *data, size_t dataLen)

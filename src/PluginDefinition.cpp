@@ -16,9 +16,12 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include "stdafx.h"
+#include "stdafx.h"      //Pre-compiled header for compiler
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
+#include <ShellAPI.h>
+#include "AboutDialog.h"
+#include "ScintillaGateway.h"
 
 //
 // put the headers you need here
@@ -28,11 +31,9 @@
 #include <shlwapi.h>
 #include "DockingFeature/NavigateToDlg.h"
 
-const TCHAR sectionName[] = TEXT("Bool Param Section");
-const TCHAR keyName[] = TEXT("boolParam");
-const TCHAR configFileName[] = TEXT("navigateTo.ini");
-
 NavigateToDlg _navigateToForm;
+AboutDialog _aboutDlg;
+static HANDLE _hModule; // For dialog initialization
 
 #ifdef UNICODE 
 	#define generic_itoa _itow
@@ -47,20 +48,16 @@ FuncItem funcItem[nbFunc];
 //
 NppData nppData;
 
-
-TCHAR iniFilePath[MAX_PATH];
-bool doCloseTag = false;
-
 #define NAVIGATETO_FORM_INDEX 0
-#define ABOUT_FORM_INDEX 1
-
+#define FIRST_SEPARATOR 1
+#define CHECK_UPDATES_INDEX 2
+#define ABOUT_FORM_INDEX 3
 //
 // Initialize your plugin data here
 // It will be called while plugin loading   
 void pluginInit(HANDLE hModule)
 {
-    // Initialize navigateto dialog
-    _navigateToForm.init((HINSTANCE)hModule, NULL);
+    _hModule = hModule;
 }
 
 //
@@ -68,43 +65,14 @@ void pluginInit(HANDLE hModule)
 //
 void pluginCleanUp()
 {
-     ::WritePrivateProfileString(sectionName, keyName, doCloseTag?TEXT("1"):TEXT("0"), iniFilePath);
+    
 }
 
 //
 // Initialization of your plugin commands
 // You should fill your plugins commands here
 void commandMenuInit()
-{
-    //
-    // Firstly we get the parameters from your plugin config file (if any)
-    //
-    // get path of plugin configuration
-    ::SendMessage(nppData._nppHandle, NPPM_GETPLUGINSCONFIGDIR, MAX_PATH, (LPARAM)iniFilePath);
-
-    // if config path doesn't exist, we create it
-    if (PathFileExists(iniFilePath) == FALSE)
-    {
-            ::CreateDirectory(iniFilePath, NULL);
-    }
-
-    // make your plugin config file full file path name
-    PathAppend(iniFilePath, configFileName);
-
-    // get the parameter value from plugin config
-    doCloseTag = (::GetPrivateProfileInt(sectionName, keyName, 0, iniFilePath) != 0);
-
-    //--------------------------------------------//
-    //-- STEP 3. CUSTOMIZE YOUR PLUGIN COMMANDS --//
-    //--------------------------------------------//
-    // with function :
-    // setCommand(int index,                      // zero based number to indicate the order of command
-    //            TCHAR *commandName,             // the command name that you want to see in plugin menu
-    //            PFUNCPLUGINCMD functionPointer, // the symbol of function (function pointer) associated with this command. The body should be defined below. See Step 4.
-    //            ShortcutKey *shortcut,          // optional. Define a shortcut to trigger this command
-    //            bool check0nInit                // optional. Make this menu item be checked visually
-    //            );
-   
+{ 
     //ShortCut CTRL+,
     ShortcutKey *dialogShKey = new ShortcutKey;
     dialogShKey->_isAlt = false;
@@ -112,7 +80,9 @@ void commandMenuInit()
     dialogShKey->_isShift = false;
     dialogShKey->_key = VK_OEM_COMMA;
 
-    setCommand(NAVIGATETO_FORM_INDEX, TEXT("Tabs - (Opened Files)"), NavigateToDlgForm, dialogShKey, false);
+    setCommand(NAVIGATETO_FORM_INDEX, TEXT("Tabs"), NavigateToDlgForm, dialogShKey, false);
+    setCommand(FIRST_SEPARATOR, TEXT("---"), NULL, NULL, false);
+    setCommand(CHECK_UPDATES_INDEX, TEXT("Check for update"), CheckUpdates, 0, false);
     setCommand(ABOUT_FORM_INDEX, TEXT("About"), ShowAboutDlgForm, 0, false);
 }
 
@@ -126,9 +96,6 @@ void commandMenuCleanUp()
 	delete funcItem[NAVIGATETO_FORM_INDEX]._pShKey;
 }
 
-//----------------------------------------------//
-//-- STEP 4. DEFINE YOUR ASSOCIATED FUNCTIONS --//
-//----------------------------------------------//
 //
 // This function help you to initialize your plugin commands
 //
@@ -148,45 +115,29 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
     return true;
 }
 
-// Dockable NavigateTo Dlg
+// NavigateTo Dlg
 // 
-// You have to create your dialog by inherented DockingDlgInterface class in order to make your dialog dockable
 // - please see NavigateToDlg.h and NavigateToDlg.cpp to have more informations.
 void NavigateToDlgForm()
 {
-        _navigateToForm.setParent(nppData._nppHandle);
-        tTbData	data = {0};
-
-        if (!_navigateToForm.isCreated())
-        {
-                _navigateToForm.create(&data);
-
-                // define the default floating behaviour
-                data.uMask = DWS_DF_FLOATING;
-
-                data.pszModuleName = _navigateToForm.getPluginFileName();
-
-                // the dlgDlg should be the index of funcItem where the current function pointer is
-                // in this case is NAVIGATETO_FORM_INDEX
-                data.dlgID = NAVIGATETO_FORM_INDEX;
-                ::SendMessage(nppData._nppHandle, NPPM_DMMREGASDCKDLG, 0, (LPARAM)&data);
-        }
-        _navigateToForm.display();
-}
-
-int MsgBoxPrint(HWND hWnd, int Type, char *Caption, char *Format, ...)
-{
-    va_list ArgList;
-    char Temp[4096];
-
-    va_start(ArgList, Format);
-    vsnprintf(Temp, 4096, Format, ArgList); 
-    va_end(ArgList);
-
-    return MessageBox(hWnd, NppManager::strToWStr(Temp).c_str(), NppManager::strToWStr(Caption).c_str(), Type);
+    _navigateToForm.doDialog();
 }
 
 void ShowAboutDlgForm()
 {
-    MsgBoxPrint(nppData._nppHandle, MB_OK | MB_ICONINFORMATION, "About - NavigateTo v.1.4.2.0", "Plugin allows to navigate between opened files(tabs)\nCreated by Oleksii Maryshchenko \nEmail: young_developer@mail.ru\nWebsite: http://omaryshchenko.info");
+    _aboutDlg.doDialog();
+}
+
+void CheckUpdates()
+{
+    //open releases
+    ShellExecute(0, 0, L"https://github.com/young-developer/nppNavigateTo/releases", 0, 0 , SW_SHOW );
+}
+
+void setNppInfo(NppData notpadPlusData)
+{
+    nppData = notpadPlusData;
+    _navigateToForm.init((HINSTANCE)_hModule, nppData);
+    _aboutDlg.init((HINSTANCE)_hModule, nppData._nppHandle);
+	commandMenuInit();
 }

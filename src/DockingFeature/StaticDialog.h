@@ -22,19 +22,6 @@
 
 enum class PosAlign { left, right, top, bottom };
 
-//struct DLGTEMPLATEEX {
-//      WORD   dlgVer;
-//      WORD   signature;
-//      DWORD  helpID;
-//      DWORD  exStyle;
-//      DWORD  style; 
-//      WORD   cDlgItems;
-//      short  x;
-//      short  y;    
-//      short  cx;
-//      short  cy;
-//      // The structure has more fields but are variable length
-//} ;
 
 class StaticDialog : public Window
 {
