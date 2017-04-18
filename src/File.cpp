@@ -1,5 +1,6 @@
 #include <stdafx.h>
 #include "File.h"
+#include "Shlwapi.h"
 
 File::File(std::wstring fileFullPath, int indexOfFile, int bufferIndex, int fileView)
 {

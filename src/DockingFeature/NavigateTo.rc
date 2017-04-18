@@ -62,12 +62,12 @@ BEGIN
             VALUE "Comments", "Latest Source available from https://github.com/young-developer/nppNavigateTo"
             VALUE "CompanyName", "Oleksii Maryshchenko"
             VALUE "FileDescription", "Notepad++ File NavigateTO : a free (GPL) source code file NavigateTo"
-            VALUE "FileVersion", "1, 10, 2, 0"
+            VALUE "FileVersion", "1, 12, 2, 0"
             VALUE "InternalName", "NavigateTo"
             VALUE "LegalCopyright", "Copyright (C) 2017 Oleksii Maryshchenko"
             VALUE "OriginalFilename", "NavigateTo.dll"
             VALUE "ProductName", "NavigateTo plugin"
-            VALUE "ProductVersion", "1, 10, 2, 0"
+            VALUE "ProductVersion", "1, 12, 2, 0"
             VALUE "SpecialBuild", "UNICODE"
         END
     END

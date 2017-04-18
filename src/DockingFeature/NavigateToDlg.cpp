@@ -417,13 +417,13 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
                 //  Get the edit window handle to each combo box. 
                 HWND hwndEdit = GetWindow(hwndGoLineEdit, GW_CHILD);
                 Edit_SetCueBannerTextFocused(hwndEdit,TEXT(" Filter by Name, Path. Put a | at the beginning of the line to invert the whole filter condition"), true);
-                g_oldComboProc = (WNDPROC) SetWindowLongPtr(hwndEdit, GWLP_WNDPROC, (DWORD) ComboProc);
-                g_oldComboBoxProc = (WNDPROC) SetWindowLongPtr(hwndEdit, GWLP_WNDPROC, (DWORD) ComboBoxProc);
+                g_oldComboProc = (WNDPROC) SetWindowLongPtr(hwndEdit, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(ComboProc));
+                g_oldComboBoxProc = (WNDPROC) SetWindowLongPtr(hwndEdit, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(ComboBoxProc));
 			}
             
             if(NULL != hwndListView)
             {
-                g_oldListProc = (WNDPROC) ::SetWindowLongPtr(hwndListView, GWLP_WNDPROC, (DWORD) listProc);
+                g_oldListProc = (WNDPROC) ::SetWindowLongPtr(hwndListView, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(listProc));
             }
 
             _winMgr.CalcLayout(_hSelf);
@@ -535,7 +535,7 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
                 if(((LPNMHDR)lParam)->code == NM_CUSTOMDRAW)
                 {
                     SetWindowLongPtr(_hSelf, DWLP_MSGRESULT, 
-                        (LONG)ProcessCustomDraw(lParam));
+                        static_cast<LONG_PTR>(ProcessCustomDraw(lParam)));
                    return TRUE;
                 }
             }
