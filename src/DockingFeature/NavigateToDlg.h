@@ -29,6 +29,7 @@
 #include <forward_list>
 #include <unordered_map>
 #include <Windowsx.h>
+#include <CommCtrl.h>
 
 class NavigateToDlg : public SizeableDlg
 {

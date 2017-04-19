@@ -1,4 +1,4 @@
-version: 1.4.2.{build}
+version: 1.12.2.{build}
 image: Visual Studio 2015
 
 
@@ -26,7 +26,7 @@ build:
 
 build_script:
     - cd "%APPVEYOR_BUILD_FOLDER%"/vs.proj
-    - msbuild NppPluginNavigateTo.vcxproj /p:configuration="%configuration%" /p:platform="%platform%" /p:PlatformToolset="%PlatformToolset%"
+    - msbuild NppPluginNavigateTo.vcxproj /p:configuration="%configuration%" /p:platform="%platform%" /p:PlatformToolset="%PlatformToolset%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
     - cd "%APPVEYOR_BUILD_FOLDER%"
