@@ -18,6 +18,7 @@
 #include "stdafx.h"      //Pre-compiled header for compiler
 #include "PluginDefinition.h"
 #include "DockingFeature/NavigateToDlg.h"
+#include "ScintillaGateway.h"
 
 extern FuncItem funcItem[nbFunc];
 extern NppData nppData;
