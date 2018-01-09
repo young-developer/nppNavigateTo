@@ -12,9 +12,9 @@ NppManager::~NppManager(void)
 {
 }
 
-void NppManager::showMessageBox(const std::wstring& text)
+void NppManager::showMessageBox(const std::wstring& text, const std::wstring &msgTitle)
 {
-    ::MessageBox(nppData._nppHandle, text.c_str() , TEXT("Info"), MB_OK);
+	::MessageBox(nppData._nppHandle, text.c_str(), msgTitle.c_str(), MB_OK);
 }
 
 bool NppManager::switchToFile(const File* file)
