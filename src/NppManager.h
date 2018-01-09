@@ -30,7 +30,7 @@ public:
     bool switchToFile(const File* file);
     bool switchToFile(const int index, const int view);
     bool openContextMenu(const int index, const int view);
-    void showMessageBox(const std::wstring& text);
+	void showMessageBox(const std::wstring& text, const std::wstring &msgTitle = TEXT("Info"));
     int getBufferIdByFilePath(const std::wstring& filePath);
     int getIndexByFilePath(const std::wstring& filePath);
     HWND getCurrentHScintilla(int which);

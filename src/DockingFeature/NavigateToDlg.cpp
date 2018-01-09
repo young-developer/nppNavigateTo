@@ -65,6 +65,24 @@ LRESULT CALLBACK ComboProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 bool isDropDownOpened = false;
 
+std::string GetErrorAsString(DWORD errorMessageID)
+{
+	//Get the error message, if any.
+	if (errorMessageID == 0)
+		return std::string(); //No error message has been recorded
+
+	LPSTR messageBuffer = nullptr;
+	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+	std::string message(messageBuffer, size);
+
+	//Free the buffer.
+	LocalFree(messageBuffer);
+
+	return message;
+}
+
 void moveSelectionUp(BOOL wrap)
 {
 	
@@ -428,28 +446,34 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 
             _winMgr.CalcLayout(_hSelf);
 	        _winMgr.SetWindowPositions(_hSelf);
+			if (NULL != hwndListView)
+			{
+				RECT rc;
+				GetClientRect(hwndListView, &rc);
+				LONG width = rc.right - rc.left;
+				LVCOLUMN LvCol;
+				memset(&LvCol, 0, sizeof(LvCol));                  // Zero Members
+				LvCol.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;  // Type of mask
+				LvCol.cx = static_cast<LONG>(width*0.4);                                   // width between each coloum
+				LvCol.pszText = TEXT("Name");                            // First Header Text
+				::SendMessage(hwndListView, LVM_SETEXTENDEDLISTVIEWSTYLE, WPARAM(0), LVS_EX_FULLROWSELECT); // Set style
+				::SendMessage(hwndListView, LVM_INSERTCOLUMN, NAME_COLUMN, (LPARAM)&LvCol); // Insert/Show the coloum
+				LvCol.pszText = TEXT("Path");
+				LvCol.cx = static_cast<LONG>(width*0.6);                                   // width of column
+				SendMessage(hwndListView, LVM_INSERTCOLUMN, PATH_COLUMN, (LPARAM)&LvCol); // ...
+
+				SendMessage(hwndGoLineEdit, CB_SETMINVISIBLE, 8, 0); // Visible items = 8
+				//ListView_SetExtendedListViewStyle(hwndListView,LVS_EX_HEADERDRAGDROP); //now we can drag&drop headers :)
+				refreshResultsList();
+				goToCenter();
+				fitColumnsToSize();
+				SetFocus(hwndListView);
+			}
+			else
+			{
+				nppManager->showMessageBox(TEXT("init dialog list is nullpointer"));
+			}
             
-            RECT rc;
-	        GetClientRect(hwndListView, &rc);
-	        LONG width = rc.right - rc.left;
-
-            LVCOLUMN LvCol;
-            memset(&LvCol,0,sizeof(LvCol));                  // Zero Members
-            LvCol.mask=LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;  // Type of mask
-            LvCol.cx=static_cast<LONG>(width*0.4);                                   // width between each coloum
-            LvCol.pszText=TEXT("Name");                            // First Header Text
-            ::SendMessage(hwndListView,LVM_SETEXTENDEDLISTVIEWSTYLE, WPARAM(0),LVS_EX_FULLROWSELECT); // Set style
-            ::SendMessage(hwndListView,LVM_INSERTCOLUMN,NAME_COLUMN,(LPARAM)&LvCol); // Insert/Show the coloum
-            LvCol.pszText=TEXT("Path");
-            LvCol.cx=static_cast<LONG>(width*0.6);                                   // width of column
-            SendMessage(hwndListView,LVM_INSERTCOLUMN,PATH_COLUMN,(LPARAM)&LvCol); // ...
-
-            SendMessage(hwndGoLineEdit,CB_SETMINVISIBLE,8,0); // Visible items = 8
-            //ListView_SetExtendedListViewStyle(hwndListView,LVS_EX_HEADERDRAGDROP); //now we can drag&drop headers :)
-            refreshResultsList();
-            goToCenter();
-            fitColumnsToSize();
-            SetFocus(hwndListView);
 			return SizeableDlg::run_dlgProc(message, wParam, lParam);
         }
         break;
@@ -986,9 +1010,31 @@ void NavigateToDlg::addFileToListView(const File& file)
         lis.iItem = 0;
         lis.cchTextMax = MAX_PATH;
         lis.iSubItem = 0;
-        lis.mask = LVIF_TEXT | LVIF_PARAM;
+        lis.mask = LVIF_PARAM;
         lis.lParam = (LPARAM)&fileList[file.getBufferId()];
-        SendMessage(hwndListView,LVM_INSERTITEM,0,(LPARAM)&lis);// Send info to the Listview
+		lis.pszText = TEXT("empty");
+		try
+		{
+			if (_hSelf != NULL)
+			{
+				ghwndListView = ::GetDlgItem(_hSelf, IDC_RESULTS_LIST);
+				if (ghwndListView == NULL)
+					throw GetLastError();
+				int indexOfNewItem = SendMessage(ghwndListView, LVM_INSERTITEM, 0, (LPARAM)&lis);// Send info to the Listview
+				if (indexOfNewItem == -1)
+					throw GetLastError();
+			}
+			else
+				throw GetLastError();
+		}
+		catch (DWORD aCause)
+		{
+			if (!GetErrorAsString(aCause).empty())
+			{
+				std::string error = GetErrorAsString(aCause).append(" Could not add file ");
+				nppManager->showMessageBox(NppManager::strToWStr(error).append(fileList[file.getBufferId()].getFileName()), TEXT("Exception"));
+			}
+		}
     }
 }
 
@@ -1124,11 +1170,14 @@ void NavigateToDlg::updateCurrentFileStatus(FileStatus status)
 
 void NavigateToDlg::beNotified(SCNotification *notifyCode)
 {
+	if (_hSelf == NULL)
+		return;
+
     switch (notifyCode->nmhdr.code) 
 	{
 		case NPPN_FILEOPENED:
         case NPPN_FILERENAMED:
-            addFileToListView(notifyCode->nmhdr.idFrom);
+			addFileToListView(notifyCode->nmhdr.idFrom);
             if(isVisible())
                 refreshResultsList(false);
 		    break;
