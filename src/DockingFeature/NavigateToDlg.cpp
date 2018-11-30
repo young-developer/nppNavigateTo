@@ -21,6 +21,9 @@
 #include "Windowsx.h"
 #include <string>
 #include <algorithm>
+#include <sys/timeb.h>
+#include <time.h>
+#include "DbgHelp.h"
 
 //////////////////
 // Window map tells CWinMgr how to position dialog controls
@@ -40,12 +43,20 @@ END_WINDOW_MAP()
 //END OF MAP
 
 #ifdef UNICODE 
-	#define generic_itoa _itow
-	typedef std::wstring String; 
+#define generic_itoa _itow
+typedef std::wstring String; 
 #else
-	#define generic_itoa itoa
-	typedef std::string String; 
+#define generic_itoa itoa
+typedef std::string String; 
 #endif
+
+#ifdef __unix__
+	typedef struct timeb TimeDefinitionStruct;
+#define CalculateTime(ts)	ftime(ts)
+#else // __unix__
+	typedef struct _timeb TimeDefinitionStruct;
+#define CalculateTime(ts)	_ftime_s(ts)
+#endif // __unix__
 
 extern NppData nppData;
 
@@ -76,17 +87,51 @@ std::string GetErrorAsString(DWORD errorMessageID)
 		NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
 
 	std::string message(messageBuffer, size);
-
 	//Free the buffer.
 	LocalFree(messageBuffer);
+	if (!message.empty())
+		LOG("Error",message.c_str());
 
 	return message;
+}
+
+void LOG(const char* errorType, const char *ErrorString)
+{
+	FILE *LogFilePtr = NULL;
+
+	LogFilePtr = fopen("NppNavigateTo_Log.log", "a");
+	if (LogFilePtr != NULL)
+	{
+		TimeDefinitionStruct tStamp;
+
+		time_t curtime;
+		struct tm *loctime;
+
+		/* Get the current time. */
+		curtime = time(NULL);
+
+		/* Convert it to local time representation. */
+		loctime = localtime(&curtime);
+		CalculateTime(&tStamp);
+
+		fprintf(LogFilePtr, "%02d/%02d/%02d %02d:%02d:%02d ",
+			(loctime->tm_year) % 100, loctime->tm_mon + 1, loctime->tm_mday,
+			loctime->tm_hour, loctime->tm_min, loctime->tm_sec);
+		fprintf(LogFilePtr, "(%d",
+			(int)tStamp.time);
+		fprintf(LogFilePtr, ".");
+		fprintf(LogFilePtr, "%u):", tStamp.millitm);
+		fprintf(LogFilePtr, "\t%s :: ", errorType);
+		fprintf(LogFilePtr, "\t%s\n", ErrorString);
+		fclose(LogFilePtr);
+	}
+	return;
 }
 
 void moveSelectionUp(BOOL wrap)
 {
 	
-	int currentItem = (int)SendMessage(ghwndListView, LVM_GETNEXTITEM, WPARAM(-1), LVNI_SELECTED);
+	INT_PTR currentItem = (INT_PTR)SendMessage(ghwndListView, LVM_GETNEXTITEM, WPARAM(-1), LVNI_SELECTED);
 	if (currentItem == -1)
 		currentItem = 0;
 
@@ -96,18 +141,18 @@ void moveSelectionUp(BOOL wrap)
 		LVITEM lvi;
 		lvi.stateMask = LVIS_SELECTED | LVIS_FOCUSED;
 		lvi.state     = LVIS_SELECTED | LVIS_FOCUSED;
-		::SendMessage(ghwndListView, LVM_SETITEMSTATE, currentItem - 1, reinterpret_cast<LPARAM>(&lvi));
-		::SendMessage(ghwndListView, LVM_ENSUREVISIBLE, currentItem - 1, 0);
+		::SendMessage(ghwndListView, LVM_SETITEMSTATE, INT_PTR(currentItem - 1), reinterpret_cast<LPARAM>(&lvi));
+		::SendMessage(ghwndListView, LVM_ENSUREVISIBLE, INT_PTR(currentItem - 1), 0);
 	}
 	else if (wrap)
 	{
-		int itemCount = (int)::SendMessage(ghwndListView, LVM_GETITEMCOUNT, 0, 0);
+		INT_PTR itemCount = (INT_PTR)::SendMessage(ghwndListView, LVM_GETITEMCOUNT, 0, 0);
 	
 		LVITEM lvi;
 		lvi.stateMask = LVIS_SELECTED | LVIS_FOCUSED;
 		lvi.state     = LVIS_SELECTED | LVIS_FOCUSED;
-		::SendMessage(ghwndListView, LVM_SETITEMSTATE, itemCount - 1, reinterpret_cast<LPARAM>(&lvi));
-		::SendMessage(ghwndListView, LVM_ENSUREVISIBLE, itemCount - 1, 0);
+		::SendMessage(ghwndListView, LVM_SETITEMSTATE, INT_PTR(itemCount - 1), reinterpret_cast<LPARAM>(&lvi));
+		::SendMessage(ghwndListView, LVM_ENSUREVISIBLE, INT_PTR(itemCount - 1), 0);
 	}
 
 }
@@ -115,11 +160,11 @@ void moveSelectionUp(BOOL wrap)
 void moveSelectionPageUp()
 {
 	
-	int currentItem = (int)SendMessage(ghwndListView, LVM_GETNEXTITEM, WPARAM(-1), LVNI_SELECTED);
+	INT_PTR currentItem = (INT_PTR)SendMessage(ghwndListView, LVM_GETNEXTITEM, WPARAM(-1), LVNI_SELECTED);
 	if (currentItem == -1)
 		currentItem = 0;
 
-	int pageItems   = (int)::SendMessage(ghwndListView, LVM_GETCOUNTPERPAGE, 0, 0); 
+	INT_PTR pageItems = (INT_PTR)::SendMessage(ghwndListView, LVM_GETCOUNTPERPAGE, 0, 0);
 
 	if (currentItem >= pageItems)
 	{
@@ -145,17 +190,17 @@ void moveSelectionPageUp()
 void moveSelectionDown(BOOL wrap)
 {
 	
-	int currentItem = (int)::SendMessage(ghwndListView, LVM_GETNEXTITEM, WPARAM(-1), LVNI_SELECTED);
-	int itemCount   = (int)::SendMessage(ghwndListView, LVM_GETITEMCOUNT, 0, 0);
+	INT_PTR currentItem = (INT_PTR)::SendMessage(ghwndListView, LVM_GETNEXTITEM, WPARAM(-1), LVNI_SELECTED);
+	INT_PTR itemCount = (INT_PTR)::SendMessage(ghwndListView, LVM_GETITEMCOUNT, 0, 0);
 
-	if (currentItem < itemCount - 1)
+	if (currentItem < (INT_PTR)(itemCount - 1))
 	{
 	
 		LVITEM lvi;
 		lvi.stateMask = LVIS_SELECTED | LVIS_FOCUSED;
 		lvi.state     = LVIS_SELECTED | LVIS_FOCUSED;
-		::SendMessage(ghwndListView, LVM_SETITEMSTATE, currentItem + 1, reinterpret_cast<LPARAM>(&lvi));
-		::SendMessage(ghwndListView, LVM_ENSUREVISIBLE, currentItem + 1, 0);
+		::SendMessage(ghwndListView, LVM_SETITEMSTATE, INT_PTR(currentItem + 1), reinterpret_cast<LPARAM>(&lvi));
+		::SendMessage(ghwndListView, LVM_ENSUREVISIBLE, INT_PTR(currentItem + 1), 0);
 	}
 	else if (wrap)
 	{
@@ -173,9 +218,9 @@ void moveSelectionDown(BOOL wrap)
 
 void moveSelectionPageDown()
 {
-	int currentItem = (int)::SendMessage(ghwndListView, LVM_GETNEXTITEM, WPARAM(-1), LVNI_SELECTED);
-	int itemCount   = (int)::SendMessage(ghwndListView, LVM_GETITEMCOUNT, 0, 0);
-	int pageItems   = (int)::SendMessage(ghwndListView, LVM_GETCOUNTPERPAGE, 0, 0);
+	INT_PTR currentItem = (INT_PTR)::SendMessage(ghwndListView, LVM_GETNEXTITEM, WPARAM(-1), LVNI_SELECTED);
+	INT_PTR itemCount = (INT_PTR)::SendMessage(ghwndListView, LVM_GETITEMCOUNT, 0, 0);
+	INT_PTR pageItems = (INT_PTR)::SendMessage(ghwndListView, LVM_GETCOUNTPERPAGE, 0, 0);
 
 	if (currentItem < itemCount - pageItems)
 	{
@@ -199,15 +244,15 @@ void moveSelectionPageDown()
 
 void moveSelectionBottom(void)
 {
-	int itemCount = (int)::SendMessage(ghwndListView, LVM_GETITEMCOUNT, 0, 0);
+	INT_PTR itemCount = (INT_PTR)::SendMessage(ghwndListView, LVM_GETITEMCOUNT, 0, 0);
 	
 	if (itemCount > 0)
 	{
 		LVITEM lvi;
 		lvi.stateMask = LVIS_SELECTED | LVIS_FOCUSED;
 		lvi.state     = LVIS_SELECTED | LVIS_FOCUSED;
-		::SendMessage(ghwndListView, LVM_SETITEMSTATE, itemCount - 1, reinterpret_cast<LPARAM>(&lvi));
-		::SendMessage(ghwndListView, LVM_ENSUREVISIBLE, itemCount - 1, 0);
+		::SendMessage(ghwndListView, LVM_SETITEMSTATE, INT_PTR(itemCount - 1), reinterpret_cast<LPARAM>(&lvi));
+		::SendMessage(ghwndListView, LVM_ENSUREVISIBLE, INT_PTR(itemCount - 1), 0);
 	}
 
 
@@ -279,22 +324,6 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 				}
                 case VK_LEFT:
                 case VK_RIGHT:
-                {
-                    /*if(wParam == VK_LEFT)
-                    {
-                        //Open in first view
-                        File* selFile = getSelectedFile();
-                        if(selFile!=nullptr)
-                            nppManager->switchToFile(selFile->getIndex(),MAIN_VIEW);
-                    }
-                    else if(wParam == VK_RIGHT)
-                    {
-                         //open in second view
-                        File* selFile = getSelectedFile();
-                        if(selFile!=nullptr)
-                            nppManager->switchToFile(selFile->getIndex(),SECOND_VIEW);
-                    }*/
-                }
                 break;
 				case VK_NEXT:
 				{
@@ -331,7 +360,7 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 
 				default:
                 {
-                    int result;
+                    INT_PTR result;
 				    BYTE keyState[256];
 						
 				    ::GetKeyboardState((PBYTE)&keyState);
@@ -392,9 +421,9 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
                         break;
                         case CBN_SELCHANGE:
                         {
-                            int idx_row;
+                            INT_PTR idx_row;
                             TCHAR strText[MAX_PATH];
-	                        idx_row = (int)SendMessage(hwndGoLineEdit , CB_GETCURSEL, 0, 0 );
+							idx_row = (INT_PTR)SendMessage(hwndGoLineEdit, CB_GETCURSEL, 0, 0);
 	                        SendMessage(hwndGoLineEdit,CB_GETLBTEXT, idx_row,(LPARAM)strText);
                             loadFileNamesToList(std::wstring(&strText[0]));
                             selectFirstRowInList();
@@ -402,7 +431,11 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
                         break;
                         case CBN_EDITCHANGE:
                         {
-                            refreshResultsList();
+							SHORT ctrlState = ::GetKeyState(VK_CONTROL) & 0x80;
+							if (!ctrlState)
+							{
+								refreshResultsList();
+							}
                             return TRUE;
                         }
                         break;
@@ -510,7 +543,7 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
                         isDropDownOpened = true;
                         File* selFile = getSelectedFile();
                         if(selFile !=nullptr)
-                            nppManager->openContextMenu(selFile->getIndex(), selFile->getView());
+                            nppManager->openContextMenu(selFile->getBufferId(), selFile->getView());
                         if(DropDownIsNotOpened())
                         {
                             ::SetFocus(GetDlgItem(_hSelf, ID_GOLINE_EDIT));
@@ -597,7 +630,7 @@ LRESULT ProcessCustomDraw (LPARAM lParam)
                     {
                         RECT iR = { 0 };
                         SetBkMode(lplvcd->nmcd.hdc, OPAQUE);
-                        ListView_GetSubItemRect(lplvcd->nmcd.hdr.hwndFrom, lplvcd->nmcd.dwItemSpec, lplvcd->iSubItem, LVIR_BOUNDS, &iR);
+                        ListView_GetSubItemRect(lplvcd->nmcd.hdr.hwndFrom, lplvcd->nmcd.dwItemSpec, lplvcd->iSubItem, LVIR_BOUNDS, &iR); //check dwItemSpec type conversion
                         SIZE sz = { 0 };
                         GetTextExtentPoint32(lplvcd->nmcd.hdc, (lplvcd->iSubItem == PATH_COLUMN?rowData->getFullPath().c_str():rowData->getFileName().c_str()), (int)(lplvcd->iSubItem == PATH_COLUMN?rowData->getFullPath():rowData->getFileName()).length(), &sz);
                         if(ListView_GetItemState(ghwndListView,lplvcd->nmcd.dwItemSpec,LVIS_FOCUSED|LVIS_SELECTED) != (LVIS_FOCUSED|LVIS_SELECTED))
@@ -883,10 +916,10 @@ LRESULT CALLBACK listProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
     return ::CallWindowProc(g_oldListProc, hwnd, message, wParam, lParam);
 }
 
-int CALLBACK NavigateToDlg::CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+INT_PTR CALLBACK NavigateToDlg::CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
     BOOL bSortAscending = (lParamSort > 0);
-    int nColumn = (int)(abs(lParamSort)) - 1;
+	INT_PTR nColumn = (INT_PTR)(abs(lParamSort)) - 1;
 
     File* pr1= (File*)lParam1;
     File* pr2= (File*)lParam2;
@@ -917,15 +950,15 @@ int CALLBACK NavigateToDlg::CompareListItems(LPARAM lParam1, LPARAM lParam2, LPA
 }
 
 // sortOrder - 0 neither, 1 ascending, 2 descending
-void setListViewSortIcon(HWND listView, int col, int sortOrder)
+void setListViewSortIcon(HWND listView, INT_PTR col, INT_PTR sortOrder)
 {
     HWND headerWnd;
     char headerText[MAX_PATH];
     HD_ITEM item;
-    int numColumns, curCol;
+    INT_PTR numColumns, curCol;
 
     headerWnd = ListView_GetHeader(listView);
-    numColumns = Header_GetItemCount(headerWnd);
+    numColumns = ptrdiff_t(Header_GetItemCount(headerWnd));
 
     for (curCol=0; curCol<numColumns; curCol++)
     {
@@ -958,20 +991,20 @@ void setListViewSortIcon(HWND listView, int col, int sortOrder)
 
 void NavigateToDlg::SortOnColumnClick(LPNMLISTVIEW pLVInfo)
 {
-    static int nSortColumn = 0;
+	static INT_PTR nSortColumn = 0;
     static BOOL bSortAscending = TRUE;
     LPARAM lParamSort;
     // get new sort parameters
-    if (pLVInfo->iSubItem == nSortColumn)
+	if (ptrdiff_t(pLVInfo->iSubItem) == nSortColumn)
         bSortAscending = !bSortAscending;
     else
     {
-        nSortColumn = pLVInfo->iSubItem;
+		nSortColumn = ptrdiff_t(pLVInfo->iSubItem);
         bSortAscending = TRUE;
     }
 
     // combine sort info into a single value we can send to our sort function
-    lParamSort = 1 + nSortColumn;
+	lParamSort = INT_PTR(nSortColumn + 1);
     if (!bSortAscending)
     {
         lParamSort = -lParamSort;
@@ -1005,7 +1038,7 @@ void NavigateToDlg::addFileToListView(const File& file)
 {
     if(file.isValid())
     {
-        fileList.insert(std::make_pair(file.getBufferId(), file));
+		addFileToList(file);
         LVITEM lis;
         lis.iItem = 0;
         lis.cchTextMax = MAX_PATH;
@@ -1019,41 +1052,38 @@ void NavigateToDlg::addFileToListView(const File& file)
 			{
 				ghwndListView = ::GetDlgItem(_hSelf, IDC_RESULTS_LIST);
 				if (ghwndListView == NULL)
-					throw GetLastError();
-				int indexOfNewItem = SendMessage(ghwndListView, LVM_INSERTITEM, 0, (LPARAM)&lis);// Send info to the Listview
+					throw std::runtime_error(GetErrorAsString(::GetLastError()));
+				INT_PTR indexOfNewItem = SendMessage(ghwndListView, LVM_INSERTITEM, 0, (LPARAM)&lis);// Send info to the Listview
 				if (indexOfNewItem == -1)
-					throw GetLastError();
+					throw std::runtime_error(GetErrorAsString(::GetLastError()));
 			}
 			else
-				throw GetLastError();
+				throw std::runtime_error(GetErrorAsString(::GetLastError()));
 		}
-		catch (DWORD aCause)
+		catch (std::runtime_error &ex)
 		{
-			if (!GetErrorAsString(aCause).empty())
-			{
-				std::string error = GetErrorAsString(aCause).append(" Could not add file ");
-				nppManager->showMessageBox(NppManager::strToWStr(error).append(fileList[file.getBufferId()].getFileName()), TEXT("Exception"));
-			}
+			nppManager->showMessageBox(NppManager::strToWStr(ex.what()).append(TEXT(" Could not add file ")).append(fileList[file.getBufferId()].getFileName()), TEXT("Exception"));
 		}
     }
 }
 
-void NavigateToDlg::addFileToListView(int bufferID)
+void NavigateToDlg::addFileToListView(INT_PTR bufferID)
 {
     TCHAR filePath[MAX_PATH];
 	::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, bufferID, reinterpret_cast<LPARAM>(filePath));
-    int index = ::SendMessage(nppData._nppHandle, NPPM_GETPOSFROMBUFFERID, bufferID, MAIN_VIEW);
+	INT_PTR index = ::SendMessage(nppData._nppHandle, NPPM_GETPOSFROMBUFFERID, bufferID, MAIN_VIEW);
     if(index != -1)
     {
-        File file(filePath, INDEX(index), bufferID, VIEW(index));
+		File file(filePath, ptrdiff_t(INDEX(index)), bufferID, ptrdiff_t(VIEW(index)));
         addFileToListView(file);
     }
 }
 
-void NavigateToDlg::removeFileFromListView(int bufferID)
+void NavigateToDlg::removeFileFromListView(INT_PTR bufferID)
 {
-    ListView_DeleteItem(hwndListView, fileList[bufferID].getIndex());
-    fileList.erase(bufferID);
+	INT_PTR fileIndex = fileList[bufferID].getIndex();
+	ListView_DeleteItem(hwndListView, fileIndex);
+	removeFileFromList(bufferID);
 }
 
 bool customNonSensetiveComparator(std::wstring filterString, std::wstring filePath)
@@ -1072,8 +1102,7 @@ bool customNonSensetiveComparator(std::wstring filterString, std::wstring filePa
 	std::transform(filterString.begin(), filterString.end(), filterString.begin(), ::tolower);
 	std::size_t found = filePath.find(filterString);
     bool subStringFound = inverseLogic ? (found==std::wstring::npos) : (found!=std::wstring::npos);
-    //int windowsSearchFound = PathMatchSpec((LPCWSTR)fileName.c_str(),(LPCWSTR)filterString.c_str());
-    
+	//bool windowsSearch = SymMatchFileName(filePath.c_str(), filterString.c_str(), NULL, NULL);
     return filterString.empty() || subStringFound;
 }
 
@@ -1081,12 +1110,19 @@ void NavigateToDlg::loadFileNamesToList(const std::wstring &filter)
 {
     searchString = filter;
     std::vector<File> loadFileList;
-    if(fileList.empty()) //first load from NPP
+
+    if(fileList.empty() && filter.empty()) //first load from NPP
     {
         loadFileList = nppManager->getOpenedFiles();
     }
     else
     {
+		/*if (fileList.size() != nppManager->getNumberOfFiles())
+		{
+			for (auto file : nppManager->getOpenedFiles())
+				addFileToList(file);
+		}*/
+
         typedef bool (*FilterFunction)(std::wstring filterString, std::wstring filePath);
         FilterFunction filterFunction = customNonSensetiveComparator;
         if(filter.empty())
@@ -1109,32 +1145,31 @@ void NavigateToDlg::loadFileNamesToList(const std::wstring &filter)
     //show count
     TCHAR toto[10];
     std::wstring lblResultCnt(TEXT("NavigateTo - Tabs - Found "));
-    lblResultCnt.append(generic_itoa((int)loadFileList.size(), toto, 10));
+    lblResultCnt.append(generic_itoa((size_t)loadFileList.size(), toto, 10));
     lblResultCnt.append(TEXT(" matching results"));
     SetWindowText(_hSelf, lblResultCnt.c_str());
     //reset list
 	SendMessage(hwndListView, LVM_DELETEALLITEMS,0,0);
     if(loadFileList.size() == 0)
         return;
-    
     for(auto file : loadFileList) 
     {
         addFileToListView(file);
     }
 }
 
-int NavigateToDlg::getSelectedFileId()
+INT_PTR NavigateToDlg::getSelectedFileId()
 {
-    LRESULT iSelect = SendMessage(hwndListView,LVM_GETNEXTITEM,
+    auto iSelect = SendMessage(hwndListView,LVM_GETNEXTITEM,
        WPARAM(-1),LVNI_FOCUSED); // return item selected
-	return (int)iSelect;
+	return (INT_PTR)iSelect;
 }
 
 File* NavigateToDlg::getSelectedFile()
 {
 	LVITEM item;
 	item.mask = LVIF_PARAM;
-	item.iItem = getSelectedFileId();
+	item.iItem = (int)getSelectedFileId();
 	
 	if (item.iItem == -1) 
         return nullptr;
@@ -1154,9 +1189,9 @@ void NavigateToDlg::openSelectedFile()
     }
 }
 
-void NavigateToDlg::updateFileBufferStatus(int bufferID, FileStatus status)
+void NavigateToDlg::updateFileBufferStatus(INT_PTR bufferID, FileStatus status)
 {
-    std::unordered_map<int,File>::iterator foundFile = fileList.find(bufferID);
+	std::unordered_map<INT_PTR, File>::iterator foundFile = fileList.find(bufferID);
 
     if ( foundFile != fileList.end() )
         foundFile->second.setFileStatus(status);
@@ -1164,7 +1199,7 @@ void NavigateToDlg::updateFileBufferStatus(int bufferID, FileStatus status)
 
 void NavigateToDlg::updateCurrentFileStatus(FileStatus status)
 {
-	int bufferID = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
+	INT_PTR bufferID = ::SendMessage(nppData._nppHandle, NPPM_GETCURRENTBUFFERID, 0, 0);
 	updateFileBufferStatus(bufferID, status);
 }
 
@@ -1177,6 +1212,8 @@ void NavigateToDlg::beNotified(SCNotification *notifyCode)
 	{
 		case NPPN_FILEOPENED:
         case NPPN_FILERENAMED:
+		case NPPN_FILEBEFOREOPEN:
+		//case NPPN_BUFFERACTIVATED:
 			addFileToListView(notifyCode->nmhdr.idFrom);
             if(isVisible())
                 refreshResultsList(false);
@@ -1201,7 +1238,7 @@ void NavigateToDlg::beNotified(SCNotification *notifyCode)
 				else
 					newStatus = SAVED;
 			}
-			updateFileBufferStatus(reinterpret_cast<int>(notifyCode->nmhdr.hwndFrom), newStatus);
+			updateFileBufferStatus(reinterpret_cast<intptr_t>(notifyCode->nmhdr.hwndFrom), newStatus);
 		}
 		break;
 		case SCN_SAVEPOINTLEFT:

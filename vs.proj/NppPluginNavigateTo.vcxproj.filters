@@ -11,6 +11,7 @@
     <ClCompile Include="..\src\SizeableFeature\WinRect.cpp" />
     <ClCompile Include="..\src\File.cpp" />
     <ClCompile Include="..\src\AboutDialog.cpp" />
+    <ClCompile Include="ParallelFinder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\DockingFeature\NavigateToDlg.h" />
@@ -29,6 +30,7 @@
     <ClInclude Include="..\src\ScintillaGateway.h" />
     <ClInclude Include="..\src\File.h" />
     <ClInclude Include="..\src\AboutDialog.h" />
+    <ClInclude Include="ParallelFinder.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\DockingFeature\NavigateTo.rc" />
