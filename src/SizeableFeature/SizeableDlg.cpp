@@ -33,7 +33,7 @@ SizeableDlg::SizeableDlg(WINRECT* pWinMap)
 {
 }
 
-BOOL SizeableDlg::onInitDialog()
+INT_PTR SizeableDlg::onInitDialog()
 {
 	_winMgr.InitToFitSizeFromCurrent(_hSelf);
 	_winMgr.CalcLayout(_hSelf);
