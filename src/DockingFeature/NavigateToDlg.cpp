@@ -247,17 +247,21 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 {    
 	switch (message) 
 	{
-#ifndef _DEBUG
+
         case WM_ACTIVATE:
         {
+            HWND hwndEdit = GetWindow(hwndGoLineEdit, GW_CHILD);
+            SendMessage(hwndEdit, EM_SETSEL, 0, -1);
+#ifndef _DEBUG
             if (LOWORD(wParam) == WA_INACTIVE && isVisible() && !isDropDownOpened)
 			{
                 hide();
 			}
             isDropDownOpened = false;
+#endif
             return TRUE;
         }
-#endif
+
         case WM_KEYDOWN :
 		{
 			switch (wParam)
