@@ -78,7 +78,7 @@ int File::getIndex() const
 
 bool File::isValid() const
 {
-    return !fileName.empty() && !fullPath.empty() && bufferId > 0 && index > 0;
+    return !fileName.empty() && !fullPath.empty() && bufferId >= 0 && index >= 0;
 }
 
 File::~File()
