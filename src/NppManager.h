@@ -23,18 +23,17 @@ public:
     virtual ~NppManager(void);
 //public functions
 public:
-	INT_PTR getNumberOfFiles();
     std::vector<std::wstring> getOpenedFileNames(std::wstring filterPath = TEXT(""));
     std::vector<File> getOpenedFiles(std::wstring filterPath = TEXT(""));
-	bool goToLine(const INT_PTR& line);
+    bool goToLine(const int& line);
     bool switchToFile(const std::wstring& filePath);
     bool switchToFile(const File* file);
-	bool switchToFile(const INT_PTR bufferId, const INT_PTR view);
-	bool openContextMenu(const INT_PTR bufferId, const INT_PTR view);
+    bool switchToFile(const int index, const int view);
+    bool openContextMenu(const int index, const int view);
 	void showMessageBox(const std::wstring& text, const std::wstring &msgTitle = TEXT("Info"));
-	INT_PTR getBufferIdByFilePath(const std::wstring& filePath);
-	INT_PTR getIndexByFilePath(const std::wstring& filePath);
-	HWND getCurrentHScintilla(INT_PTR which);
+    int getBufferIdByFilePath(const std::wstring& filePath);
+    int getIndexByFilePath(const std::wstring& filePath);
+    HWND getCurrentHScintilla(int which);
     void setFocus();
     FileStatus getFileStatus(const File& file);
 //static string helper //todo: should be moved from here

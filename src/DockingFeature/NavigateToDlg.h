@@ -31,8 +31,6 @@
 #include <Windowsx.h>
 #include <CommCtrl.h>
 
-void LOG(const char* errorType, const char *ErrorString);
-
 class NavigateToDlg : public SizeableDlg
 {
 public :
@@ -83,8 +81,8 @@ public :
 	    RECT rc;
 	    if (GetClientRect(hwndListView, &rc))
 	    {
-			LONG_PTR len = ptrdiff_t(rc.right - rc.left);
-			len -= static_cast<LONG_PTR>(SendMessage(hwndListView, LVM_GETCOLUMNWIDTH, 0, 0));
+		    int len = (rc.right - rc.left);
+		    len -= static_cast<int>(SendMessage(hwndListView, LVM_GETCOLUMNWIDTH, 0, 0));
 		    len -= 2;
 		    SendMessage(hwndListView, LVM_SETCOLUMNWIDTH, 1, len);
 	    }
@@ -98,25 +96,25 @@ public :
 
 protected :
 	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
-    static INT_PTR CALLBACK CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
+    static int CALLBACK CompareListItems(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 private :
     //File list functions
 	void loadFileNamesToList(const std::wstring &filter);
-	void updateFileBufferStatus(INT_PTR bufferID, FileStatus status);
+    void updateFileBufferStatus(int bufferID, FileStatus status);
     void updateCurrentFileStatus(FileStatus status);
     void addFileToListView(const File& file);
-	void addFileToListView(INT_PTR bufferID);
-	void removeFileFromListView(INT_PTR bufferID);
+    void addFileToListView(int bufferID);
+    void removeFileFromListView(int bufferID);
     //
 
 	void openSelectedFile();
     void previewHighlightedFile();
     void updateHistory(const std::wstring &value);
-	INT_PTR getSelectedFileId();
+	int getSelectedFileId();
     File* NavigateToDlg::getSelectedFile();
-	INT_PTR getLine() const {
+    int getLine() const {
         BOOL isSuccessful;
-		INT_PTR line = ::GetDlgItemInt(_hSelf, ID_GOLINE_EDIT, &isSuccessful, FALSE);
+        int line = ::GetDlgItemInt(_hSelf, ID_GOLINE_EDIT, &isSuccessful, FALSE);
         return (isSuccessful?line:-1);
     };
 
@@ -139,22 +137,6 @@ private :
        return ::GetFocus() != hwndListView;
     }
 
-	void NavigateToDlg::addFileToList(const File& file)
-	{
-		if(file.isValid() && (fileList.find(file.getBufferId()) == fileList.end()))//is valid and is not present in list
-			fileList.insert(std::make_pair(file.getBufferId(), file));
-	}
-
-	void NavigateToDlg::removeFileFromList(INT_PTR bufferID)
-	{
-		fileList.erase(bufferID);
-	}
-
-	void NavigateToDlg::clearFileList()
-	{
-		fileList.clear();
-	}
-
 	std::wstring getFilterEditValue() const 
 	{
 		TCHAR buf[MAX_PATH];
@@ -170,7 +152,7 @@ private:
     NppManager *nppManager;
     bool isDropDownOpened;
     std::forward_list<std::wstring> history; //TODO: should be changed to HistoryManager class
-	std::unordered_map<INT_PTR, File> fileList;
+    std::unordered_map<int, File> fileList;
 };
 
 LRESULT ProcessCustomDraw (LPARAM lParam);

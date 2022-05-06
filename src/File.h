@@ -13,7 +13,7 @@ class File
 {
 public:
     File(){};
-	File(std::wstring fileFullPath, INT_PTR indexOfFile, INT_PTR bufferIndex, INT_PTR fileView);
+    File(std::wstring fileFullPath, int indexOfFile, int bufferIndex, int fileView);
     ~File();
     //getters
     std::wstring getFullPath() const;
@@ -21,12 +21,9 @@ public:
     std::wstring getFileNameWithView() const;
     FileStatus getFileStatus() const {return fileStatus;}
     void setFileStatus(FileStatus newStatus){ fileStatus = newStatus;}
-	INT_PTR getView() const;
-	INT_PTR getIndex() const;
-	void setIndex(INT_PTR anIndex);
-	INT_PTR decrementIndex();
-	INT_PTR incrementIndex();
-	INT_PTR getBufferId() const;
+    int getView() const;
+    int getIndex() const;
+    int getBufferId() const;
     bool isValid() const;
     void showView();
     bool equals(const File& other) const;
@@ -36,9 +33,9 @@ public:
 private:
     std::wstring fullPath;
     std::wstring fileName;
-	INT_PTR bufferId;
-	INT_PTR index;
-	INT_PTR view;
+    int bufferId;
+    int index;
+    int view;
     bool showViewString;
     FileStatus fileStatus;
 };

@@ -33,7 +33,7 @@ public :
 			destroy();
 		}
 	};
-	virtual void create(INT_PTR dialogID, bool isRTL = false);
+	virtual void create(int dialogID, bool isRTL = false);
 
     virtual bool isCreated() const {
 		return (_hSelf != NULL);
@@ -51,6 +51,6 @@ protected :
 	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) = 0;
 
     void alignWith(HWND handle, HWND handle2Align, PosAlign pos, POINT & point);
-	HGLOBAL makeRTLResource(INT_PTR dialogID, DLGTEMPLATE **ppMyDlgTemplate);
+	HGLOBAL makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplate);
 };
 

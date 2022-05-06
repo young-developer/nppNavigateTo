@@ -49,7 +49,7 @@ void StaticDialog::goToCenter()
 	::SetWindowPos(_hSelf, HWND_TOP, x, y, _rc.right - _rc.left, _rc.bottom - _rc.top, SWP_SHOWWINDOW);
 }
 
-HGLOBAL StaticDialog::makeRTLResource(INT_PTR dialogID, DLGTEMPLATE **ppMyDlgTemplate)
+HGLOBAL StaticDialog::makeRTLResource(int dialogID, DLGTEMPLATE **ppMyDlgTemplate)
 {
 	// Get Dlg Template resource
 	HRSRC  hDialogRC = ::FindResource(_hInst, MAKEINTRESOURCE(dialogID), RT_DIALOG);
@@ -65,7 +65,7 @@ HGLOBAL StaticDialog::makeRTLResource(INT_PTR dialogID, DLGTEMPLATE **ppMyDlgTem
 		return NULL;
 
 	// Duplicate Dlg Template resource
-	LONG_PTR sizeDlg = ::SizeofResource(_hInst, hDialogRC);
+	unsigned long sizeDlg = ::SizeofResource(_hInst, hDialogRC);
 	HGLOBAL hMyDlgTemplate = ::GlobalAlloc(GPTR, sizeDlg);
 	*ppMyDlgTemplate = reinterpret_cast<DLGTEMPLATE *>(::GlobalLock(hMyDlgTemplate));
 
@@ -80,7 +80,7 @@ HGLOBAL StaticDialog::makeRTLResource(INT_PTR dialogID, DLGTEMPLATE **ppMyDlgTem
 	return hMyDlgTemplate;
 }
 
-void StaticDialog::create(INT_PTR dialogID, bool isRTL)
+void StaticDialog::create(int dialogID, bool isRTL)
 {
 	if (isRTL)
 	{
