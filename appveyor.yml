@@ -58,16 +58,3 @@ after_build:
 artifacts:
   - path: NavigateTo_*.zip
     name: releases
-
-deploy:
-    provider: GitHub
-    auth_token:
-        secure: !!TODO, see https://www.appveyor.com/docs/deployment/github/#provider-settings!!
-    artifact: releases
-    draft: false
-    prerelease: false
-    force_update: true
-    on:
-        appveyor_repo_tag: true
-        PlatformToolset: v120_xp
-        configuration: Release
