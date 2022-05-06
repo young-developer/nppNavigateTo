@@ -48,7 +48,6 @@
     <ClCompile Include="..\src\SizeableFeature\SizeableDlg.cpp" />
     <ClCompile Include="..\src\SizeableFeature\WinMgr.cpp" />
     <ClCompile Include="..\src\SizeableFeature\WinRect.cpp" />
-    <ClCompile Include="ParallelFinder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\DockingFeature\NavigateTo.rc" />
@@ -77,7 +76,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
