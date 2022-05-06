@@ -543,7 +543,7 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
                         isDropDownOpened = true;
                         File* selFile = getSelectedFile();
                         if(selFile !=nullptr)
-                            nppManager->openContextMenu(selFile->getBufferId(), selFile->getView());
+                            nppManager->openContextMenu(selFile->getIndex(), selFile->getView());
                         if(DropDownIsNotOpened())
                         {
                             ::SetFocus(GetDlgItem(_hSelf, ID_GOLINE_EDIT));
@@ -1072,7 +1072,13 @@ void NavigateToDlg::addFileToListView(INT_PTR bufferID)
     TCHAR filePath[MAX_PATH];
 	::SendMessage(nppData._nppHandle, NPPM_GETFULLPATHFROMBUFFERID, bufferID, reinterpret_cast<LPARAM>(filePath));
 	INT_PTR index = ::SendMessage(nppData._nppHandle, NPPM_GETPOSFROMBUFFERID, bufferID, MAIN_VIEW);
-    if(index != -1)
+    //check second view
+    if(index == -1)
+    {
+	    index = ::SendMessage(nppData._nppHandle, NPPM_GETPOSFROMBUFFERID, bufferID, SUB_VIEW);
+    }
+
+	if(index != -1)
     {
 		File file(filePath, ptrdiff_t(INDEX(index)), bufferID, ptrdiff_t(VIEW(index)));
         addFileToListView(file);
@@ -1117,12 +1123,6 @@ void NavigateToDlg::loadFileNamesToList(const std::wstring &filter)
     }
     else
     {
-		/*if (fileList.size() != nppManager->getNumberOfFiles())
-		{
-			for (auto file : nppManager->getOpenedFiles())
-				addFileToList(file);
-		}*/
-
         typedef bool (*FilterFunction)(std::wstring filterString, std::wstring filePath);
         FilterFunction filterFunction = customNonSensetiveComparator;
         if(filter.empty())

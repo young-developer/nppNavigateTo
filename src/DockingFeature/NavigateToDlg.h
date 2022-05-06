@@ -141,8 +141,10 @@ private :
 
 	void NavigateToDlg::addFileToList(const File& file)
 	{
-		if(file.isValid() && (fileList.find(file.getBufferId()) == fileList.end()))//is valid and is not present in list
+		if(file.isValid()) 
+        {
 			fileList.insert(std::make_pair(file.getBufferId(), file));
+        }
 	}
 
 	void NavigateToDlg::removeFileFromList(INT_PTR bufferID)

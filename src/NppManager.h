@@ -24,6 +24,8 @@ public:
 //public functions
 public:
 	INT_PTR getNumberOfFiles();
+    INT_PTR getNumberOfFilesPrimary();
+    INT_PTR getNumberOfFilesSecondary();
     std::vector<std::wstring> getOpenedFileNames(std::wstring filterPath = TEXT(""));
     std::vector<File> getOpenedFiles(std::wstring filterPath = TEXT(""));
 	bool goToLine(const INT_PTR& line);
@@ -32,8 +34,8 @@ public:
 	bool switchToFile(const INT_PTR bufferId, const INT_PTR view);
 	bool openContextMenu(const INT_PTR bufferId, const INT_PTR view);
 	void showMessageBox(const std::wstring& text, const std::wstring &msgTitle = TEXT("Info"));
-	INT_PTR getBufferIdByFilePath(const std::wstring& filePath);
-	INT_PTR getIndexByFilePath(const std::wstring& filePath);
+	INT_PTR getBufferIdByFilePath(const std::wstring& filePath, const INT_PTR view);
+	INT_PTR getIndexByFilePath(const std::wstring& filePath, const INT_PTR view);
 	HWND getCurrentHScintilla(INT_PTR which);
     void setFocus();
     FileStatus getFileStatus(const File& file);

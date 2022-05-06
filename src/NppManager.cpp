@@ -19,7 +19,7 @@ void NppManager::showMessageBox(const std::wstring& text, const std::wstring &ms
 
 bool NppManager::switchToFile(const File* file)
 {
-    return (file != nullptr)?switchToFile(file->getBufferId(),file->getView()):false;
+    return (file != nullptr) ? switchToFile(file->getFullPath()) : false;
 }
 
 bool NppManager::switchToFile(const std::wstring& filePath)
@@ -38,14 +38,14 @@ bool NppManager::switchToFile(const std::wstring& filePath)
     return res;
 }
 
-bool NppManager::switchToFile(const INT_PTR bufferId, const INT_PTR view)
+bool NppManager::switchToFile(const INT_PTR index, const INT_PTR view)
 {
-	return ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, view, ::SendMessage(nppData._nppHandle, NPPM_GETPOSFROMBUFFERID, bufferId, MAIN_VIEW)) != -1;
+	return ::SendMessage(nppData._nppHandle, NPPM_ACTIVATEDOC, view, index) != -1;
 }
 
-bool NppManager::openContextMenu(const INT_PTR bufferId, const INT_PTR view)
+bool NppManager::openContextMenu(const INT_PTR index, const INT_PTR view)
 {
-	return ::SendMessage(nppData._nppHandle, NPPM_TRIGGERTABBARCONTEXTMENU, view, ::SendMessage(nppData._nppHandle, NPPM_GETPOSFROMBUFFERID, bufferId, MAIN_VIEW)) != -1;
+	return ::SendMessage(nppData._nppHandle, NPPM_TRIGGERTABBARCONTEXTMENU, view, index) != -1;
 }
 
 bool NppManager::goToLine(const INT_PTR& line)
@@ -153,6 +153,16 @@ INT_PTR NppManager::getNumberOfFiles()
 	return nbFile[0] + nbFile[1];
 }
 
+INT_PTR NppManager::getNumberOfFilesPrimary()
+{
+	return (INT_PTR)::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, PRIMARY_VIEW);
+}
+
+INT_PTR NppManager::getNumberOfFilesSecondary()
+{
+	return (INT_PTR)::SendMessage(nppData._nppHandle, NPPM_GETNBOPENFILES, 0, SECOND_VIEW);
+}
+
 std::vector<File> NppManager::getOpenedFiles(std::wstring filterPath)
 {
     bool inverseLogic = false;
@@ -204,7 +214,7 @@ std::vector<File> NppManager::getOpenedFiles(std::wstring filterPath)
                     bool subStringLogic = inverseLogic?(found==std::wstring::npos):(found!=std::wstring::npos);
                     if(filterPath.empty() || subStringLogic)
 			        {
-						auto bufId = getBufferIdByFilePath(fileName);
+						auto bufId = getBufferIdByFilePath(fileName, view);
 						File file(fileNames[position], position, bufId, view);
 						fileNamesList.push_back(file);                        
 			        }
@@ -242,22 +252,26 @@ FileStatus NppManager::getFileStatus(const File& file)
 }
 
 
-INT_PTR NppManager::getIndexByFilePath(const std::wstring& filePath)
+INT_PTR NppManager::getIndexByFilePath(const std::wstring& filePath, const INT_PTR view)
 {
     std::vector<std::wstring> fileNamesList = getOpenedFileNames();
-	if(fileNamesList.size() == 0)
+	if(fileNamesList.empty())
 		return -1;
     auto iter = std::find(fileNamesList.begin(), fileNamesList.end(), filePath);
     if(iter == fileNamesList.end())
         return -1;
     auto index = (INT_PTR)(iter - fileNamesList.begin());
 
-    return index;
+	if(view == SUB_VIEW && getNumberOfFilesPrimary() != 0)
+	{
+		index -= getNumberOfFilesPrimary();
+	}
+	return index;
 }
 
-INT_PTR NppManager::getBufferIdByFilePath(const std::wstring& filePath)
+INT_PTR NppManager::getBufferIdByFilePath(const std::wstring& filePath, const INT_PTR view)
 {
-    return (INT_PTR)::SendMessage(nppData._nppHandle, NPPM_GETBUFFERIDFROMPOS, (LPARAM)getIndexByFilePath(filePath), 0);
+    return (INT_PTR)::SendMessage(nppData._nppHandle, NPPM_GETBUFFERIDFROMPOS, (LPARAM)getIndexByFilePath(filePath, view), view);
 }
 
  LangType NppManager::detectLanguageFromTextBegining(const unsigned char *data, size_t dataLen)
