@@ -1,8 +1,8 @@
-#include <stdafx.h>
+#include "stdafx.h"
 #include "File.h"
 #include "Shlwapi.h"
 
-File::File(std::wstring fileFullPath, int indexOfFile, int bufferIndex, int fileView)
+File::File(std::wstring fileFullPath, INT_PTR indexOfFile, INT_PTR bufferIndex, INT_PTR fileView)
 {
     fullPath = fileFullPath;
     fileName = (LPWSTR)PathFindFileName(fullPath.c_str());
@@ -58,27 +58,44 @@ bool File::equals(const File& other) const
 
 size_t File::getHash() const
 {
-    return std::hash<std::wstring>()(this->fullPath) ^ std::hash<int>()(this->view) ^ std::hash<int>()(this->index);
+	return std::hash<std::wstring>()(this->fullPath) ^ std::hash<INT_PTR>()(this->view) ^ std::hash<INT_PTR>()(this->index);
 }
 
-int File::getView() const
+INT_PTR File::getView() const
 {
     return view;
 }
 
-int File::getBufferId() const
+INT_PTR File::getBufferId() const
 {
     return bufferId;
 }
 
-int File::getIndex() const
+INT_PTR File::getIndex() const
 {
     return index;
+}
+
+void File::setIndex(INT_PTR anIndex)
+{
+	index = anIndex;
 }
 
 bool File::isValid() const
 {
     return !fileName.empty() && !fullPath.empty() && bufferId >= 0 && index >= 0;
+}
+
+INT_PTR File::decrementIndex()
+{
+	index = index - 1;
+	return getIndex();
+}
+
+INT_PTR File::incrementIndex()
+{
+	index = index + 1;
+	return getIndex();
 }
 
 File::~File()

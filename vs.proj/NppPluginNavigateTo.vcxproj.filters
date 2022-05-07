@@ -29,7 +29,6 @@
     <ClInclude Include="..\src\ScintillaGateway.h" />
     <ClInclude Include="..\src\File.h" />
     <ClInclude Include="..\src\AboutDialog.h" />
-    <ClInclude Include="ParallelFinder.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\DockingFeature\NavigateTo.rc" />
