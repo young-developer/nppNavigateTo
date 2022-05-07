@@ -107,7 +107,7 @@ protected:
 	LONG	param;			// arg depends on type
 
 public:
-	WINRECT(WORD f, int id, LONG p);
+	WINRECT(WORD f, INT_PTR id, LONG p);
 
 	static WINRECT* InitMap(WINRECT* map, WINRECT* parent=NULL);
 

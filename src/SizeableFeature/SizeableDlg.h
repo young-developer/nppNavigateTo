@@ -106,7 +106,7 @@ protected:
 	CWinMgr _winMgr;	  // window manager
 
 	virtual INT_PTR CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam);
-	virtual BOOL onInitDialog();
+	virtual INT_PTR onInitDialog();
 	virtual void onSize(UINT nType, int cx, int cy);
 	virtual void onGetMinMaxInfo(MINMAXINFO* lpMMI);
 	virtual LRESULT onWinMgr(WPARAM wp, LPARAM lp);

@@ -64,13 +64,13 @@ public:
 		::GetWindowRect(_hSelf, &rc);
 	};
 
-	virtual int getWidth() const {
+	virtual INT_PTR getWidth() const {
 		RECT rc;
 		::GetClientRect(_hSelf, &rc);
 		return (rc.right - rc.left);
 	};
 
-	virtual int getHeight() const {
+	virtual INT_PTR getHeight() const {
 		RECT rc;
 		::GetClientRect(_hSelf, &rc);
 		if (::IsWindowVisible(_hSelf) == TRUE)
