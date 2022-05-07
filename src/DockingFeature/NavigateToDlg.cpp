@@ -1132,6 +1132,14 @@ void NavigateToDlg::loadFileNamesToList(const std::wstring &filter)
     }
     else
     {
+        //FIXME: Temporary fix
+    	if (fileList.size() != nppManager->getNumberOfFiles())
+        {
+            fileList.clear();
+            for (auto file : nppManager->getOpenedFiles())
+                addFileToList(file);
+        }
+
         typedef bool (*FilterFunction)(std::wstring filterString, std::wstring filePath);
         FilterFunction filterFunction = customNonSensetiveComparator;
         if(filter.empty())
