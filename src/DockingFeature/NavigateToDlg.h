@@ -38,6 +38,8 @@ class NavigateToDlg : public SizeableDlg
 public :
     NavigateToDlg();
     void doDialog();
+    void selectAllInputChars();
+
     bool IsDropDownOpened() const
     {
         return isDropDownOpened;

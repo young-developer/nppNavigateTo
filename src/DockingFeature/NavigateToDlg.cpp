@@ -288,6 +288,13 @@ void NavigateToDlg::doDialog()
     refreshResultsList();
 }
 
+void NavigateToDlg::selectAllInputChars()
+{
+	::SetFocus(GetDlgItem(_hSelf, ID_GOLINE_EDIT));
+	SendMessage(GetWindow(hwndGoLineEdit, GW_CHILD),EM_SETSEL,WPARAM(0),-1);
+	SendMessage(GetWindow(hwndGoLineEdit, GW_CHILD),EM_SETSEL,WPARAM(-1),-1);
+}
+
 INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
 {    
 	switch (message) 
@@ -316,11 +323,6 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 		{
 			switch (wParam)
 			{
-                case VK_ESCAPE:
-				{
-					hide();
-					return TRUE;
-				}
 				case VK_DOWN:
 				{
 					moveSelectionDown(TRUE);
@@ -331,42 +333,21 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
 					moveSelectionUp(TRUE);
 					return TRUE;
 				}
-                case VK_LEFT:
-                case VK_RIGHT:
-                break;
 				case VK_NEXT:
 				{
 					moveSelectionPageDown();
 					return TRUE;
 				}
-				
 				case VK_PRIOR:
 				{
 					moveSelectionPageUp();
 					return TRUE;
-				}
-				case VK_HOME:
-				{
-					moveSelectionTop();
-					return TRUE;
-				}
-				case VK_END:
-				{
-					moveSelectionBottom();
-					return TRUE;
-				}
-
-				case VK_TAB:
-				{
-					return TRUE;
-					break;
 				}
                 case VK_RETURN:
                 {
                     openSelectedFile();
                     break;
                 }
-
 				default:
                 {
                     INT_PTR result;
@@ -543,9 +524,7 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
                     }
                     if(pNMHDR->code == NM_CLICK)
                     {
-                        ::SetFocus(GetDlgItem(_hSelf, ID_GOLINE_EDIT));
-                        SendMessage(GetWindow(hwndGoLineEdit, GW_CHILD),EM_SETSEL,WPARAM(0),-1);
-                        SendMessage(GetWindow(hwndGoLineEdit, GW_CHILD),EM_SETSEL,WPARAM(-1),-1);
+                        selectAllInputChars();
                     }
                     if(pNMHDR->code == NM_RCLICK)
                     {
@@ -555,29 +534,25 @@ INT_PTR CALLBACK NavigateToDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM 
                             nppManager->openContextMenu(selFile->getIndex(), selFile->getView());
                         if(DropDownIsNotOpened())
                         {
-                            ::SetFocus(GetDlgItem(_hSelf, ID_GOLINE_EDIT));
-                            SendMessage(GetWindow(hwndGoLineEdit, GW_CHILD),EM_SETSEL,WPARAM(0),-1);
-                            SendMessage(GetWindow(hwndGoLineEdit, GW_CHILD),EM_SETSEL,WPARAM(-1),-1);
+                            selectAllInputChars();
                         }
                     }
                     
                     if(pNMHDR->code == LVN_ITEMCHANGED)
                     {
                         LPNMLVODSTATECHANGE lpStateChange = (LPNMLVODSTATECHANGE) lParam;
+                        SHORT shiftState = ::GetKeyState(VK_SHIFT) & 0x80;
                         if ((lpStateChange->uNewState ^  lpStateChange->uOldState) & LVIS_SELECTED) 
                         {
-                            SHORT shiftState = ::GetKeyState(VK_SHIFT) & 0x80;
                             if(shiftState)
                             {
                                 isDropDownOpened = true;
                                 nppManager->switchToFile(getSelectedFile());
                             }
                         }
-                        if(DropDownIsNotOpened())
+                        if(shiftState && DropDownIsNotOpened())
                         {
-                            ::SetFocus(GetDlgItem(_hSelf, ID_GOLINE_EDIT));
-                            SendMessage(GetWindow(hwndGoLineEdit, GW_CHILD),EM_SETSEL,WPARAM(0),-1);
-                            SendMessage(GetWindow(hwndGoLineEdit, GW_CHILD),EM_SETSEL,WPARAM(-1),-1);
+                            ::SetFocus(::GetDlgItem(_hSelf, ID_GOLINE_EDIT));
                         }
                         return TRUE;
                     }
@@ -793,28 +768,14 @@ LRESULT CALLBACK ComboBoxProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     { 
         case WM_KEYDOWN:
             switch (wParam) 
-            { 
+            {
                 case VK_UP:
                 case VK_DOWN:
-                case VK_HOME:
-                case VK_END:
-                case VK_TAB:
-                case VK_ESCAPE:
-                    if(!::isDropDownOpened)
+                if(!::isDropDownOpened)
                     {
                         ::SendMessage(GetParent(GetParent(hwnd)), WM_KEYDOWN, wParam, 0);
                         return TRUE;
                     }
-                case VK_LEFT:
-                case VK_RIGHT:
-                {
-                    SHORT ctrlState = ::GetKeyState(VK_CONTROL) & 0x80;
-                    if(ctrlState)
-                    {
-                        ::SendMessage(GetParent(GetParent(hwnd)), WM_KEYDOWN, wParam, 0);
-                        return TRUE;
-                    }
-                }  
             }
             break;
         case WM_CHAR:
@@ -842,25 +803,11 @@ LRESULT CALLBACK ComboProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             { 
                 case VK_UP:
                 case VK_DOWN:
-                case VK_HOME:
-                case VK_END:
-                case VK_TAB:
-                case VK_ESCAPE:
-                    if(!::isDropDownOpened)
-                    {
-                        ::SendMessage(GetParent(hwnd), WM_KEYDOWN, wParam, 0);
-                        return TRUE;
-                    }
-                case VK_LEFT:
-                case VK_RIGHT:
+                if(!::isDropDownOpened)
                 {
-                    SHORT ctrlState = ::GetKeyState(VK_CONTROL) & 0x80;
-                    if(ctrlState)
-                    {
-                        ::SendMessage(GetParent(GetParent(hwnd)), WM_KEYDOWN, wParam, 0);
-                        return TRUE;
-                    }
-                }  
+                    ::SendMessage(GetParent(hwnd), WM_KEYDOWN, wParam, 0);
+                    return TRUE;
+                }
             }
             break;
             case WM_CHAR:
