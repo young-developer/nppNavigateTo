@@ -14,8 +14,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,4,2,0
- PRODUCTVERSION 1,4,2,0
+ FILEVERSION 1,12,7,0
+ PRODUCTVERSION 1,12,7,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -30,14 +30,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Oleksii Maryshchenko( http://omaryshchenko.info )"
+            VALUE "CompanyName", "Oleksii Maryshchenko( https://omaryshchenko.info )"
             VALUE "FileDescription", "NavigateTo plugin for Notepad++"
-            VALUE "FileVersion", "1.4.2.0"
+            VALUE "FileVersion", "1.12.7.0"
             VALUE "InternalName", "NavigateTo.dll"
-            VALUE "LegalCopyright", "Copyright 2016 - 2017 by Oleksii Maryshchenko"
+            VALUE "LegalCopyright", "Copyright 2016 - 2022 by Oleksii Maryshchenko"
             VALUE "OriginalFilename", "NavigateTo.dll"
             VALUE "ProductName", "NavigateTo"
-            VALUE "ProductVersion", "1.4.2.0"
+            VALUE "ProductVersion", "1.12.7.0"
         END
     END
     BLOCK "VarFileInfo"
