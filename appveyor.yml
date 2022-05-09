@@ -4,8 +4,10 @@ image: Visual Studio 2015
 
 environment:
   matrix:
+  - PlatformToolset: v142
   - PlatformToolset: v140_xp
   - PlatformToolset: v120_xp
+  
 
 platform:
     - x64
@@ -19,6 +21,7 @@ install:
     - if "%platform%"=="x64" set archi=amd64
     - if "%platform%"=="Win32" set archi=x86
     - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
+    - if "%PlatformToolset%"=="v142" call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
 
 build:
     parallel: true                  # enable MSBuild parallel builds
@@ -39,16 +42,46 @@ after_build:
         if ($env:PLATFORM -eq "Win32" -and $env:CONFIGURATION -eq "Release") {
             Push-AppveyorArtifact "bin\NavigateTo.dll" -FileName NavigateTo.dll
         }
-
-        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v120_xp") {
+        
+        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v142") {
             if($env:PLATFORM -eq "x64"){
-            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
+            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x64.zip"
             Remove-Item bin64\*.ipdb
             Remove-Item bin64\*.iobj
             7z a $ZipFileName .\bin64\*
             }
             if($env:PLATFORM -eq "Win32"){
-            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_x86.zip"
+            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
+            Remove-Item bin\*.ipdb
+            Remove-Item bin\*.iobj
+            7z a $ZipFileName .\bin\*
+            }
+        }
+
+        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v140_xp") {
+            if($env:PLATFORM -eq "x64"){
+            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x64.zip"
+            Remove-Item bin64\*.ipdb
+            Remove-Item bin64\*.iobj
+            7z a $ZipFileName .\bin64\*
+            }
+            if($env:PLATFORM -eq "Win32"){
+            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
+            Remove-Item bin\*.ipdb
+            Remove-Item bin\*.iobj
+            7z a $ZipFileName .\bin\*
+            }
+        }
+
+        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v120_xp") {
+            if($env:PLATFORM -eq "x64"){
+            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x64.zip"
+            Remove-Item bin64\*.ipdb
+            Remove-Item bin64\*.iobj
+            7z a $ZipFileName .\bin64\*
+            }
+            if($env:PLATFORM -eq "Win32"){
+            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
             Remove-Item bin\*.ipdb
             Remove-Item bin\*.iobj
             7z a $ZipFileName .\bin\*
