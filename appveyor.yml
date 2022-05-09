@@ -45,13 +45,13 @@ after_build:
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_x64.zip"
             Remove-Item bin64\*.ipdb
             Remove-Item bin64\*.iobj
-            7z a $ZipFileName bin64\*
+            7z a $ZipFileName bin64\NavigateTo.dll
             }
             if($env:PLATFORM -eq "Win32"){
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_x86.zip"
             Remove-Item bin\*.ipdb
             Remove-Item bin\*.iobj
-            7z a $ZipFileName bin\*
+            7z a $ZipFileName bin\NavigateTo.dll
             }
         }
 
