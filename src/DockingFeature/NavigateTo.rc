@@ -43,8 +43,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,12,4,1
- PRODUCTVERSION 1,12,4,1
+ FILEVERSION 1,12,7,0
+ PRODUCTVERSION 1,12,7,0
  FILEFLAGSMASK 0x37L
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -62,12 +62,12 @@ BEGIN
             VALUE "Comments", "Latest Sources available - https://github.com/young-developer/nppNavigateTo"
             VALUE "CompanyName", "Oleksii Maryshchenko"
             VALUE "FileDescription", "Notepad++ File NavigateTO : a free (GPL) source code file NavigateTo"
-            VALUE "FileVersion", "1.12.4.1"
+            VALUE "FileVersion", "1.12.7.0"
             VALUE "InternalName", "NavigateTo"
-            VALUE "LegalCopyright", "Copyright (C) 2018 Oleksii Maryshchenko"
+            VALUE "LegalCopyright", "Copyright (C) 2022 Oleksii Maryshchenko"
             VALUE "OriginalFilename", "NavigateTo.dll"
             VALUE "ProductName", "NavigateTo plugin"
-            VALUE "ProductVersion", "1.12.4.1"
+            VALUE "ProductVersion", "1.12.7.0"
             VALUE "SpecialBuild", "UNICODE"
         END
     END
