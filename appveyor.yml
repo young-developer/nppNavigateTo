@@ -47,44 +47,13 @@ after_build:
             Push-AppveyorArtifact "bin\NavigateTo.dll" -FileName NavigateTo.dll
         }
         
-        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v142") {
+        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
             if($env:PLATFORM -eq "x64"){
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x64.zip"
             Remove-Item bin64\*.ipdb
             Remove-Item bin64\*.iobj
             7z a $ZipFileName .\bin64\*
-            }
-            if($env:PLATFORM -eq "Win32"){
-            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
-            Remove-Item bin\*.ipdb
-            Remove-Item bin\*.iobj
-            7z a $ZipFileName .\bin\*
-            }
-        }
-
-        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v140_xp") {
-            if($env:PLATFORM -eq "x64"){
-            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x64.zip"
-            Remove-Item bin64\*.ipdb
-            Remove-Item bin64\*.iobj
-            7z a $ZipFileName .\bin64\*
-            }
-            if($env:PLATFORM -eq "Win32"){
-            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
-            Remove-Item bin\*.ipdb
-            Remove-Item bin\*.iobj
-            7z a $ZipFileName .\bin\*
-            }
-        }
-
-        if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release" -and $env:PLATFORMTOOLSET -eq "v120_xp") {
-            if($env:PLATFORM -eq "x64"){
-            $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x64.zip"
-            Remove-Item bin64\*.ipdb
-            Remove-Item bin64\*.iobj
-            7z a $ZipFileName .\bin64\*
-            }
-            if($env:PLATFORM -eq "Win32"){
+            } else {
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
             Remove-Item bin\*.ipdb
             Remove-Item bin\*.iobj
