@@ -186,9 +186,6 @@
       <ImportLibrary>$(TargetName).lib</ImportLibrary>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
     </Link>
-    <PostBuildEvent>
-      <Command>copy ..\license.txt ..\bin\license.txt</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -218,10 +215,6 @@
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImportLibrary>$(TargetName).lib</ImportLibrary>
     </Link>
-    <PostBuildEvent>
-      <Command>copy ..\license.txt ..\bin64\license.txt
-copy ..\readme.FIRST ..\bin64\readme.FIRST</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
