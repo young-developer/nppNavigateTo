@@ -41,11 +41,13 @@ namespace NavigateTo.Plugin.Namespace
 
         public List<FileModel> FilteredFileList { get; set; }
 
+        public List<String> SelectedFiles { get; set; }
+
         public FrmNavigateTo(IScintillaGateway editor, INotepadPPGateway notepad)
         {
             this.editor = editor;
             this.notepad = notepad;
-
+            this.SelectedFiles = new List<string>();
             InitializeComponent();
             ReloadFileList();
             this.notepad.ReloadMenuItems();
@@ -81,6 +83,11 @@ namespace NavigateTo.Plugin.Namespace
             if (filter.Contains("*"))
             {
                 searchPattern = filter;
+            }
+
+            foreach (DataGridViewRow selectedRow in dataGridFileList.SelectedRows)
+            {
+                SelectedFiles.Add(selectedRow.Cells[1].Value.ToString());
             }
 
             dataGridFileList.Rows.Clear();
@@ -129,6 +136,13 @@ namespace NavigateTo.Plugin.Namespace
                     dataGridFileList.Rows.Add(newRow);
                 });
             }
+
+            //restore selection
+            foreach (DataGridViewRow row in dataGridFileList.Rows)
+            {
+                row.Selected = SelectedFiles.Contains(row.Cells[1].Value);
+            }
+            SelectedFiles.Clear();
         }
 
         private void FilterMenuCommands(string filter)

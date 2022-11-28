@@ -146,13 +146,13 @@ namespace NavigateTo.Plugin.Namespace
             this.contextMenuStripMultiSelect.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItemClose});
             this.contextMenuStripMultiSelect.Name = "contextMenuStripMultiSelect";
-            this.contextMenuStripMultiSelect.Size = new System.Drawing.Size(104, 26);
+            this.contextMenuStripMultiSelect.Size = new System.Drawing.Size(181, 48);
             // 
             // toolStripMenuItemClose
             // 
             this.toolStripMenuItemClose.Name = "toolStripMenuItemClose";
-            this.toolStripMenuItemClose.Size = new System.Drawing.Size(103, 22);
-            this.toolStripMenuItemClose.Text = "Close";
+            this.toolStripMenuItemClose.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItemClose.Text = "Close Selected Tabs";
             this.toolStripMenuItemClose.ToolTipText = "Close All Selected Tabs";
             this.toolStripMenuItemClose.Click += new System.EventHandler(this.toolStripMenuItemClose_Click);
             // 
