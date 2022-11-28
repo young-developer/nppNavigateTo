@@ -287,7 +287,7 @@ namespace Kbg.NppPluginNET.PluginInfrastructure
             return retval;
         }
 
-        public const int MAX_PATH = 260;
+        public const int MAX_PATH = 2600;
 
         [DllImport("kernel32")]
         public static extern int GetPrivateProfileInt(string lpAppName, string lpKeyName, int nDefault,
