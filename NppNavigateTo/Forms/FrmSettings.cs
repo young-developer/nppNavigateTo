@@ -58,6 +58,8 @@ namespace NavigateTo.Plugin.Namespace
             checkBoxSearchInFolder.Checked = Settings.GetBoolSetting(Settings.searchInCurrentFolder);
             checkBoxSearchInSubDirs.Checked = Settings.GetBoolSetting(Settings.searchInSubDirs);
             checkBoxSearchMenu.Checked = Settings.GetBoolSetting(Settings.searchMenuCommands);
+            checkBoxCleanSearch.Checked = Settings.GetBoolSetting(Settings.clearOnClose);
+            checkBoxKeepSelected.Checked = Settings.GetBoolSetting(Settings.selectFirstRowOnFilter);
             numericUpDownCharSearchLimit.Value = Settings.GetIntSetting(Settings.minTypeCharLimit);
 
             DataGridViewRow newRow = new DataGridViewRow();
@@ -269,6 +271,16 @@ namespace NavigateTo.Plugin.Namespace
             }
 
             RefreshDataGridStyles();
+        }
+
+        private void checkBoxCleanSearch_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.SetBoolSetting(Settings.clearOnClose, checkBoxCleanSearch.Checked);
+        }
+
+        private void checkBoxKeepSelected_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.SetBoolSetting(Settings.selectFirstRowOnFilter, checkBoxKeepSelected.Checked);
         }
     }
 }

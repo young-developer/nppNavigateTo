@@ -31,6 +31,8 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.keepOpenDlgCheckBox = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkBoxKeepSelected = new System.Windows.Forms.CheckBox();
+            this.checkBoxCleanSearch = new System.Windows.Forms.CheckBox();
             this.checkBoxSearchInFolder = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.numericUpDownMinGridWidth = new System.Windows.Forms.NumericUpDown();
@@ -51,10 +53,10 @@
             this.button1 = new System.Windows.Forms.Button();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.dataGridFileListPreview = new System.Windows.Forms.DataGridView();
-            this.label2 = new System.Windows.Forms.Label();
             this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ColumnPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ColumnView = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.label2 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinGridWidth)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -77,6 +79,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.checkBoxKeepSelected);
+            this.groupBox1.Controls.Add(this.checkBoxCleanSearch);
             this.groupBox1.Controls.Add(this.keepOpenDlgCheckBox);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
@@ -84,6 +88,28 @@
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "General";
+            // 
+            // checkBoxKeepSelected
+            // 
+            this.checkBoxKeepSelected.AutoSize = true;
+            this.checkBoxKeepSelected.Location = new System.Drawing.Point(6, 74);
+            this.checkBoxKeepSelected.Name = "checkBoxKeepSelected";
+            this.checkBoxKeepSelected.Size = new System.Drawing.Size(143, 17);
+            this.checkBoxKeepSelected.TabIndex = 4;
+            this.checkBoxKeepSelected.Text = "Keep First Row Selected";
+            this.checkBoxKeepSelected.UseVisualStyleBackColor = true;
+            this.checkBoxKeepSelected.CheckedChanged += new System.EventHandler(this.checkBoxKeepSelected_CheckedChanged);
+            // 
+            // checkBoxCleanSearch
+            // 
+            this.checkBoxCleanSearch.AutoSize = true;
+            this.checkBoxCleanSearch.Location = new System.Drawing.Point(6, 51);
+            this.checkBoxCleanSearch.Name = "checkBoxCleanSearch";
+            this.checkBoxCleanSearch.Size = new System.Drawing.Size(111, 17);
+            this.checkBoxCleanSearch.TabIndex = 3;
+            this.checkBoxCleanSearch.Text = "Clear search input";
+            this.checkBoxCleanSearch.UseVisualStyleBackColor = true;
+            this.checkBoxCleanSearch.CheckedChanged += new System.EventHandler(this.checkBoxCleanSearch_CheckedChanged);
             // 
             // checkBoxSearchInFolder
             // 
@@ -343,15 +369,6 @@
             this.dataGridFileListPreview.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dataGridFileListPreview_CellPainting);
             this.dataGridFileListPreview.ColumnWidthChanged += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dataGridFileListPreview_ColumnWidthChanged);
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 236);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(48, 13);
-            this.label2.TabIndex = 10;
-            this.label2.Text = "Preview:";
-            // 
             // ColumnName
             // 
             this.ColumnName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
@@ -378,6 +395,15 @@
             this.ColumnView.MinimumWidth = 40;
             this.ColumnView.Name = "ColumnView";
             this.ColumnView.ReadOnly = true;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(13, 236);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(48, 13);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "Preview:";
             // 
             // FrmSettings
             // 
@@ -440,5 +466,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnName;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnPath;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnView;
+        private System.Windows.Forms.CheckBox checkBoxCleanSearch;
+        private System.Windows.Forms.CheckBox checkBoxKeepSelected;
     }
 }

@@ -138,10 +138,19 @@ namespace NavigateTo.Plugin.Namespace
             }
 
             //restore selection
-            foreach (DataGridViewRow row in dataGridFileList.Rows)
+            if (SelectedFiles.Count != 0)
             {
-                row.Selected = SelectedFiles.Contains(row.Cells[1].Value);
+                foreach (DataGridViewRow row in dataGridFileList.Rows)
+                {
+                    row.Selected = SelectedFiles.Contains(row.Cells[1].Value);
+                }
             }
+
+            if (FilteredFileList.Count != 0 && dataGridFileList.SelectedRows.Count == 0)
+            {
+                SelectFirstRow();
+            }
+
             SelectedFiles.Clear();
         }
 
@@ -166,22 +175,25 @@ namespace NavigateTo.Plugin.Namespace
             int filesCount =
                 (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 0);
             FileList.Clear();
-            using (ClikeStringArray cStrArray = new ClikeStringArray(filesCount, Win32.MAX_PATH))
+            if (filesCount > 0)
             {
-                if (Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETOPENFILENAMES,
-                        cStrArray.NativePointer, filesCount) != IntPtr.Zero)
-                    for (int index = 0; index < filesCount; index++)
-                    {
-                        IntPtr bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,
-                            (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS,
-                            (index < firstViewCount) ? index : index - (firstViewCount),
-                            (index > firstViewCount) ? 1 : 0);
-                        if (bufferId != IntPtr.Zero)
+                using (ClikeStringArray cStrArray = new ClikeStringArray(filesCount, Win32.MAX_PATH))
+                {
+                    if (Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETOPENFILENAMES,
+                            cStrArray.NativePointer, filesCount) != IntPtr.Zero)
+                        for (int index = 0; index < filesCount; index++)
                         {
-                            FileList.Add(new FileModel(Path.GetFileName(cStrArray.ManagedStringsUnicode[index]),
-                                cStrArray.ManagedStringsUnicode[index], index, bufferId.ToInt64(), TABS));
+                            IntPtr bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,
+                                (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS,
+                                (index < firstViewCount) ? index : index - (firstViewCount),
+                                (index > firstViewCount) ? 1 : 0);
+                            if (bufferId != IntPtr.Zero)
+                            {
+                                FileList.Add(new FileModel(Path.GetFileName(cStrArray.ManagedStringsUnicode[index]),
+                                    cStrArray.ManagedStringsUnicode[index], index, bufferId.ToInt64(), TABS));
+                            }
                         }
-                    }
+                }
             }
         }
 
@@ -204,11 +216,13 @@ namespace NavigateTo.Plugin.Namespace
             {
                 SetColumnsWidth();
                 RefreshDataGridStyles();
-                searchComboBox.Focus();
-                searchComboBox.Select();
             }
             else
             {
+                if (FrmSettings.Settings.GetBoolSetting(Settings.clearOnClose))
+                {
+                    searchComboBox.Text = "";
+                }
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
                     PluginBase._funcItems.Items[Main.idFormNavigateAll]._cmdID, 0);
             }
@@ -292,7 +306,7 @@ namespace NavigateTo.Plugin.Namespace
 
             if (dataGridFileList.SelectedRows.Count == 0)
             {
-                dataGridFileList.Rows[0].Selected = true;
+                SelectFirstRow();
                 return true;
             }
 
@@ -324,7 +338,7 @@ namespace NavigateTo.Plugin.Namespace
 
             if (dataGridFileList.SelectedRows.Count == 0)
             {
-                dataGridFileList.Rows[0].Selected = true;
+                SelectFirstRow();
                 return true;
             }
 
@@ -341,7 +355,7 @@ namespace NavigateTo.Plugin.Namespace
             }
             else
             {
-                dataGridFileList.Rows[0].Selected = true;
+                SelectFirstRow();
             }
 
             dataGridFileList.FirstDisplayedScrollingRowIndex = dataGridFileList.SelectedRows[0].Index;
@@ -359,6 +373,21 @@ namespace NavigateTo.Plugin.Namespace
             {
                 ReloadFileList();
                 FilterDataGrid("");
+            }
+
+            if (FrmSettings.Settings.GetBoolSetting(Settings.selectFirstRowOnFilter))
+            {
+                SelectFirstRow();
+            }
+        }
+
+        private void SelectFirstRow()
+        {
+            if (dataGridFileList.Rows.Count > 0)
+            {
+                dataGridFileList.MultiSelect = false;
+                dataGridFileList.MultiSelect = true;
+                dataGridFileList.Rows[0].Selected = true;
             }
         }
 
@@ -384,6 +413,11 @@ namespace NavigateTo.Plugin.Namespace
         {
             if (disabled)
             {
+                if (FrmSettings.Settings.GetBoolSetting(Settings.clearOnClose))
+                {
+                    searchComboBox.Text = "";
+                }
+
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMHIDE, 0, Handle);
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
                     PluginBase._funcItems.Items[0]._cmdID, 0);
@@ -392,6 +426,11 @@ namespace NavigateTo.Plugin.Namespace
 
         private void ExecuteCurrentAction()
         {
+            if (dataGridFileList.Rows.Count == 0 || dataGridFileList.SelectedRows.Count == 0)
+            {
+                return;
+            }
+
             if (dataGridFileList.SelectedRows[0].Cells[2].Value.Equals(CMD))
             {
                 NppMenuCmd cmd;
@@ -531,7 +570,6 @@ namespace NavigateTo.Plugin.Namespace
                 case Keys.Up:
                     e.Handled = NavigateGridUp((Control.ModifierKeys & Keys.Shift) == Keys.Shift);
                     break;
-
                 case Keys.Tab:
                 {
                     Control next = GetNextControl((Control)sender, !e.Shift);

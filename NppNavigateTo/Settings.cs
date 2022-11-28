@@ -25,6 +25,8 @@ namespace NppPluginNET
         public static string gridBackgroundColor = "gridBackgroundColor";
         public static string searchMenuCommands = "searchMenuCommands";
         public static string minTypeCharLimit = "minTypeCharLimit";
+        public static string clearOnClose = "clearOnClose";
+        public static string selectFirstRowOnFilter = "selectFirstRowOnFilter";
 
         static string iniFilePath;
         static string lpAppName = "NavigateTo";
@@ -122,6 +124,10 @@ namespace NppPluginNET
                 Win32.GetPrivateProfileInt(lpAppName, gridBackgroundColor, -5526613, iniFilePath));
             LoadIntSetting(minTypeCharLimit,
                 Win32.GetPrivateProfileInt(lpAppName, minTypeCharLimit, 2, iniFilePath));
+            LoadIntSetting(clearOnClose,
+                Win32.GetPrivateProfileInt(lpAppName, clearOnClose, 0, iniFilePath));
+            LoadIntSetting(selectFirstRowOnFilter,
+                Win32.GetPrivateProfileInt(lpAppName, selectFirstRowOnFilter, 0, iniFilePath));
         }
 
         public void SetColorSetting(String name, Color color)
