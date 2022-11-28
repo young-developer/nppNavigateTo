@@ -1,4 +1,4 @@
-version: 1.12.7.{build}
+version: 2.0.0.{build}
 image: Visual Studio 2019
 
 
@@ -14,7 +14,7 @@ environment:
 
 platform:
     - x64
-    - Win32
+    - x86
 
 configuration:
     - Release
@@ -22,42 +22,34 @@ configuration:
 
 install:
     - if "%platform%"=="x64" set archi=amd64
-    - if "%platform%"=="Win32" set archi=x86
+    - if "%platform%"=="x86" set archi=x86
     - if "%PlatformToolset%"=="v120_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
     - if "%PlatformToolset%"=="v140_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
     - if "%PlatformToolset%"=="v142" call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
 
-build:
-    parallel: true                  # enable MSBuild parallel builds
-    verbosity: minimal
-
 build_script:
-    - cd "%APPVEYOR_BUILD_FOLDER%"/vs.proj
-    - msbuild NppPluginNavigateTo.vcxproj /p:configuration="%configuration%" /p:platform="%platform%" /p:PlatformToolset="%PlatformToolset%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+     - cd "%APPVEYOR_BUILD_FOLDER%"
+    - msbuild NppNavigateTo.sln /m /p:configuration="%configuration%" /p:platform="%platform_input%" /p:PlatformToolset="%PlatformToolset%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
     - cd "%APPVEYOR_BUILD_FOLDER%"
     - ps: >-
 
         if ($env:PLATFORM -eq "x64" -and $env:CONFIGURATION -eq "Release") {
-            Push-AppveyorArtifact "bin64\NavigateTo.dll" -FileName NavigateTo.dll
+            Push-AppveyorArtifact "bin\Release-x64\NavigateTo.dll" -FileName NavigateTo.dll
         }
 
-        if ($env:PLATFORM -eq "Win32" -and $env:CONFIGURATION -eq "Release") {
-            Push-AppveyorArtifact "bin\NavigateTo.dll" -FileName NavigateTo.dll
+        if ($env:PLATFORM -eq "x86" -and $env:CONFIGURATION -eq "Release") {
+            Push-AppveyorArtifact "bin\Release\NavigateTo.dll" -FileName NavigateTo.dll
         }
         
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
             if($env:PLATFORM -eq "x64"){
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x64.zip"
-            Remove-Item bin64\*.ipdb
-            Remove-Item bin64\*.iobj
-            7z a $ZipFileName .\bin64\*
+            7z a $ZipFileName .\bin\Release-x64\*
             } else {
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
-            Remove-Item bin\*.ipdb
-            Remove-Item bin\*.iobj
-            7z a $ZipFileName .\bin\*
+            7z a $ZipFileName .\bin\Release*
             }
         }
 
