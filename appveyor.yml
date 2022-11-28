@@ -33,21 +33,21 @@ after_build:
     - ps: >-
 
         if ($env:PLATFORM -eq "x64" -and $env:CONFIGURATION -eq "Release") {
-            Push-AppveyorArtifact "obj\$env:PLATFORM\$env:CONFIGURATION\NavigateTo.dll" -FileName NavigateTo.dll
+            Push-AppveyorArtifact "bin\$env:CONFIGURATION\NavigateTo.dll" -FileName NavigateTo.dll
         }
 
         if ($env:PLATFORM -eq "x86" -and $env:CONFIGURATION -eq "Release") {
-            Push-AppveyorArtifact "obj\$env:PLATFORM\$env:CONFIGURATION\NavigateTo.dll" -FileName NavigateTo.dll
+            Push-AppveyorArtifact "bin\$env:CONFIGURATION\NavigateTo.dll" -FileName NavigateTo.dll
         }
         
         if ($($env:APPVEYOR_REPO_TAG) -eq "true" -and $env:CONFIGURATION -eq "Release") {
             if($env:PLATFORM -eq "x64"){
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x64.zip"
-            7z a $ZipFileName .\obj\$env:PLATFORM\$env:CONFIGURATION\NavigateTo.dll
+            7z a $ZipFileName .\bin\$env:CONFIGURATION\*
             Push-AppveyorArtifact $ZipFileName -DeploymentName releases
             } else {
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
-            7z a $ZipFileName .\obj\$env:PLATFORM\$env:CONFIGURATION\NavigateTo.dll
+            7z a $ZipFileName .\bin\$env:CONFIGURATION\*
             Push-AppveyorArtifact $ZipFileName -DeploymentName releases
             }
         }
