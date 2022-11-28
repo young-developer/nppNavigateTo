@@ -27,9 +27,12 @@ namespace NavigateTo.Plugin.Namespace
         private void frmSettings_Load(object sender, EventArgs e)
         {
             keepOpenDlgCheckBox.Checked = Settings.GetBoolSetting(Settings.keepDlgOpen);
-            dataGridFileListPreview.Columns[0].FillWeight = FrmSettings.Settings.GetIntSetting(Settings.columnNameWidth);
-            dataGridFileListPreview.Columns[1].FillWeight = FrmSettings.Settings.GetIntSetting(Settings.columnPathWidth);
-            dataGridFileListPreview.Columns[2].FillWeight = FrmSettings.Settings.GetIntSetting(Settings.columnSourceWidth);
+            dataGridFileListPreview.Columns[0].FillWeight =
+                FrmSettings.Settings.GetIntSetting(Settings.columnNameWidth);
+            dataGridFileListPreview.Columns[1].FillWeight =
+                FrmSettings.Settings.GetIntSetting(Settings.columnPathWidth);
+            dataGridFileListPreview.Columns[2].FillWeight =
+                FrmSettings.Settings.GetIntSetting(Settings.columnSourceWidth);
         }
 
         private void frmSettings_FormClosing(object sender, FormClosingEventArgs e)
@@ -61,6 +64,11 @@ namespace NavigateTo.Plugin.Namespace
             checkBoxCleanSearch.Checked = Settings.GetBoolSetting(Settings.clearOnClose);
             checkBoxKeepSelected.Checked = Settings.GetBoolSetting(Settings.selectFirstRowOnFilter);
             numericUpDownCharSearchLimit.Value = Settings.GetIntSetting(Settings.minTypeCharLimit);
+            checkBoxFileNameResults.Checked = Settings.GetBoolSetting(Settings.preferFilenameResults);
+            comboBoxSortedByAfterFilter.SelectedIndex = Settings.GetIntSetting(Settings.sortAfterFilterBy) == -1
+                ? 0
+                : Settings.GetIntSetting(Settings.sortAfterFilterBy) + 1;
+            comboBoxSortOrder.SelectedIndex = Settings.GetIntSetting(Settings.sortOrderAfterFilterBy);
 
             DataGridViewRow newRow = new DataGridViewRow();
             newRow.CreateCells(dataGridFileListPreview);
@@ -253,7 +261,7 @@ namespace NavigateTo.Plugin.Namespace
 
             float percentName = (float)Math.Round((double)(100 * nameWidth) / sum);
             float percentPath = (float)Math.Round((double)(100 * pathWidth) / sum);
-            float percentSource =(float)Math.Round((double)(100 * sourceWidth) / sum);
+            float percentSource = (float)Math.Round((double)(100 * sourceWidth) / sum);
 
             if (percentName > 0 && percentPath > 0 && percentSource > 0)
             {
@@ -281,6 +289,22 @@ namespace NavigateTo.Plugin.Namespace
         private void checkBoxKeepSelected_CheckedChanged(object sender, EventArgs e)
         {
             Settings.SetBoolSetting(Settings.selectFirstRowOnFilter, checkBoxKeepSelected.Checked);
+        }
+
+        private void checkBoxFileNameResults_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.SetBoolSetting(Settings.preferFilenameResults, checkBoxFileNameResults.Checked);
+        }
+
+        private void comboBoxSortedByAfterFilter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Settings.SetIntSetting(Settings.sortAfterFilterBy,
+                comboBoxSortedByAfterFilter.SelectedIndex == 0 ? -1 : comboBoxSortedByAfterFilter.SelectedIndex - 1);
+        }
+
+        private void comboBoxSortOrder_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Settings.SetIntSetting(Settings.sortOrderAfterFilterBy, comboBoxSortOrder.SelectedIndex);
         }
     }
 }

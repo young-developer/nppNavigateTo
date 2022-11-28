@@ -27,6 +27,9 @@ namespace NppPluginNET
         public static string minTypeCharLimit = "minTypeCharLimit";
         public static string clearOnClose = "clearOnClose";
         public static string selectFirstRowOnFilter = "selectFirstRowOnFilter";
+        public static string preferFilenameResults = "preferFilenameResults";
+        public static string sortAfterFilterBy = "sortAfterFilterBy";
+        public static string sortOrderAfterFilterBy = "sortOrderAfterFilterBy";
 
         static string iniFilePath;
         static string lpAppName = "NavigateTo";
@@ -128,6 +131,12 @@ namespace NppPluginNET
                 Win32.GetPrivateProfileInt(lpAppName, clearOnClose, 0, iniFilePath));
             LoadIntSetting(selectFirstRowOnFilter,
                 Win32.GetPrivateProfileInt(lpAppName, selectFirstRowOnFilter, 0, iniFilePath));
+            LoadIntSetting(preferFilenameResults,
+                Win32.GetPrivateProfileInt(lpAppName, preferFilenameResults, 0, iniFilePath));
+            LoadIntSetting(sortAfterFilterBy,
+                Win32.GetPrivateProfileInt(lpAppName, sortAfterFilterBy, -1, iniFilePath));
+            LoadIntSetting(sortOrderAfterFilterBy,
+                Win32.GetPrivateProfileInt(lpAppName, sortOrderAfterFilterBy, 0, iniFilePath));
         }
 
         public void SetColorSetting(String name, Color color)

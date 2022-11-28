@@ -108,10 +108,30 @@ namespace NavigateTo.Plugin.Namespace
             }
             else
             {
-                FilteredFileList = FileList.AsParallel()
-                    .Where(e => e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0 ||
-                                e.FileName.Contains(filter))
-                    .ToList();
+                if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
+                {
+                    FilteredFileList = FileList.AsParallel()
+                        .Where(e => e.FileName.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                        .ToList();
+
+                    FileList.AsParallel()
+                        .Where(e => e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                        .ToList().ForEach(filePath =>
+                            {
+                                if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
+                                {
+                                    FilteredFileList.Add(filePath);
+                                }
+                            }
+                        );
+                }
+                else
+                {
+                    FilteredFileList = FileList.AsParallel()
+                        .Where(e => e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0 ||
+                                    e.FileName.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                        .ToList();
+                }
 
                 if (FrmSettings.Settings.GetBoolSetting(Settings.searchInCurrentFolder))
                 {
@@ -137,6 +157,16 @@ namespace NavigateTo.Plugin.Namespace
                 });
             }
 
+            //auto sort
+            if (FrmSettings.Settings.GetIntSetting(Settings.sortAfterFilterBy) != -1)
+            {
+                dataGridFileList.Sort(
+                    dataGridFileList.Columns[FrmSettings.Settings.GetIntSetting(Settings.sortAfterFilterBy)],
+                    FrmSettings.Settings.GetIntSetting(Settings.sortOrderAfterFilterBy) == 0
+                        ? ListSortDirection.Ascending
+                        : ListSortDirection.Descending);
+            }
+
             //restore selection
             if (SelectedFiles.Count != 0)
             {
@@ -146,7 +176,7 @@ namespace NavigateTo.Plugin.Namespace
                 }
             }
 
-            if (FilteredFileList.Count != 0 && dataGridFileList.SelectedRows.Count == 0)
+            if (FilteredFileList != null && FilteredFileList.Count != 0 && dataGridFileList.SelectedRows.Count == 0)
             {
                 SelectFirstRow();
             }
@@ -172,16 +202,16 @@ namespace NavigateTo.Plugin.Namespace
             if (FileList == null) FileList = new List<FileModel>();
             int firstViewCount =
                 (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 1);
-            int filesCount =
-                (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 0);
+            int secondViewCount =
+                (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 2);
             FileList.Clear();
-            if (filesCount > 0)
+            if (secondViewCount+firstViewCount > 0)
             {
-                using (ClikeStringArray cStrArray = new ClikeStringArray(filesCount, Win32.MAX_PATH))
+                using (ClikeStringArray cStrArray = new ClikeStringArray(secondViewCount+firstViewCount , Win32.MAX_PATH))
                 {
                     if (Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETOPENFILENAMES,
-                            cStrArray.NativePointer, filesCount) != IntPtr.Zero)
-                        for (int index = 0; index < filesCount; index++)
+                            cStrArray.NativePointer, secondViewCount+firstViewCount ) != IntPtr.Zero)
+                        for (int index = 0; index < secondViewCount+firstViewCount ; index++)
                         {
                             IntPtr bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,
                                 (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS,
@@ -223,6 +253,7 @@ namespace NavigateTo.Plugin.Namespace
                 {
                     searchComboBox.Text = "";
                 }
+
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
                     PluginBase._funcItems.Items[Main.idFormNavigateAll]._cmdID, 0);
             }
