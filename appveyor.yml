@@ -17,7 +17,7 @@ configuration:
 
 install:
     - if "%platform%"=="x64" set archi=amd64
-    - if "%platform%"=="x64" set platform_input=x86
+    - if "%platform%"=="x64" set platform_input=x64
 
     - if "%platform%"=="x86" set archi=x86
     - if "%platform%"=="x86" set platform_input=x86
