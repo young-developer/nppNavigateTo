@@ -46,7 +46,7 @@ after_build:
             7z a $ZipFileName .\bin\Release-x64\*
             } else {
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
-            7z a $ZipFileName .\bin\Release*
+            7z a $ZipFileName .\bin\Release\*
             }
         }
 
