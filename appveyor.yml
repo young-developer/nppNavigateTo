@@ -44,12 +44,10 @@ after_build:
             if($env:PLATFORM -eq "x64"){
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x64.zip"
             7z a $ZipFileName .\bin\$env:CONFIGURATION\*
+            Push-AppveyorArtifact $ZipFileName -DeploymentName releases
             } else {
             $ZipFileName = "NavigateTo_$($env:APPVEYOR_REPO_TAG_NAME)_$($env:PLATFORMTOOLSET)_x86.zip"
             7z a $ZipFileName .\bin\$env:CONFIGURATION\*
+            Push-AppveyorArtifact $ZipFileName -DeploymentName releases
             }
         }
-
-artifacts:
-  - path: "%APPVEYOR_BUILD_FOLDER%\NppNavigateTo\NavigateTo_*.zip"
-    name: releases
