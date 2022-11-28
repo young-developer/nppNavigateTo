@@ -6,12 +6,7 @@ environment:
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     PlatformToolset: v142
-  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    PlatformToolset: v140_xp
-  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    PlatformToolset: v120_xp
   
-
 platform:
     - x64
     - x86
@@ -22,9 +17,11 @@ configuration:
 
 install:
     - if "%platform%"=="x64" set archi=amd64
+    - if "%platform%"=="x64" set platform_input=x86
+
     - if "%platform%"=="x86" set archi=x86
-    - if "%PlatformToolset%"=="v120_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
-    - if "%PlatformToolset%"=="v140_xp" call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %archi%
+    - if "%platform%"=="x86" set platform_input=x86
+
     - if "%PlatformToolset%"=="v142" call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %archi%
 
 build_script:
