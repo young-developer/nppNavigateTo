@@ -147,35 +147,21 @@ namespace NavigateTo.Plugin.Namespace
         public void ReloadFileList()
         {
             if (FileList == null) FileList = new List<FileModel>();
+            int firstViewCount =
+                (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 1);
             int filesCount =
                 (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 0);
-            int filesCount2 =
-                (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 1);
             FileList.Clear();
             using (ClikeStringArray cStrArray = new ClikeStringArray(filesCount, Win32.MAX_PATH))
             {
-                if (Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETOPENFILENAMESPRIMARY,
+                if (Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETOPENFILENAMES,
                         cStrArray.NativePointer, filesCount) != IntPtr.Zero)
-                    for (int index = 0; index < filesCount; ++index)
+                    for (int index = 0; index < filesCount; index++)
                     {
                         IntPtr bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,
-                            (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS, index, 0);
-                        if (bufferId != IntPtr.Zero)
-                        {
-                            FileList.Add(new FileModel(Path.GetFileName(cStrArray.ManagedStringsUnicode[index]),
-                                cStrArray.ManagedStringsUnicode[index], index, bufferId.ToInt64(), TABS));
-                        }
-                    }
-            }
-
-            using (ClikeStringArray cStrArray = new ClikeStringArray(filesCount2, Win32.MAX_PATH))
-            {
-                if (Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETOPENFILENAMESSECOND,
-                        cStrArray.NativePointer, filesCount2) != IntPtr.Zero)
-                    for (int index = 0; index < filesCount2; ++index)
-                    {
-                        IntPtr bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,
-                            (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS, index, 1);
+                            (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS,
+                            (index < firstViewCount) ? index : index - (firstViewCount),
+                            (index > firstViewCount) ? 1 : 0);
                         if (bufferId != IntPtr.Zero)
                         {
                             FileList.Add(new FileModel(Path.GetFileName(cStrArray.ManagedStringsUnicode[index]),
@@ -610,7 +596,8 @@ namespace NavigateTo.Plugin.Namespace
                 if (selectedRow.Cells[2].Value.Equals(TABS))
                 {
                     notepad.SwitchToFile(selectedRow.Cells[1].Value.ToString(), true);
-                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_MENUCOMMAND, 0, NppMenuCmd.IDM_FILE_CLOSE);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_MENUCOMMAND, 0,
+                        NppMenuCmd.IDM_FILE_CLOSE);
                 }
             }
         }

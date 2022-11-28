@@ -55,6 +55,7 @@ namespace Kbg.NppPluginNET
                     case (uint)NppMsg.NPPN_FILELOADFAILED:
                     case (uint)NppMsg.NPPN_FILEDELETED:
                     case (uint)NppMsg.NPPN_DOCORDERCHANGED:
+                    case (uint)NppMsg.NPPN_BUFFERACTIVATED:
                         NavigateTo.Plugin.Namespace.Main.frmNavigateTo.ReloadFileList();
                         NavigateTo.Plugin.Namespace.Main.frmNavigateTo.FilterDataGrid("");
                         break;
