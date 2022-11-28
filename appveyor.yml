@@ -51,5 +51,5 @@ after_build:
         }
 
 artifacts:
-  - path: %APPVEYOR_BUILD_FOLDER%\NppNavigateTo\NavigateTo_*.zip
+  - path: "%APPVEYOR_BUILD_FOLDER%\NppNavigateTo\NavigateTo_*.zip"
     name: releases
