@@ -6,7 +6,9 @@ environment:
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     PlatformToolset: v142
-  
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    PlatformToolset: v142_xp
+    
 platform:
     - x64
     - x86
