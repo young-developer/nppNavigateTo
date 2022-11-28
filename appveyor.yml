@@ -29,7 +29,7 @@ build_script:
     - msbuild NppNavigateTo.sln /m /p:configuration="%configuration%" /p:platform="%platform_input%" /p:PlatformToolset="%PlatformToolset%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
-    - cd "%APPVEYOR_BUILD_FOLDER%"
+    - cd "%APPVEYOR_BUILD_FOLDER%\NppNavigateTo"
     - ps: >-
 
         if ($env:PLATFORM -eq "x64" -and $env:CONFIGURATION -eq "Release") {
