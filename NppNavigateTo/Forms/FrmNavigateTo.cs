@@ -31,7 +31,6 @@ namespace NavigateTo.Plugin.Namespace
     {
         private readonly IScintillaGateway editor;
         private readonly INotepadPPGateway notepad;
-        private static ArrayList ListFiles = new ArrayList();
         private const string TABS = "Tabs";
         private const string CMD = "Cmd";
         private const string FOLDER_TOP = "Top Directory";
@@ -41,7 +40,9 @@ namespace NavigateTo.Plugin.Namespace
 
         public List<FileModel> FilteredFileList { get; set; }
 
-        public List<String> SelectedFiles { get; set; }
+        public List<string> SelectedFiles { get; set; }
+
+        public IntPtr ParentWindowHandle { get; set; }
 
         public FrmNavigateTo(IScintillaGateway editor, INotepadPPGateway notepad)
         {
@@ -69,7 +70,7 @@ namespace NavigateTo.Plugin.Namespace
                     if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath)))
                     {
                         FilteredFileList.Add(new FileModel(Path.GetFileName(filePath), filePath, -1, -1,
-                            searchInSubDirs ? FOLDER_SUB : FOLDER_TOP));
+                            searchInSubDirs ? FOLDER_SUB : FOLDER_TOP, 0));
                     }
                 }
             }
@@ -101,7 +102,7 @@ namespace NavigateTo.Plugin.Namespace
 
                     newRow.Cells[0].Value = file.FileName;
                     newRow.Cells[1].Value = file.FilePath;
-                    newRow.Cells[2].Value = file.View;
+                    newRow.Cells[2].Value = file.Source;
 
                     dataGridFileList.Rows.Add(newRow);
                 });
@@ -151,7 +152,7 @@ namespace NavigateTo.Plugin.Namespace
 
                     newRow.Cells[0].Value = file.FileName;
                     newRow.Cells[1].Value = file.FilePath;
-                    newRow.Cells[2].Value = file.View;
+                    newRow.Cells[2].Value = file.Source;
 
                     dataGridFileList.Rows.Add(newRow);
                 });
@@ -182,6 +183,8 @@ namespace NavigateTo.Plugin.Namespace
             }
 
             SelectedFiles.Clear();
+
+            dataGridFileList.TopLeftHeaderCell.Value = dataGridFileList.Rows.Count.ToString();
         }
 
         private void FilterMenuCommands(string filter)
@@ -193,36 +196,43 @@ namespace NavigateTo.Plugin.Namespace
                 FilteredFileList.Add(new FileModel(
                     nppMenuCmd.Key.ToString(),
                     nppMenuCmd.Value, nppMenuCmd.GetHashCode(), (uint)nppMenuCmd.Key,
-                    CMD));
+                    CMD, 0));
             }
         }
 
         public void ReloadFileList()
         {
             if (FileList == null) FileList = new List<FileModel>();
+            FileList.Clear();
             int firstViewCount =
                 (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 1);
+            var viewCount = firstViewCount;
+
             int secondViewCount =
                 (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 2);
-            FileList.Clear();
-            if (secondViewCount+firstViewCount > 0)
+            viewCount += secondViewCount;
+
+            if (viewCount > 0)
             {
-                using (ClikeStringArray cStrArray = new ClikeStringArray(secondViewCount+firstViewCount , Win32.MAX_PATH))
+                using (ClikeStringArray cStrArray =
+                       new ClikeStringArray(viewCount, Win32.MAX_PATH))
                 {
                     if (Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETOPENFILENAMES,
-                            cStrArray.NativePointer, secondViewCount+firstViewCount ) != IntPtr.Zero)
-                        for (int index = 0; index < secondViewCount+firstViewCount ; index++)
+                            cStrArray.NativePointer, viewCount) != IntPtr.Zero)
+                    {
+                        for (int index = 0; index < viewCount; index++)
                         {
+                            int view = (index >= firstViewCount) ? 1 : 0;
+                            int pos = (index < firstViewCount) ? index : index - (firstViewCount);
                             IntPtr bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,
-                                (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS,
-                                (index < firstViewCount) ? index : index - (firstViewCount),
-                                (index > firstViewCount) ? 1 : 0);
+                                (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS, pos, view);
                             if (bufferId != IntPtr.Zero)
                             {
                                 FileList.Add(new FileModel(Path.GetFileName(cStrArray.ManagedStringsUnicode[index]),
-                                    cStrArray.ManagedStringsUnicode[index], index, bufferId.ToInt64(), TABS));
+                                    cStrArray.ManagedStringsUnicode[index], pos, bufferId.ToInt64(), TABS, view));
                             }
                         }
+                    }
                 }
             }
         }
@@ -282,12 +292,14 @@ namespace NavigateTo.Plugin.Namespace
                     if (currentMouseOverRow != -1 &&
                         dataGridFileList.Rows[currentMouseOverRow].Cells[2].Value.Equals(TABS))
                     {
-                        Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_TRIGGERTABBARCONTEXTMENU, 0,
-                            FileList.FindIndex(f =>
-                                f.FilePath.Equals(dataGridFileList.Rows[currentMouseOverRow].Cells[1].Value)));
+                        FileModel file = FileList.Find(f =>
+                            f.FilePath.Equals(dataGridFileList.Rows[currentMouseOverRow].Cells[1].Value));
+                        Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_TRIGGERTABBARCONTEXTMENU,
+                            file.View,
+                            (int)file.FileIndex);
                     }
                 }
-                else
+                else if (dataGridFileList.SelectedRows.Count > 1)
                 {
                     contextMenuStripMultiSelect.Show(dataGridFileList, new Point(e.X, e.Y));
                 }
@@ -350,10 +362,14 @@ namespace NavigateTo.Plugin.Namespace
 
 
             if (dataGridFileList.Rows[lastSelectedIndex].Index > 0)
+            {
                 dataGridFileList.Rows[lastSelectedIndex - 1].Selected = true;
+                dataGridFileList.CurrentCell = dataGridFileList.Rows[lastSelectedIndex - 1].Cells[0];
+            }
             else
             {
                 dataGridFileList.Rows[dataGridFileList.Rows.Count - 1].Selected = true;
+                dataGridFileList.CurrentCell = dataGridFileList.Rows[dataGridFileList.Rows.Count - 1].Cells[0];
             }
 
             dataGridFileList.FirstDisplayedScrollingRowIndex = dataGridFileList.SelectedRows[0].Index;
@@ -431,9 +447,9 @@ namespace NavigateTo.Plugin.Namespace
             }
         }
 
-        private void SwitchToFile(StringBuilder path, bool isTab = true)
+        private void SwitchToFile(string path, bool isTab = true)
         {
-            notepad.SwitchToFile(path.ToString(), isTab);
+            notepad.SwitchToFile(path, isTab);
             HideWindow(!FrmSettings.Settings.GetBoolSetting(Settings.keepDlgOpen));
             string fileName = Path.GetFileName(notepad.GetCurrentFilePath());
             searchComboBox.Items.Remove(fileName);
@@ -470,9 +486,8 @@ namespace NavigateTo.Plugin.Namespace
             }
             else
             {
-                StringBuilder path = new StringBuilder(Win32.MAX_PATH);
-                path.Append(dataGridFileList.SelectedRows[0].Cells[1].Value);
-                SwitchToFile(path, dataGridFileList.SelectedRows[0].Cells[2].Value.Equals(TABS));
+                SwitchToFile(dataGridFileList.SelectedRows[0].Cells[1].Value.ToString(),
+                    dataGridFileList.SelectedRows[0].Cells[2].Value.Equals(TABS));
             }
         }
 
@@ -683,6 +698,17 @@ namespace NavigateTo.Plugin.Namespace
                         NppMenuCmd.IDM_FILE_CLOSE);
                 }
             }
+        }
+
+        private void dataGridFileList_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
+        {
+            object o = dataGridFileList.Rows[e.RowIndex].HeaderCell.Value;
+
+            e.Graphics.DrawString(
+                o != null ? o.ToString() : "",
+                dataGridFileList.Font,
+                Brushes.Black,
+                new PointF((float)e.RowBounds.Left + 2, (float)e.RowBounds.Top + 4));
         }
     }
 }

@@ -88,7 +88,7 @@ namespace NavigateTo.Plugin.Namespace
             this.dataGridFileList.Location = new System.Drawing.Point(1, 27);
             this.dataGridFileList.Name = "dataGridFileList";
             this.dataGridFileList.ReadOnly = true;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
             dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
@@ -96,8 +96,8 @@ namespace NavigateTo.Plugin.Namespace
             dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dataGridFileList.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
-            this.dataGridFileList.RowHeadersVisible = false;
-            this.dataGridFileList.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
+            this.dataGridFileList.RowHeadersWidth = 25;
+            this.dataGridFileList.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dataGridFileList.RowTemplate.ReadOnly = true;
             this.dataGridFileList.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.dataGridFileList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -106,6 +106,7 @@ namespace NavigateTo.Plugin.Namespace
             this.dataGridFileList.Size = new System.Drawing.Size(602, 412);
             this.dataGridFileList.TabIndex = 5;
             this.dataGridFileList.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dataGridFileList_CellPainting);
+            this.dataGridFileList.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.dataGridFileList_RowPostPaint);
             this.dataGridFileList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dataGridFileList_KeyDown);
             this.dataGridFileList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.dataGridFileList_KeyPress);
             this.dataGridFileList.MouseClick += new System.Windows.Forms.MouseEventHandler(this.dataGridView1_MouseClick);
@@ -146,12 +147,12 @@ namespace NavigateTo.Plugin.Namespace
             this.contextMenuStripMultiSelect.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItemClose});
             this.contextMenuStripMultiSelect.Name = "contextMenuStripMultiSelect";
-            this.contextMenuStripMultiSelect.Size = new System.Drawing.Size(181, 48);
+            this.contextMenuStripMultiSelect.Size = new System.Drawing.Size(177, 26);
             // 
             // toolStripMenuItemClose
             // 
             this.toolStripMenuItemClose.Name = "toolStripMenuItemClose";
-            this.toolStripMenuItemClose.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItemClose.Size = new System.Drawing.Size(176, 22);
             this.toolStripMenuItemClose.Text = "Close Selected Tabs";
             this.toolStripMenuItemClose.ToolTipText = "Close All Selected Tabs";
             this.toolStripMenuItemClose.Click += new System.EventHandler(this.toolStripMenuItemClose_Click);

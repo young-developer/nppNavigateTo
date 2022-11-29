@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using Kbg.NppPluginNET;
@@ -33,6 +34,7 @@ namespace NavigateTo.Plugin.Namespace
                 FrmSettings.Settings.GetIntSetting(Settings.columnPathWidth);
             dataGridFileListPreview.Columns[2].FillWeight =
                 FrmSettings.Settings.GetIntSetting(Settings.columnSourceWidth);
+            Text = Kbg.NppPluginNET.Main.PluginName + " - Settings - v." + Assembly.GetExecutingAssembly().GetName().Version;
         }
 
         private void frmSettings_FormClosing(object sender, FormClosingEventArgs e)

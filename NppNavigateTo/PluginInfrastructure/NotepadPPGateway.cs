@@ -29,6 +29,8 @@ namespace Kbg.NppPluginNET.PluginInfrastructure
         bool SwitchToFile(string path, bool isTab);
         Dictionary<NppMenuCmd, string> MainMenuItems { get; set; }
         string ReloadMenuItems();
+
+        int getCurrentView();
     }
 
     /// <summary>
@@ -79,6 +81,12 @@ namespace Kbg.NppPluginNET.PluginInfrastructure
             }
 
             return "";
+        }
+
+        public int getCurrentView()
+        {
+            return (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETCURRENTVIEW, Unused,
+                Unused);
         }
 
         public void FileNew()

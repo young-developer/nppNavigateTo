@@ -96,6 +96,11 @@ namespace Kbg.NppPluginNET.PluginInfrastructure
         public static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam,
             [MarshalAs(UnmanagedType.LPWStr)] string lParam);
 
+        [DllImport("user32")]
+        public static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg,
+            [MarshalAs(UnmanagedType.LPWStr)] string wParam,
+            [MarshalAs(UnmanagedType.LPWStr)] string lParam);
+
         /// <summary>
         /// You should try to avoid calling this method in your plugin code. Rather use one of the gateways such as 
         /// <see cref="ScintillaGateway"/> or <see cref="NotepadPPGateway"/>.  
@@ -239,6 +244,11 @@ namespace Kbg.NppPluginNET.PluginInfrastructure
             return SendMessage(hWnd, (UInt32)Msg, new IntPtr(wParam), lParam);
         }
 
+        public static IntPtr SendMessage(IntPtr hWnd, SciMsg Msg, string wParam, string lParam)
+        {
+            return SendMessage(hWnd, (UInt32)Msg, wParam, lParam);
+        }
+
         /// <summary>
         /// You should try to avoid calling this method in your plugin code. Rather use one of the gateways such as 
         /// <see cref="ScintillaGateway"/> or <see cref="NotepadPPGateway"/>.  
@@ -309,6 +319,9 @@ namespace Kbg.NppPluginNET.PluginInfrastructure
         public static extern IntPtr GetMenu(IntPtr hWnd);
 
         [DllImport("user32")]
+        public static extern IntPtr SetWindowText(IntPtr hWnd, string windowName);
+
+        [DllImport("user32")]
         public static extern int GetMenuItemCount(IntPtr hMenu);
 
         [DllImport("user32")]
@@ -345,6 +358,7 @@ namespace Kbg.NppPluginNET.PluginInfrastructure
                 get { return (uint)Marshal.SizeOf(typeof(MENUITEMINFO)); }
             }
         }
+
         public static string GetMenuItemText(IntPtr hMenu, uint uItem, bool fByPosition)
         {
             Win32.MENUITEMINFO info = new Win32.MENUITEMINFO();

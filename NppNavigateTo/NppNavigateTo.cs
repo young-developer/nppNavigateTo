@@ -99,7 +99,7 @@ namespace NavigateTo.Plugin.Namespace
 
         static internal void CommandMenuInit()
         {
-            PluginBase.SetCommand(idFormNavigateAll, "NavigateTo", NavigateToDlg,
+            PluginBase.SetCommand(idFormNavigateAll, PluginName, NavigateToDlg,
                 new ShortcutKey(true, false, false, Keys.Oemcomma));
             PluginBase.SetCommand(idFormSettings, "Settings", SettingsDlg);
             PluginBase.SetCommand(2, "---", null);
@@ -157,7 +157,7 @@ namespace NavigateTo.Plugin.Namespace
 
                 NppTbData _nppTbData = new NppTbData();
                 _nppTbData.hClient = frmNavigateTo.Handle;
-                _nppTbData.pszName = "NavigateTo";
+                _nppTbData.pszName = PluginName;
                 _nppTbData.dlgID = idFormNavigateAll;
                 // define the default docking behaviour
                 _nppTbData.uMask = NppTbMsg.CONT_LEFT | NppTbMsg.DWS_ICONTAB | NppTbMsg.DWS_ICONBAR;
@@ -165,7 +165,6 @@ namespace NavigateTo.Plugin.Namespace
                 _nppTbData.pszModuleName = PluginName;
                 IntPtr _ptrNppTbData = Marshal.AllocHGlobal(Marshal.SizeOf(_nppTbData));
                 Marshal.StructureToPtr(_nppTbData, _ptrNppTbData, false);
-
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMREGASDCKDLG, 0, _ptrNppTbData);
                 // Following message will toogle both menu item state and toolbar button
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
