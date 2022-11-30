@@ -38,11 +38,14 @@
             this.numericUpDownMinGridWidth = new System.Windows.Forms.NumericUpDown();
             this.checkBoxSearchInSubDirs = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.comboBoxSortOrder = new System.Windows.Forms.ComboBox();
             this.comboBoxSortedByAfterFilter = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.numericUpDownCharSearchLimit = new System.Windows.Forms.NumericUpDown();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.numericUpDownFuzzyness = new System.Windows.Forms.NumericUpDown();
+            this.checkBoxFuzzySearch = new System.Windows.Forms.CheckBox();
             this.checkBoxFileNameResults = new System.Windows.Forms.CheckBox();
             this.checkBoxSearchMenu = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
@@ -60,12 +63,12 @@
             this.ColumnPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ColumnView = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label2 = new System.Windows.Forms.Label();
-            this.comboBoxSortOrder = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinGridWidth)).BeginInit();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownCharSearchLimit)).BeginInit();
             this.groupBox3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFuzzyness)).BeginInit();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridFileListPreview)).BeginInit();
             this.SuspendLayout();
@@ -190,6 +193,19 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "File List";
             // 
+            // comboBoxSortOrder
+            // 
+            this.comboBoxSortOrder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxSortOrder.FormattingEnabled = true;
+            this.comboBoxSortOrder.Items.AddRange(new object[] {
+            "ASC",
+            "DESC"});
+            this.comboBoxSortOrder.Location = new System.Drawing.Point(179, 80);
+            this.comboBoxSortOrder.Name = "comboBoxSortOrder";
+            this.comboBoxSortOrder.Size = new System.Drawing.Size(53, 21);
+            this.comboBoxSortOrder.TabIndex = 10;
+            this.comboBoxSortOrder.SelectedIndexChanged += new System.EventHandler(this.comboBoxSortOrder_SelectedIndexChanged);
+            // 
             // comboBoxSortedByAfterFilter
             // 
             this.comboBoxSortedByAfterFilter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -247,6 +263,8 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.numericUpDownFuzzyness);
+            this.groupBox3.Controls.Add(this.checkBoxFuzzySearch);
             this.groupBox3.Controls.Add(this.checkBoxFileNameResults);
             this.groupBox3.Controls.Add(this.checkBoxSearchMenu);
             this.groupBox3.Controls.Add(this.checkBoxSearchInFolder);
@@ -254,10 +272,39 @@
             this.groupBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox3.Location = new System.Drawing.Point(12, 129);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(283, 123);
+            this.groupBox3.Size = new System.Drawing.Size(283, 137);
             this.groupBox3.TabIndex = 7;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Search behavior";
+            // 
+            // numericUpDownFuzzyness
+            // 
+            this.numericUpDownFuzzyness.Location = new System.Drawing.Point(217, 107);
+            this.numericUpDownFuzzyness.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericUpDownFuzzyness.Name = "numericUpDownFuzzyness";
+            this.numericUpDownFuzzyness.Size = new System.Drawing.Size(40, 20);
+            this.numericUpDownFuzzyness.TabIndex = 11;
+            this.numericUpDownFuzzyness.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDownFuzzyness.ValueChanged += new System.EventHandler(this.numericUpDownFuzzyness_ValueChanged);
+            // 
+            // checkBoxFuzzySearch
+            // 
+            this.checkBoxFuzzySearch.AutoSize = true;
+            this.checkBoxFuzzySearch.Location = new System.Drawing.Point(6, 110);
+            this.checkBoxFuzzySearch.Name = "checkBoxFuzzySearch";
+            this.checkBoxFuzzySearch.Size = new System.Drawing.Size(205, 17);
+            this.checkBoxFuzzySearch.TabIndex = 8;
+            this.checkBoxFuzzySearch.Text = "Fuzzy search (Tabs Only) - Tolerance:";
+            this.checkBoxFuzzySearch.UseVisualStyleBackColor = true;
+            this.checkBoxFuzzySearch.CheckedChanged += new System.EventHandler(this.checkBoxFuzzySearch_CheckedChanged);
             // 
             // checkBoxFileNameResults
             // 
@@ -293,7 +340,7 @@
             this.groupBox4.Controls.Add(this.button1);
             this.groupBox4.Location = new System.Drawing.Point(311, 129);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(256, 123);
+            this.groupBox4.Size = new System.Drawing.Size(256, 137);
             this.groupBox4.TabIndex = 8;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Appearance";
@@ -400,13 +447,13 @@
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataGridFileListPreview.DefaultCellStyle = dataGridViewCellStyle1;
-            this.dataGridFileListPreview.Location = new System.Drawing.Point(12, 274);
+            this.dataGridFileListPreview.Location = new System.Drawing.Point(12, 285);
             this.dataGridFileListPreview.Name = "dataGridFileListPreview";
             this.dataGridFileListPreview.ReadOnly = true;
             this.dataGridFileListPreview.RowHeadersVisible = false;
             this.dataGridFileListPreview.RowTemplate.ReadOnly = true;
             this.dataGridFileListPreview.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridFileListPreview.Size = new System.Drawing.Size(555, 155);
+            this.dataGridFileListPreview.Size = new System.Drawing.Size(555, 144);
             this.dataGridFileListPreview.TabIndex = 9;
             this.dataGridFileListPreview.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dataGridFileListPreview_CellPainting);
             this.dataGridFileListPreview.ColumnWidthChanged += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dataGridFileListPreview_ColumnWidthChanged);
@@ -441,24 +488,11 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(15, 255);
+            this.label2.Location = new System.Drawing.Point(15, 269);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(48, 13);
             this.label2.TabIndex = 10;
             this.label2.Text = "Preview:";
-            // 
-            // comboBoxSortOrder
-            // 
-            this.comboBoxSortOrder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxSortOrder.FormattingEnabled = true;
-            this.comboBoxSortOrder.Items.AddRange(new object[] {
-            "ASC",
-            "DESC"});
-            this.comboBoxSortOrder.Location = new System.Drawing.Point(179, 80);
-            this.comboBoxSortOrder.Name = "comboBoxSortOrder";
-            this.comboBoxSortOrder.Size = new System.Drawing.Size(53, 21);
-            this.comboBoxSortOrder.TabIndex = 10;
-            this.comboBoxSortOrder.SelectedIndexChanged += new System.EventHandler(this.comboBoxSortOrder_SelectedIndexChanged);
             // 
             // FrmSettings
             // 
@@ -486,6 +520,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownCharSearchLimit)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFuzzyness)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridFileListPreview)).EndInit();
@@ -527,5 +562,7 @@
         private System.Windows.Forms.ComboBox comboBoxSortedByAfterFilter;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox comboBoxSortOrder;
+        private System.Windows.Forms.CheckBox checkBoxFuzzySearch;
+        private System.Windows.Forms.NumericUpDown numericUpDownFuzzyness;
     }
 }

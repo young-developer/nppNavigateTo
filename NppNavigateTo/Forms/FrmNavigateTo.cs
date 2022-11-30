@@ -109,30 +109,7 @@ namespace NavigateTo.Plugin.Namespace
             }
             else
             {
-                if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
-                {
-                    FilteredFileList = FileList.AsParallel()
-                        .Where(e => e.FileName.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
-                        .ToList();
-
-                    FileList.AsParallel()
-                        .Where(e => e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
-                        .ToList().ForEach(filePath =>
-                            {
-                                if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
-                                {
-                                    FilteredFileList.Add(filePath);
-                                }
-                            }
-                        );
-                }
-                else
-                {
-                    FilteredFileList = FileList.AsParallel()
-                        .Where(e => e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0 ||
-                                    e.FileName.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
-                        .ToList();
-                }
+                searchInTabs(filter);
 
                 if (FrmSettings.Settings.GetBoolSetting(Settings.searchInCurrentFolder))
                 {
@@ -185,6 +162,61 @@ namespace NavigateTo.Plugin.Namespace
             SelectedFiles.Clear();
 
             dataGridFileList.TopLeftHeaderCell.Value = dataGridFileList.Rows.Count.ToString();
+        }
+
+        private void searchInTabs(string filter)
+        {
+            //Normal index of search
+            if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
+            {
+                FilteredFileList = FileList.AsParallel()
+                    .Where(e => e.FileName.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                    .ToList();
+
+                FileList.AsParallel()
+                    .Where(e => e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                    .ToList().ForEach(filePath =>
+                        {
+                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
+                            {
+                                FilteredFileList.Add(filePath);
+                            }
+                        }
+                    );
+            }
+            else
+            {
+                FilteredFileList = FileList.AsParallel()
+                    .Where(e => e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0 ||
+                                e.FileName.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                    .ToList();
+            }
+
+            //run fuzzy search if there are no results from normal search and it is enabled
+            if (FilteredFileList != null && FilteredFileList.Count == 0 &&
+                FrmSettings.Settings.GetBoolSetting(Settings.fuzzySearch))
+            {
+                if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
+                {
+                    FilteredFileList = SearchUtils.FuzzySearchFileName(filter, FileList,
+                        FrmSettings.Settings.GetIntSetting(Settings.fuzzynessTolerance));
+
+                    SearchUtils.FuzzySearchFilePath(filter, FileList,
+                        FrmSettings.Settings.GetIntSetting(Settings.fuzzynessTolerance)).ForEach(filePath =>
+                        {
+                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
+                            {
+                                FilteredFileList.Add(filePath);
+                            }
+                        }
+                    );
+                }
+                else
+                {
+                    FilteredFileList = SearchUtils.FuzzySearch(filter, FileList,
+                        FrmSettings.Settings.GetIntSetting(Settings.fuzzynessTolerance));
+                }
+            }
         }
 
         private void FilterMenuCommands(string filter)
@@ -399,6 +431,7 @@ namespace NavigateTo.Plugin.Namespace
             if (dataGridFileList.Rows[lastSelectedIndex].Index + 1 < dataGridFileList.Rows.Count)
             {
                 dataGridFileList.Rows[lastSelectedIndex + 1].Selected = true;
+                dataGridFileList.CurrentCell = dataGridFileList.Rows[lastSelectedIndex + 1].Cells[0];
             }
             else
             {
@@ -435,6 +468,7 @@ namespace NavigateTo.Plugin.Namespace
                 dataGridFileList.MultiSelect = false;
                 dataGridFileList.MultiSelect = true;
                 dataGridFileList.Rows[0].Selected = true;
+                dataGridFileList.CurrentCell = dataGridFileList.Rows[0].Cells[0];
             }
         }
 

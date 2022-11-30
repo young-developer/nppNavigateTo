@@ -30,6 +30,8 @@ namespace NppPluginNET
         public static string preferFilenameResults = "preferFilenameResults";
         public static string sortAfterFilterBy = "sortAfterFilterBy";
         public static string sortOrderAfterFilterBy = "sortOrderAfterFilterBy";
+        public static string fuzzySearch = "fuzzySearch";
+        public static string fuzzynessTolerance = "fuzzynessTolerance";
 
         static string iniFilePath;
         static string lpAppName = "NavigateTo";
@@ -137,6 +139,10 @@ namespace NppPluginNET
                 Win32.GetPrivateProfileInt(lpAppName, sortAfterFilterBy, -1, iniFilePath));
             LoadIntSetting(sortOrderAfterFilterBy,
                 Win32.GetPrivateProfileInt(lpAppName, sortOrderAfterFilterBy, 0, iniFilePath));
+            LoadIntSetting(fuzzySearch,
+                Win32.GetPrivateProfileInt(lpAppName, fuzzySearch, 0, iniFilePath));
+            LoadIntSetting(fuzzynessTolerance,
+                Win32.GetPrivateProfileInt(lpAppName, fuzzynessTolerance, 1, iniFilePath));
         }
 
         public void SetColorSetting(String name, Color color)

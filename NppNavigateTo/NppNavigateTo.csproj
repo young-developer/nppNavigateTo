@@ -153,6 +153,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SearchUtils.cs" />
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>

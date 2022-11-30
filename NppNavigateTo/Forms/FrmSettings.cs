@@ -71,6 +71,8 @@ namespace NavigateTo.Plugin.Namespace
                 ? 0
                 : Settings.GetIntSetting(Settings.sortAfterFilterBy) + 1;
             comboBoxSortOrder.SelectedIndex = Settings.GetIntSetting(Settings.sortOrderAfterFilterBy);
+            checkBoxFuzzySearch.Checked = Settings.GetBoolSetting(Settings.fuzzySearch);
+            numericUpDownFuzzyness.Value = Settings.GetIntSetting(Settings.fuzzynessTolerance);
 
             DataGridViewRow newRow = new DataGridViewRow();
             newRow.CreateCells(dataGridFileListPreview);
@@ -307,6 +309,16 @@ namespace NavigateTo.Plugin.Namespace
         private void comboBoxSortOrder_SelectedIndexChanged(object sender, EventArgs e)
         {
             Settings.SetIntSetting(Settings.sortOrderAfterFilterBy, comboBoxSortOrder.SelectedIndex);
+        }
+
+        private void checkBoxFuzzySearch_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.SetBoolSetting(Settings.fuzzySearch, checkBoxFuzzySearch.Checked);
+        }
+
+        private void numericUpDownFuzzyness_ValueChanged(object sender, EventArgs e)
+        {
+            Settings.SetIntSetting(Settings.fuzzynessTolerance, (int)numericUpDownFuzzyness.Value);
         }
     }
 }
