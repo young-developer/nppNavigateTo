@@ -42,13 +42,14 @@ namespace NavigateTo.Plugin.Namespace
 
         public List<string> SelectedFiles { get; set; }
 
-        public IntPtr ParentWindowHandle { get; set; }
+        public bool IsFuzzyResult { get; set; }
 
         public FrmNavigateTo(IScintillaGateway editor, INotepadPPGateway notepad)
         {
             this.editor = editor;
             this.notepad = notepad;
             this.SelectedFiles = new List<string>();
+            IsFuzzyResult = false;
             InitializeComponent();
             ReloadFileList();
             this.notepad.ReloadMenuItems();
@@ -80,8 +81,15 @@ namespace NavigateTo.Plugin.Namespace
         {
             if (!string.IsNullOrEmpty(searchComboBox.Text)) filter = searchComboBox.Text;
 
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                filter = filter.Trim();
+            }
+
+            IsFuzzyResult = false;
+
             string searchPattern = "*";
-            if (filter.Contains("*"))
+            if (filter != null && filter.Contains("*"))
             {
                 searchPattern = filter;
             }
@@ -166,30 +174,37 @@ namespace NavigateTo.Plugin.Namespace
 
         private void searchInTabs(string filter)
         {
-            //Normal index of search
-            if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
+            var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            if (words.Length > 0)
             {
-                FilteredFileList = FileList.AsParallel()
-                    .Where(e => e.FileName.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
-                    .ToList();
+                //Normal index of search
+                if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
+                {
+                    FilteredFileList = FileList.AsParallel()
+                        .Where(e => words.All(word =>
+                            e.FileName.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0))
+                        .ToList();
 
-                FileList.AsParallel()
-                    .Where(e => e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
-                    .ToList().ForEach(filePath =>
-                        {
-                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
+                    FileList.AsParallel()
+                        .Where(e => words.All(word =>
+                            e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0))
+                        .ToList().ForEach(filePath =>
                             {
-                                FilteredFileList.Add(filePath);
+                                if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
+                                {
+                                    FilteredFileList.Add(filePath);
+                                }
                             }
-                        }
-                    );
-            }
-            else
-            {
-                FilteredFileList = FileList.AsParallel()
-                    .Where(e => e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0 ||
-                                e.FileName.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0)
-                    .ToList();
+                        );
+                }
+                else
+                {
+                    FilteredFileList = FileList.AsParallel()
+                        .Where(e => words.All(word =>
+                            e.FilePath.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0 ||
+                            e.FileName.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0))
+                        .ToList();
+                }
             }
 
             //run fuzzy search if there are no results from normal search and it is enabled
@@ -216,6 +231,8 @@ namespace NavigateTo.Plugin.Namespace
                     FilteredFileList = SearchUtils.FuzzySearch(filter, FileList,
                         FrmSettings.Settings.GetIntSetting(Settings.fuzzynessTolerance));
                 }
+
+                IsFuzzyResult = true;
             }
         }
 
@@ -544,67 +561,71 @@ namespace NavigateTo.Plugin.Namespace
 
             if (e.RowIndex > -1 && e.ColumnIndex > -1)
             {
-                String search = searchComboBox.Text;
-                var filterList = search.Split(null);
+                String search = searchComboBox.Text.Trim();
+                var filterList = IsFuzzyResult ? search.ToCharArray().Select(c => c.ToString()) : search.Split(' ');
+                filterList = filterList.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
                 List<Rectangle> rectangleList = new List<Rectangle>();
 
-                if (!String.IsNullOrWhiteSpace(search.Trim()))
+                if (!String.IsNullOrWhiteSpace(search))
                 {
                     foreach (var word in filterList)
                     {
                         String gridCellValue = e.FormattedValue.ToString();
-                        int startIndexInCellValue = gridCellValue.ToLower().IndexOf(word.Trim().ToLower(),
-                            StringComparison.CurrentCultureIgnoreCase);
-                        if (startIndexInCellValue >= 0)
+                        var startIndexes = gridCellValue.AllIndexesOf(word.Trim(), true);
+
+                        foreach (var startIndexInCellValue in startIndexes)
                         {
-                            e.Handled = true;
-                            e.PaintBackground(e.CellBounds, true);
-                            int indexOfN = gridCellValue.IndexOf("\n", StringComparison.CurrentCultureIgnoreCase);
-                            Rectangle hlRect = new Rectangle();
-                            hlRect.Y = e.CellBounds.Y + 2;
-
-                            String sBeforeSearchword = gridCellValue.Substring(0, startIndexInCellValue);
-                            String sSearchWord = gridCellValue.Substring(startIndexInCellValue, word.Trim().Length);
-                            Size s1 = TextRenderer.MeasureText(e.Graphics, sBeforeSearchword, e.CellStyle.Font,
-                                e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                            Size s2 = TextRenderer.MeasureText(e.Graphics, sSearchWord, e.CellStyle.Font,
-                                e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                            if (s1.Width > 5)
+                            if (startIndexInCellValue >= 0)
                             {
-                                hlRect.X = e.CellBounds.X + s1.Width - 5;
-                                hlRect.Width = s2.Width - 6;
+                                e.Handled = true;
+                                e.PaintBackground(e.CellBounds, true);
+                                int indexOfN = gridCellValue.IndexOf("\n", StringComparison.CurrentCultureIgnoreCase);
+                                Rectangle hlRect = new Rectangle();
+                                hlRect.Y = e.CellBounds.Y + 2;
 
-                                if (indexOfN != -1)
+                                String sBeforeSearchword = gridCellValue.Substring(0, startIndexInCellValue);
+                                String sSearchWord = gridCellValue.Substring(startIndexInCellValue, word.Trim().Length);
+                                Size s1 = TextRenderer.MeasureText(e.Graphics, sBeforeSearchword, e.CellStyle.Font,
+                                    e.CellBounds.Size, TextFormatFlags.TextBoxControl);
+                                Size s2 = TextRenderer.MeasureText(e.Graphics, sSearchWord, e.CellStyle.Font,
+                                    e.CellBounds.Size, TextFormatFlags.TextBoxControl);
+                                if (s1.Width > 5)
                                 {
-                                    if (startIndexInCellValue > indexOfN)
+                                    hlRect.X = e.CellBounds.X + s1.Width - 5;
+                                    hlRect.Width = s2.Width - 6;
+
+                                    if (indexOfN != -1)
                                     {
-                                        int cellRow2Index = startIndexInCellValue - indexOfN;
-                                        String breakWord = gridCellValue.Substring(indexOfN, cellRow2Index);
-                                        Size s3 = TextRenderer.MeasureText(e.Graphics, breakWord, e.CellStyle.Font,
-                                            e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                                        hlRect.X = e.CellBounds.X + 2 + s3.Width - 7;
-                                        hlRect.Y = e.CellBounds.Y + s2.Height + 2;
+                                        if (startIndexInCellValue > indexOfN)
+                                        {
+                                            int cellRow2Index = startIndexInCellValue - indexOfN;
+                                            String breakWord = gridCellValue.Substring(indexOfN, cellRow2Index);
+                                            Size s3 = TextRenderer.MeasureText(e.Graphics, breakWord, e.CellStyle.Font,
+                                                e.CellBounds.Size, TextFormatFlags.TextBoxControl);
+                                            hlRect.X = e.CellBounds.X + 2 + s3.Width - 7;
+                                            hlRect.Y = e.CellBounds.Y + s2.Height + 2;
+                                        }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                hlRect.X = e.CellBounds.X + 2;
-                                hlRect.Width = s2.Width - 6;
-                            }
-
-                            if (indexOfN == -1)
-                            {
-                                Size s4 = TextRenderer.MeasureText(e.Graphics, gridCellValue, e.CellStyle.Font,
-                                    e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                                if (s4.Width < e.CellBounds.Width)
+                                else
                                 {
-                                    hlRect.Y = e.CellBounds.Y + ((e.CellBounds.Height - s4.Height) / 2);
+                                    hlRect.X = e.CellBounds.X + 2;
+                                    hlRect.Width = s2.Width - 6;
                                 }
-                            }
 
-                            hlRect.Height = s2.Height;
-                            rectangleList.Add(hlRect);
+                                if (indexOfN == -1)
+                                {
+                                    Size s4 = TextRenderer.MeasureText(e.Graphics, gridCellValue, e.CellStyle.Font,
+                                        e.CellBounds.Size, TextFormatFlags.TextBoxControl);
+                                    if (s4.Width < e.CellBounds.Width)
+                                    {
+                                        hlRect.Y = e.CellBounds.Y + ((e.CellBounds.Height - s4.Height) / 2);
+                                    }
+                                }
+
+                                hlRect.Height = s2.Height;
+                                rectangleList.Add(hlRect);
+                            }
                         }
                     }
                 }
