@@ -149,10 +149,12 @@ namespace NavigateTo.Plugin.Namespace
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 =
                 new System.Windows.Forms.DataGridViewCellStyle();
             dataGridViewCellStyle1.ForeColor = Settings.GetColorSetting(Settings.gridTextColor);
+            dataGridViewCellStyle1.BackColor = Settings.GetColorSetting(Settings.rowBackgroundColor);
             dataGridViewCellStyle1.SelectionBackColor = Settings.GetColorSetting(Settings.gridSelectedRowBackground);
             dataGridViewCellStyle1.SelectionForeColor = Settings.GetColorSetting(Settings.gridSelectedRowForeground);
             dataGridFileListPreview.DefaultCellStyle = dataGridViewCellStyle1;
             dataGridFileListPreview.BackgroundColor = Settings.GetColorSetting(Settings.gridBackgroundColor);
+            dataGridFileListPreview.BackColor = Settings.GetColorSetting(Settings.rowBackgroundColor);
             dataGridFileListPreview.Refresh();
         }
 
@@ -248,6 +250,7 @@ namespace NavigateTo.Plugin.Namespace
             Settings.SetColorSetting(Settings.gridSelectedRowForeground, System.Drawing.SystemColors.ControlText);
             Settings.SetColorSetting(Settings.gridBackgroundColor, System.Drawing.SystemColors.AppWorkspace);
             Settings.SetColorSetting(Settings.highlightColorBackground, Color.Orange);
+            Settings.SetColorSetting(Settings.rowBackgroundColor, Color.White);
             RefreshDataGridStyles();
         }
 
@@ -319,6 +322,16 @@ namespace NavigateTo.Plugin.Namespace
         private void numericUpDownFuzzyness_ValueChanged(object sender, EventArgs e)
         {
             Settings.SetIntSetting(Settings.fuzzynessTolerance, (int)numericUpDownFuzzyness.Value);
+        }
+
+        private void buttonRowBackgroud_Click(object sender, EventArgs e)
+        {
+            if (colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Settings.SetColorSetting(Settings.rowBackgroundColor, colorDialog1.Color);
+            }
+
+            RefreshDataGridStyles();
         }
     }
 }

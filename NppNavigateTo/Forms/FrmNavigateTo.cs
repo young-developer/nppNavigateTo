@@ -275,7 +275,12 @@ namespace NavigateTo.Plugin.Namespace
                             int pos = (index < firstViewCount) ? index : index - (firstViewCount);
                             IntPtr bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,
                                 (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS, pos, view);
-                            if (bufferId != IntPtr.Zero)
+
+                            bool isPhantomFile = pos == 0 
+                                                   && ((secondViewCount == 1 && view == 1) || (firstViewCount == 1 && view==0)) 
+                                                   && cStrArray.ManagedStringsUnicode[index].Contains("new ");
+
+                            if (bufferId != IntPtr.Zero && !isPhantomFile)
                             {
                                 FileList.Add(new FileModel(Path.GetFileName(cStrArray.ManagedStringsUnicode[index]),
                                     cStrArray.ManagedStringsUnicode[index], pos, bufferId.ToInt64(), TABS, view));
@@ -291,12 +296,14 @@ namespace NavigateTo.Plugin.Namespace
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 =
                 new System.Windows.Forms.DataGridViewCellStyle();
             dataGridViewCellStyle1.ForeColor = FrmSettings.Settings.GetColorSetting(Settings.gridTextColor);
+            dataGridViewCellStyle1.BackColor = FrmSettings.Settings.GetColorSetting(Settings.rowBackgroundColor);
             dataGridViewCellStyle1.SelectionBackColor =
                 FrmSettings.Settings.GetColorSetting(Settings.gridSelectedRowBackground);
             dataGridViewCellStyle1.SelectionForeColor =
                 FrmSettings.Settings.GetColorSetting(Settings.gridSelectedRowForeground);
             dataGridFileList.DefaultCellStyle = dataGridViewCellStyle1;
             dataGridFileList.BackgroundColor = FrmSettings.Settings.GetColorSetting(Settings.gridBackgroundColor);
+            dataGridFileList.BackColor = FrmSettings.Settings.GetColorSetting(Settings.rowBackgroundColor);
         }
 
         void frmNavigateAll_VisibleChanged(object sender, EventArgs e)

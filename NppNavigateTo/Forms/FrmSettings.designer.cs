@@ -63,6 +63,7 @@
             this.ColumnPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ColumnView = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label2 = new System.Windows.Forms.Label();
+            this.buttonRowBackgroud = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinGridWidth)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -330,6 +331,7 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.buttonRowBackgroud);
             this.groupBox4.Controls.Add(this.gridBackground);
             this.groupBox4.Controls.Add(this.buttonResetStyle);
             this.groupBox4.Controls.Add(this.buttonSelectedRowText);
@@ -347,7 +349,7 @@
             // 
             // gridBackground
             // 
-            this.gridBackground.Location = new System.Drawing.Point(12, 94);
+            this.gridBackground.Location = new System.Drawing.Point(12, 83);
             this.gridBackground.Name = "gridBackground";
             this.gridBackground.Size = new System.Drawing.Size(114, 23);
             this.gridBackground.TabIndex = 8;
@@ -494,6 +496,16 @@
             this.label2.TabIndex = 10;
             this.label2.Text = "Preview:";
             // 
+            // buttonRowBackgroud
+            // 
+            this.buttonRowBackgroud.Location = new System.Drawing.Point(12, 110);
+            this.buttonRowBackgroud.Name = "buttonRowBackgroud";
+            this.buttonRowBackgroud.Size = new System.Drawing.Size(114, 23);
+            this.buttonRowBackgroud.TabIndex = 9;
+            this.buttonRowBackgroud.Text = "Row Background";
+            this.buttonRowBackgroud.UseVisualStyleBackColor = true;
+            this.buttonRowBackgroud.Click += new System.EventHandler(this.buttonRowBackgroud_Click);
+            // 
             // FrmSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -564,5 +576,6 @@
         private System.Windows.Forms.ComboBox comboBoxSortOrder;
         private System.Windows.Forms.CheckBox checkBoxFuzzySearch;
         private System.Windows.Forms.NumericUpDown numericUpDownFuzzyness;
+        private System.Windows.Forms.Button buttonRowBackgroud;
     }
 }

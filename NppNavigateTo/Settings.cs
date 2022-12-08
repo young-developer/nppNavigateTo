@@ -23,6 +23,7 @@ namespace NppPluginNET
         public static string gridSelectedRowForeground = "gridSelectedRowForeground";
         public static string gridTextColor = "gridTextColor";
         public static string gridBackgroundColor = "gridBackgroundColor";
+        public static string rowBackgroundColor = "rowBackgroundColor";
         public static string searchMenuCommands = "searchMenuCommands";
         public static string minTypeCharLimit = "minTypeCharLimit";
         public static string clearOnClose = "clearOnClose";
@@ -143,6 +144,8 @@ namespace NppPluginNET
                 Win32.GetPrivateProfileInt(lpAppName, fuzzySearch, 0, iniFilePath));
             LoadIntSetting(fuzzynessTolerance,
                 Win32.GetPrivateProfileInt(lpAppName, fuzzynessTolerance, 1, iniFilePath));
+            LoadIntSetting(rowBackgroundColor,
+                Win32.GetPrivateProfileInt(lpAppName, rowBackgroundColor, -1, iniFilePath));
         }
 
         public void SetColorSetting(String name, Color color)
