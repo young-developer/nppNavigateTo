@@ -13,6 +13,7 @@ using NavigateTo.Plugin.Namespace;
 using Kbg.NppPluginNET.PluginInfrastructure;
 using NppPluginNET;
 using static Kbg.NppPluginNET.PluginInfrastructure.Win32;
+using System.Diagnostics;
 
 namespace Kbg.NppPluginNET
 {
@@ -58,6 +59,10 @@ namespace Kbg.NppPluginNET
                     case (uint)NppMsg.NPPN_BUFFERACTIVATED:
                         NavigateTo.Plugin.Namespace.Main.frmNavigateTo.ReloadFileList();
                         NavigateTo.Plugin.Namespace.Main.frmNavigateTo.FilterDataGrid("");
+                        // if the user has multiple instances or views open,
+                        // having a static unchanging editor object no longer works.
+                        // this makes the editor track the current instance.
+                        NavigateTo.Plugin.Namespace.Main.editor = new ScintillaGateway(PluginBase.GetCurrentScintilla());
                         break;
                 }
             }
@@ -88,7 +93,7 @@ namespace NavigateTo.Plugin.Namespace
         static Icon tbIcoDM = Properties.Resources.star_white_ico;
         static Icon tbIcon = null;
 
-        static IScintillaGateway editor = new ScintillaGateway(PluginBase.GetCurrentScintilla());
+        public static IScintillaGateway editor = new ScintillaGateway(PluginBase.GetCurrentScintilla());
         static INotepadPPGateway notepad = new NotepadPPGateway();
         public static FrmNavigateTo frmNavigateTo = null;
         public static FrmSettings frmSettings = new FrmSettings(editor, notepad);
@@ -99,11 +104,12 @@ namespace NavigateTo.Plugin.Namespace
 
         static internal void CommandMenuInit()
         {
-            PluginBase.SetCommand(idFormNavigateAll, PluginName, NavigateToDlg,
+            PluginBase.SetCommand(idFormNavigateAll, "&NavigateTo", NavigateToDlg,
                 new ShortcutKey(true, false, false, Keys.Oemcomma));
-            PluginBase.SetCommand(idFormSettings, "Settings", SettingsDlg);
+            PluginBase.SetCommand(idFormSettings, "&Settings", SettingsDlg);
             PluginBase.SetCommand(2, "---", null);
-            PluginBase.SetCommand(3, "Check updates", OpenReleasePage);
+            PluginBase.SetCommand(3, "A&bout", ShowAboutForm);
+            PluginBase.SetCommand(4, "Check &updates", OpenReleasePage);
         }
 
         static internal void SetToolBarIcon()
@@ -199,6 +205,13 @@ namespace NavigateTo.Plugin.Namespace
             {
                 frmSettings.Show();
             }
+        }
+
+        static void ShowAboutForm()
+        {
+            AboutForm aboutForm = new AboutForm();
+            aboutForm.ShowDialog();
+            aboutForm.Focus();
         }
 
         static void OpenReleasePage()
