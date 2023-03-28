@@ -375,22 +375,24 @@ namespace NavigateTo.Plugin.Namespace
                     break;
 
                 case Keys.Tab:
-                {
                     Control next = GetNextControl((Control)sender, !e.Shift);
                     while ((next == null) || (!next.TabStop)) next = GetNextControl(next, !e.Shift);
                     next.Focus();
                     e.Handled = true;
-                }
+                    e.SuppressKeyPress = true;
                     break;
+
                 case Keys.Enter:
                     ExecuteCurrentAction();
                     e.Handled = true;
+                    e.SuppressKeyPress = true;
                     break;
+
                 case Keys.Escape:
-                {
                     HideWindow();
                     editor.GrabFocus();
-                }
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
                     break;
             }
         }
@@ -533,6 +535,11 @@ namespace NavigateTo.Plugin.Namespace
         {
             if (dataGridFileList.Rows.Count == 0 || dataGridFileList.SelectedRows.Count == 0)
             {
+                string fname = searchComboBox.Text.Trim('"');
+                if (File.Exists(fname))
+                {
+                    notepad.OpenFile(fname);
+                }
                 return;
             }
 
@@ -658,12 +665,14 @@ namespace NavigateTo.Plugin.Namespace
                 HideWindow();
                 editor.GrabFocus();
                 e.Handled = true;
+                e.SuppressKeyPress = true;
             }
 
             if (e.KeyData == Keys.Enter)
             {
                 ExecuteCurrentAction();
                 e.Handled = true;
+                e.SuppressKeyPress = true;
             }
         }
 
@@ -678,23 +687,25 @@ namespace NavigateTo.Plugin.Namespace
                 case Keys.Up:
                     e.Handled = NavigateGridUp((Control.ModifierKeys & Keys.Shift) == Keys.Shift);
                     break;
+
                 case Keys.Tab:
-                {
                     Control next = GetNextControl((Control)sender, !e.Shift);
                     while ((next == null) || (!next.TabStop)) next = GetNextControl(next, !e.Shift);
                     next.Focus();
                     e.Handled = true;
-                }
+                    e.SuppressKeyPress = true;
                     break;
+
                 case Keys.Enter:
                     ExecuteCurrentAction();
                     e.Handled = true;
+                    e.SuppressKeyPress = true;
                     break;
+
                 case Keys.Escape:
-                {
+                    e.SuppressKeyPress = true;
                     HideWindow();
                     editor.GrabFocus();
-                }
                     break;
             }
         }
@@ -715,7 +726,6 @@ namespace NavigateTo.Plugin.Namespace
                     searchComboBox.Text += e.KeyChar.ToString();
                     searchComboBox.Select(searchComboBox.Text.Length, 1);
                 }
-
                 e.Handled = true;
             }
             else
