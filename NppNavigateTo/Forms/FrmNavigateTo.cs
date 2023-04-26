@@ -714,7 +714,7 @@ namespace NavigateTo.Plugin.Namespace
         {
             searchComboBox.Focus();
             Char pressedKey = e.KeyChar;
-            if (Char.IsLetter(pressedKey) || Char.IsSeparator(pressedKey) || Char.IsPunctuation(pressedKey))
+            if (Char.IsLetter(pressedKey) || Char.IsSeparator(pressedKey) || Char.IsPunctuation(pressedKey) || Char.IsNumber(pressedKey))
             {
                 if (searchComboBox.Text.Length == 0)
                 {
