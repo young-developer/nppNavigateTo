@@ -159,7 +159,8 @@ namespace NavigateTo.Plugin.Namespace
             // 
             // FrmNavigateTo
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.ClientSize = new System.Drawing.Size(603, 440);
             this.Controls.Add(this.dataGridFileList);
             this.Controls.Add(this.searchComboBox);
