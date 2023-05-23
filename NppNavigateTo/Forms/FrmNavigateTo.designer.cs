@@ -96,8 +96,10 @@ namespace NavigateTo.Plugin.Namespace
             dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dataGridFileList.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
-            this.dataGridFileList.RowHeadersWidth = 25;
+            this.dataGridFileList.RowHeadersWidth = 30;
             this.dataGridFileList.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.dataGridFileList.ColumnHeadersHeight = 25;
+            this.dataGridFileList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridFileList.RowTemplate.ReadOnly = true;
             this.dataGridFileList.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.dataGridFileList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
