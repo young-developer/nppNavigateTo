@@ -99,7 +99,7 @@ namespace NavigateTo.Plugin.Namespace
             this.dataGridFileList.RowHeadersWidth = 30;
             this.dataGridFileList.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dataGridFileList.ColumnHeadersHeight = 25;
-            this.dataGridFileList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            this.dataGridFileList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridFileList.RowTemplate.ReadOnly = true;
             this.dataGridFileList.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.dataGridFileList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
