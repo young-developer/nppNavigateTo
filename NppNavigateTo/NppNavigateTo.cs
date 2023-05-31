@@ -50,11 +50,8 @@ namespace Kbg.NppPluginNET
             switch (notification.Header.Code)
             {
                 case (uint)NppMsg.NPPN_BEFORESHUTDOWN:
-                var frmNavigateTo = NavigateTo.Plugin.Namespace.Main.frmNavigateTo;
-                if (frmNavigateTo == null)
-                    return;
-                frmNavigateTo.isShuttingDown = true;
-                break;
+                    NavigateTo.Plugin.Namespace.Main.isShuttingDown = true;
+                    break;
                 case (uint)NppMsg.NPPN_FILEOPENED:
                 case (uint)NppMsg.NPPN_FILECLOSED:
                 case (uint)NppMsg.NPPN_FILERENAMED:
@@ -66,10 +63,14 @@ namespace Kbg.NppPluginNET
                     // having a static unchanging editor object no longer works.
                     // this makes the editor track the current instance.
                     NavigateTo.Plugin.Namespace.Main.editor = new ScintillaGateway(PluginBase.GetCurrentScintilla());
-                    frmNavigateTo = NavigateTo.Plugin.Namespace.Main.frmNavigateTo;
-                    if (frmNavigateTo == null)
+                    var frmNavigateTo = NavigateTo.Plugin.Namespace.Main.frmNavigateTo;
+                    if (frmNavigateTo == null || NavigateTo.Plugin.Namespace.Main.isShuttingDown)
+                        // a bunch of NPPN_BUFFERACTIVATED events fire when Notepad++ is shutting down
+                        // which will lead to this being called repeatedly
                         return;
                     frmNavigateTo.shouldReloadFilesInDirectory = notification.Header.Code == (uint)NppMsg.NPPN_BUFFERACTIVATED;
+                    if (!frmNavigateTo.Visible)
+                        return;
                     frmNavigateTo.ReloadFileList();
                     frmNavigateTo.FilterDataGrid("");
                     break;
@@ -105,6 +106,7 @@ namespace NavigateTo.Plugin.Namespace
         static INotepadPPGateway notepad = new NotepadPPGateway();
         public static FrmNavigateTo frmNavigateTo = null;
         public static FrmSettings frmSettings = new FrmSettings(editor, notepad);
+        public static bool isShuttingDown = false;
 
         #endregion
 

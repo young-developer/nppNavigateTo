@@ -108,10 +108,6 @@ namespace NavigateTo.Plugin.Namespace
 
         public void FilterDataGrid(string filter)
         {
-            // a bunch of NPPN_BUFFERACTIVATED events fire when Notepad++ is shutting down
-            // which will lead to this being called repeatedly
-            if (isShuttingDown)
-                return;
             if (!string.IsNullOrEmpty(searchComboBox.Text)) filter = searchComboBox.Text;
 
             if (!string.IsNullOrWhiteSpace(filter))
@@ -283,8 +279,6 @@ namespace NavigateTo.Plugin.Namespace
 
         public void ReloadFileList()
         {
-            if (isShuttingDown)
-                return;
             if (FileList == null) FileList = new List<FileModel>();
             FileList.Clear();
             int firstViewCount =
