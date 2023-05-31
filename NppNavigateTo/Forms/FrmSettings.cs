@@ -62,6 +62,7 @@ namespace NavigateTo.Plugin.Namespace
             numericUpDownMinGridWidth.Value = Settings.GetIntSetting(Settings.gridMinWidth);
             checkBoxSearchInFolder.Checked = Settings.GetBoolSetting(Settings.searchInCurrentFolder);
             checkBoxSearchInSubDirs.Checked = Settings.GetBoolSetting(Settings.searchInSubDirs);
+            numUpDownSecsBetweenDirectoryScans.Value = Settings.GetIntSetting(Settings.secondsBetweenDirectoryScans);
             checkBoxSearchMenu.Checked = Settings.GetBoolSetting(Settings.searchMenuCommands);
             checkBoxCleanSearch.Checked = Settings.GetBoolSetting(Settings.clearOnClose);
             checkBoxKeepSelected.Checked = Settings.GetBoolSetting(Settings.selectFirstRowOnFilter);
@@ -332,6 +333,11 @@ namespace NavigateTo.Plugin.Namespace
             }
 
             RefreshDataGridStyles();
+        }
+
+        private void secondsBetweenDirectoryScans_ValueChanged(object sender, EventArgs e)
+        {
+            Settings.SetIntSetting(Settings.secondsBetweenDirectoryScans, (int)numUpDownSecsBetweenDirectoryScans.Value);
         }
     }
 }

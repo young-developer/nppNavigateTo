@@ -33,6 +33,7 @@ namespace NppPluginNET
         public static string sortOrderAfterFilterBy = "sortOrderAfterFilterBy";
         public static string fuzzySearch = "fuzzySearch";
         public static string fuzzynessTolerance = "fuzzynessTolerance";
+        public static string secondsBetweenDirectoryScans = "secondsBetweenDirectoryScans";
 
         static string iniFilePath;
         static string lpAppName = "NavigateTo";
@@ -146,6 +147,7 @@ namespace NppPluginNET
                 Win32.GetPrivateProfileInt(lpAppName, fuzzynessTolerance, 1, iniFilePath));
             LoadIntSetting(rowBackgroundColor,
                 Win32.GetPrivateProfileInt(lpAppName, rowBackgroundColor, -1, iniFilePath));
+            LoadIntSetting(secondsBetweenDirectoryScans, Win32.GetPrivateProfileInt(lpAppName, secondsBetweenDirectoryScans, 5, iniFilePath));
         }
 
         public void SetColorSetting(String name, Color color)

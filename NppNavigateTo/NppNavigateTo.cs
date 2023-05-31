@@ -1,6 +1,7 @@
 ﻿// NPP plugin platform for .Net v0.91.57 by Kasper B. Graversen etc.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Drawing;
@@ -46,25 +47,32 @@ namespace Kbg.NppPluginNET
 
         public static void OnNotification(ScNotification notification)
         {
-            if (NavigateTo.Plugin.Namespace.Main.frmNavigateTo != null)
+            switch (notification.Header.Code)
             {
-                switch (notification.Header.Code)
-                {
-                    case (uint)NppMsg.NPPN_FILEOPENED:
-                    case (uint)NppMsg.NPPN_FILECLOSED:
-                    case (uint)NppMsg.NPPN_FILERENAMED:
-                    case (uint)NppMsg.NPPN_FILELOADFAILED:
-                    case (uint)NppMsg.NPPN_FILEDELETED:
-                    case (uint)NppMsg.NPPN_DOCORDERCHANGED:
-                    case (uint)NppMsg.NPPN_BUFFERACTIVATED:
-                        NavigateTo.Plugin.Namespace.Main.frmNavigateTo.ReloadFileList();
-                        NavigateTo.Plugin.Namespace.Main.frmNavigateTo.FilterDataGrid("");
-                        // if the user has multiple instances or views open,
-                        // having a static unchanging editor object no longer works.
-                        // this makes the editor track the current instance.
-                        NavigateTo.Plugin.Namespace.Main.editor = new ScintillaGateway(PluginBase.GetCurrentScintilla());
-                        break;
-                }
+                case (uint)NppMsg.NPPN_BEFORESHUTDOWN:
+                var frmNavigateTo = NavigateTo.Plugin.Namespace.Main.frmNavigateTo;
+                if (frmNavigateTo == null)
+                    return;
+                frmNavigateTo.isShuttingDown = true;
+                break;
+                case (uint)NppMsg.NPPN_FILEOPENED:
+                case (uint)NppMsg.NPPN_FILECLOSED:
+                case (uint)NppMsg.NPPN_FILERENAMED:
+                case (uint)NppMsg.NPPN_FILELOADFAILED:
+                case (uint)NppMsg.NPPN_FILEDELETED:
+                case (uint)NppMsg.NPPN_DOCORDERCHANGED:
+                case (uint)NppMsg.NPPN_BUFFERACTIVATED:
+                    // if the user has multiple instances or views open,
+                    // having a static unchanging editor object no longer works.
+                    // this makes the editor track the current instance.
+                    NavigateTo.Plugin.Namespace.Main.editor = new ScintillaGateway(PluginBase.GetCurrentScintilla());
+                    frmNavigateTo = NavigateTo.Plugin.Namespace.Main.frmNavigateTo;
+                    if (frmNavigateTo == null)
+                        return;
+                    frmNavigateTo.shouldReloadFilesInDirectory = notification.Header.Code == (uint)NppMsg.NPPN_BUFFERACTIVATED;
+                    frmNavigateTo.ReloadFileList();
+                    frmNavigateTo.FilterDataGrid("");
+                    break;
             }
         }
 
