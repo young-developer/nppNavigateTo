@@ -42,6 +42,14 @@ namespace NavigateTo.Plugin.Namespace
 
         public List<string> SelectedFiles { get; set; }
 
+        public string[] filesInCurrentDirectory { get; set; }
+
+        public bool shouldReloadFilesInDirectory { get; set; }
+
+        public long lastDirectoryReloadTimeTicks { get; set; }
+
+        public bool isShuttingDown { get; set; }
+
         public bool IsFuzzyResult { get; set; }
 
         public FrmNavigateTo(IScintillaGateway editor, INotepadPPGateway notepad)
@@ -49,30 +57,51 @@ namespace NavigateTo.Plugin.Namespace
             this.editor = editor;
             this.notepad = notepad;
             this.SelectedFiles = new List<string>();
+            filesInCurrentDirectory = null;
+            shouldReloadFilesInDirectory = true;
             IsFuzzyResult = false;
             InitializeComponent();
             ReloadFileList();
             this.notepad.ReloadMenuItems();
         }
 
-        void SearchInCurrentDirectory(string s, string searchPattern1)
+        private static bool MatchesAllWordsInFilter(string s, string[] words)
+        {
+            return words.All(word => 
+                s.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0
+            );
+        }
+
+        void SearchInCurrentDirectory(string[] words)
         {
             string currentFilePath = notepad.GetCurrentFileDirectory();
-            if (!String.IsNullOrWhiteSpace(currentFilePath))
+            if (string.IsNullOrWhiteSpace(currentFilePath))
+                return;
+            bool searchInSubDirs = FrmSettings.Settings.GetBoolSetting(Settings.searchInSubDirs);
+            long nextTimeToRefresh = lastDirectoryReloadTimeTicks +
+                10_000_000 * FrmSettings.Settings.GetIntSetting(Settings.secondsBetweenDirectoryScans); // 10 million ticks/sec
+            if (shouldReloadFilesInDirectory ||
+                filesInCurrentDirectory == null ||
+                DateTime.UtcNow.Ticks >= nextTimeToRefresh)
             {
-                bool searchInSubDirs = FrmSettings.Settings.GetBoolSetting(Settings.searchInSubDirs);
-                foreach (var filePath in Directory.GetFiles(currentFilePath, searchPattern1,
-                                 searchInSubDirs ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                             .AsParallel().Where(e =>
-                                 e.IndexOf(s, StringComparison.CurrentCultureIgnoreCase) >= 0 ||
-                                 e.Contains(s))
-                             .ToList())
+                // only load the files in current directory as needed
+                // the correct files to load will depend on the active buffer
+                filesInCurrentDirectory = Directory.GetFiles(
+                    currentFilePath,
+                    "*.*",
+                    searchInSubDirs ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
+                );
+                shouldReloadFilesInDirectory = false;
+                lastDirectoryReloadTimeTicks = DateTime.UtcNow.Ticks;
+            }
+            foreach (var filePath in filesInCurrentDirectory
+                            .AsParallel().Where(fname => MatchesAllWordsInFilter(fname, words))
+                            .ToList())
+            {
+                if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath)))
                 {
-                    if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath)))
-                    {
-                        FilteredFileList.Add(new FileModel(Path.GetFileName(filePath), filePath, -1, -1,
-                            searchInSubDirs ? FOLDER_SUB : FOLDER_TOP, 0));
-                    }
+                    FilteredFileList.Add(new FileModel(Path.GetFileName(filePath), filePath, -1, -1,
+                        searchInSubDirs ? FOLDER_SUB : FOLDER_TOP, 0));
                 }
             }
         }
@@ -117,16 +146,17 @@ namespace NavigateTo.Plugin.Namespace
             }
             else
             {
+                var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
                 searchInTabs(filter);
 
                 if (FrmSettings.Settings.GetBoolSetting(Settings.searchInCurrentFolder))
                 {
-                    SearchInCurrentDirectory(filter, searchPattern);
+                    SearchInCurrentDirectory(words);
                 }
 
                 if (FrmSettings.Settings.GetBoolSetting(Settings.searchMenuCommands))
                 {
-                    FilterMenuCommands(filter);
+                    FilterMenuCommands(words);
                 }
 
                 FilteredFileList.ForEach(file =>
@@ -181,13 +211,11 @@ namespace NavigateTo.Plugin.Namespace
                 if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
                 {
                     FilteredFileList = FileList.AsParallel()
-                        .Where(e => words.All(word =>
-                            e.FileName.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0))
+                        .Where(e => MatchesAllWordsInFilter(e.FileName, words))
                         .ToList();
 
                     FileList.AsParallel()
-                        .Where(e => words.All(word =>
-                            e.FilePath.IndexOf(filter, StringComparison.CurrentCultureIgnoreCase) >= 0))
+                        .Where(e => MatchesAllWordsInFilter(e.FilePath, words))
                         .ToList().ForEach(filePath =>
                             {
                                 if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
@@ -200,10 +228,10 @@ namespace NavigateTo.Plugin.Namespace
                 else
                 {
                     FilteredFileList = FileList.AsParallel()
-                        .Where(e => words.All(word =>
-                            e.FilePath.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0 ||
-                            e.FileName.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0))
-                        .ToList();
+                        .Where(e =>
+                            MatchesAllWordsInFilter(e.FilePath, words) ||
+                            MatchesAllWordsInFilter(e.FileName, words)
+                        ).ToList();
                 }
             }
 
@@ -236,11 +264,11 @@ namespace NavigateTo.Plugin.Namespace
             }
         }
 
-        private void FilterMenuCommands(string filter)
+        private void FilterMenuCommands(string[] filterWords)
         {
-            foreach (var nppMenuCmd in notepad.MainMenuItems.AsParallel().Where(e => e.Value.IndexOf(filter,
-                             StringComparison.CurrentCultureIgnoreCase) >= 0 ||
-                         e.Value.Contains(filter)).ToList())
+            foreach (var nppMenuCmd in notepad.MainMenuItems.AsParallel().Where(e => 
+                MatchesAllWordsInFilter(e.Value, filterWords)
+            ).ToList())
             {
                 FilteredFileList.Add(new FileModel(
                     nppMenuCmd.Key.ToString(),
