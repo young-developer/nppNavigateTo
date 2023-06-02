@@ -585,7 +585,10 @@ namespace NavigateTo.Plugin.Namespace
                     foreach (var word in filterList)
                     {
                         String gridCellValue = e.FormattedValue.ToString();
-                        var startIndexes = gridCellValue.AllIndexesOf(word.Trim(), true);
+                        var trimmedWord = word.Trim();
+                        var startIndexes = gridCellValue.AllIndexesOf(trimmedWord, true);
+                        Size sizeOfWord = TextRenderer.MeasureText(e.Graphics, trimmedWord, e.CellStyle.Font,
+                            e.CellBounds.Size, TextFormatFlags.TextBoxControl);
 
                         foreach (var startIndexInCellValue in startIndexes)
                         {
@@ -596,17 +599,20 @@ namespace NavigateTo.Plugin.Namespace
                                 int indexOfN = gridCellValue.IndexOf("\n", StringComparison.CurrentCultureIgnoreCase);
                                 Rectangle hlRect = new Rectangle();
                                 hlRect.Y = e.CellBounds.Y + 2;
-
-                                String sBeforeSearchword = gridCellValue.Substring(0, startIndexInCellValue);
-                                String sSearchWord = gridCellValue.Substring(startIndexInCellValue, word.Trim().Length);
-                                Size s1 = TextRenderer.MeasureText(e.Graphics, sBeforeSearchword, e.CellStyle.Font,
+                                string sBeforeSearchWord = gridCellValue.Substring(0, startIndexInCellValue);
+                                Size sizeBeforeSearchWord = TextRenderer.MeasureText(e.Graphics, sBeforeSearchWord, e.CellStyle.Font,
                                     e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                                Size s2 = TextRenderer.MeasureText(e.Graphics, sSearchWord, e.CellStyle.Font,
-                                    e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                                if (s1.Width > 5)
+                                if (IsFuzzyResult)
                                 {
-                                    hlRect.X = e.CellBounds.X + s1.Width - 5;
-                                    hlRect.Width = s2.Width - 6;
+                                    // if not fuzzy, the text to be highlighted is just the original word
+                                    string sSearchWord = gridCellValue.Substring(startIndexInCellValue, trimmedWord.Length);
+                                    sizeOfWord = TextRenderer.MeasureText(e.Graphics, sSearchWord, e.CellStyle.Font,
+                                        e.CellBounds.Size, TextFormatFlags.TextBoxControl);
+                                }
+                                if (sizeBeforeSearchWord.Width > 5)
+                                {
+                                    hlRect.X = e.CellBounds.X + sizeBeforeSearchWord.Width - 5;
+                                    hlRect.Width = sizeOfWord.Width - 6;
 
                                     if (indexOfN != -1)
                                     {
@@ -614,17 +620,17 @@ namespace NavigateTo.Plugin.Namespace
                                         {
                                             int cellRow2Index = startIndexInCellValue - indexOfN;
                                             String breakWord = gridCellValue.Substring(indexOfN, cellRow2Index);
-                                            Size s3 = TextRenderer.MeasureText(e.Graphics, breakWord, e.CellStyle.Font,
+                                            Size sizeBreakWord = TextRenderer.MeasureText(e.Graphics, breakWord, e.CellStyle.Font,
                                                 e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                                            hlRect.X = e.CellBounds.X + 2 + s3.Width - 7;
-                                            hlRect.Y = e.CellBounds.Y + s2.Height + 2;
+                                            hlRect.X = e.CellBounds.X + 2 + sizeBreakWord.Width - 7;
+                                            hlRect.Y = e.CellBounds.Y + sizeOfWord.Height + 2;
                                         }
                                     }
                                 }
                                 else
                                 {
                                     hlRect.X = e.CellBounds.X + 2;
-                                    hlRect.Width = s2.Width - 6;
+                                    hlRect.Width = sizeOfWord.Width - 6;
                                 }
 
                                 if (indexOfN == -1)
@@ -637,7 +643,7 @@ namespace NavigateTo.Plugin.Namespace
                                     }
                                 }
 
-                                hlRect.Height = s2.Height;
+                                hlRect.Height = sizeOfWord.Height;
                                 rectangleList.Add(hlRect);
                             }
                         }
