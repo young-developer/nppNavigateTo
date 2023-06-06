@@ -40,3 +40,7 @@ Read license.md
 # Credits
 Plugin based on NPP plugin platform for .Net v0.91.57 (Starting from NppNavigateTo v2)
 https://github.com/kbilsted/NotepadPlusPlusPluginPack.Net.git
+
+# Contributors
+
+molsonkiko - https://github.com/molsonkiko

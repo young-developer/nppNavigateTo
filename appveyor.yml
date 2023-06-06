@@ -1,4 +1,4 @@
-version: 2.4.3.{build}
+version: 2.5.2.{build}
 image: Visual Studio 2019
 
 
