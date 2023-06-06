@@ -29,15 +29,19 @@ namespace Kbg.NppPluginNET.PluginInfrastructure
         bool SwitchToFile(string path, bool isTab);
         Dictionary<NppMenuCmd, string> MainMenuItems { get; set; }
         string ReloadMenuItems();
-
         int getCurrentView();
+        int[] GetNppVersion();
+        Color GetDefaultForegroundColor();
+        Color GetDefaultBackgroundColor();
+        bool IsDarkModeEnabled();
+        IntPtr GetDarkModeColors();
     }
 
     /// <summary>
     /// This class holds helpers for sending messages defined in the Msgs_h.cs file. It is at the moment
     /// incomplete. Please help fill in the blanks.
     /// </summary>
-    public class NotepadPPGateway : INotepadPPGateway
+    public partial class NotepadPPGateway : INotepadPPGateway
     {
         private const int Unused = 0;
 
@@ -205,6 +209,32 @@ namespace Kbg.NppPluginNET.PluginInfrastructure
         {
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETCURRENTLANGTYPE, Unused,
                 (int)language);
+        }
+
+        /// <summary>
+		/// 3-int array: {major, minor, bugfix}<br></br>
+		/// Thus GetNppVersion() would return {8, 5, 0} for version 8.5.0
+		/// and {7, 7, 1} for version 7.7.1
+		/// </summary>
+		/// <returns></returns>
+		public int[] GetNppVersion()
+        {
+            int version = Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNPPVERSION, 0, 0).ToInt32();
+            int major = version >> 16;
+            int minor = Math.DivRem(version & 0xffff, 10, out int bugfix);
+            return new int[] { major, minor, bugfix };
+        }
+
+        public Color GetDefaultForegroundColor()
+        {
+            var rawColor = (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTFOREGROUNDCOLOR, 0, 0);
+            return Color.FromArgb(rawColor & 0xff, (rawColor >> 8) & 0xff, (rawColor >> 16) & 0xff);
+        }
+
+        public Color GetDefaultBackgroundColor()
+        {
+            var rawColor = (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETEDITORDEFAULTBACKGROUNDCOLOR, 0, 0);
+            return Color.FromArgb(rawColor & 0xff, (rawColor >> 8) & 0xff, (rawColor >> 16) & 0xff);
         }
     }
 

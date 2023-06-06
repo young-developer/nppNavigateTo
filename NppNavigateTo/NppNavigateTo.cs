@@ -15,6 +15,7 @@ using Kbg.NppPluginNET.PluginInfrastructure;
 using NppPluginNET;
 using static Kbg.NppPluginNET.PluginInfrastructure.Win32;
 using System.Diagnostics;
+using System.Runtime;
 
 namespace Kbg.NppPluginNET
 {
@@ -74,6 +75,10 @@ namespace Kbg.NppPluginNET
                     frmNavigateTo.ReloadFileList();
                     frmNavigateTo.FilterDataGrid("");
                     break;
+                // the editor color scheme changed, so update form colors
+                case (uint)NppMsg.NPPN_WORDSTYLESUPDATED:
+                    NavigateTo.Plugin.Namespace.Main.RestyleEverything();
+                    return;
             }
         }
 
@@ -103,7 +108,7 @@ namespace NavigateTo.Plugin.Namespace
         static Icon tbIcon = null;
 
         public static IScintillaGateway editor = new ScintillaGateway(PluginBase.GetCurrentScintilla());
-        static INotepadPPGateway notepad = new NotepadPPGateway();
+        public static INotepadPPGateway notepad = new NotepadPPGateway();
         public static FrmNavigateTo frmNavigateTo = null;
         public static FrmSettings frmSettings = new FrmSettings(editor, notepad);
         public static bool isShuttingDown = false;
@@ -230,5 +235,19 @@ namespace NavigateTo.Plugin.Namespace
         }
 
         #endregion
+
+        /// <summary>
+        /// Apply the appropriate styling
+        /// (either generic control styling or Notepad++ styling as the case may be)
+        /// to all forms.
+        /// </summary>
+        public static void RestyleEverything()
+        {
+            bool isDark = notepad.IsDarkModeEnabled();
+            if (frmNavigateTo != null && !frmNavigateTo.IsDisposed)
+                FormStyle.ApplyStyle(frmNavigateTo, true, isDark);
+            if (frmSettings != null && !frmSettings.IsDisposed)
+                FormStyle.ApplyStyle(frmSettings, true, isDark);
+        }
     }
 }

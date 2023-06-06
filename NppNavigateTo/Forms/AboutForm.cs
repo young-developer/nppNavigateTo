@@ -17,6 +17,7 @@ namespace NavigateTo.Plugin.Namespace
         {
             InitializeComponent();
             Title.Text = $"NavigateTo v{AssemblyVersionString()}";
+            FormStyle.ApplyStyle(this, true, Main.notepad.IsDarkModeEnabled());
         }
 
         /// <summary>

@@ -23,6 +23,7 @@ namespace NavigateTo.Plugin.Namespace
             this.notepad = notepad;
             InitializeComponent();
             Settings.LoadConfigValues();
+            FormStyle.ApplyStyle(this, true, notepad.IsDarkModeEnabled());
         }
 
         private void frmSettings_Load(object sender, EventArgs e)

@@ -27,6 +27,15 @@ using Rectangle = System.Drawing.Rectangle;
 
 namespace NavigateTo.Plugin.Namespace
 {
+    public enum DirectorySearchLevel
+    {
+        None,
+        TopDirOnly,
+        TopDirOnlyAndDontAsk,
+        RecurseSubdirs,
+        RecurseSubdirsAndDontAsk
+    }
+
     partial class FrmNavigateTo : Form
     {
         private readonly IScintillaGateway editor;
@@ -52,6 +61,14 @@ namespace NavigateTo.Plugin.Namespace
 
         public bool IsFuzzyResult { get; set; }
 
+        private Dictionary<string, DirectorySearchLevel> subDirSearchAllowances { get; set; }
+
+        /// <summary>
+        /// if there are a lot of files in the current directory, displaying rows for them
+        /// could take a VERY LONG TIME, so warn the user.
+        /// </summary>
+        public int minDirTreeSizeToWarn { get; set; } = 5000;
+
         public FrmNavigateTo(IScintillaGateway editor, INotepadPPGateway notepad)
         {
             this.editor = editor;
@@ -59,10 +76,13 @@ namespace NavigateTo.Plugin.Namespace
             this.SelectedFiles = new List<string>();
             filesInCurrentDirectory = null;
             shouldReloadFilesInDirectory = true;
+            lastDirectoryReloadTimeTicks = 0;
             IsFuzzyResult = false;
+            subDirSearchAllowances = new Dictionary<string, DirectorySearchLevel>();
             InitializeComponent();
             ReloadFileList();
             this.notepad.ReloadMenuItems();
+            FormStyle.ApplyStyle(this, true, notepad.IsDarkModeEnabled());
         }
 
         private static bool MatchesAllWordsInFilter(string s, string[] words)
@@ -72,36 +92,97 @@ namespace NavigateTo.Plugin.Namespace
             );
         }
 
-        void SearchInCurrentDirectory(string[] words)
+        string[] SearchCurrentDirectory(DirectorySearchLevel searchLevel, long nextTimeToRefresh, string currentDirectory)
         {
-            string currentFilePath = notepad.GetCurrentFileDirectory();
-            if (string.IsNullOrWhiteSpace(currentFilePath))
-                return;
-            bool searchInSubDirs = FrmSettings.Settings.GetBoolSetting(Settings.searchInSubDirs);
-            long nextTimeToRefresh = lastDirectoryReloadTimeTicks +
-                10_000_000 * FrmSettings.Settings.GetIntSetting(Settings.secondsBetweenDirectoryScans); // 10 million ticks/sec
+            if (searchLevel == DirectorySearchLevel.None)
+                return new string[0];
             if (shouldReloadFilesInDirectory ||
                 filesInCurrentDirectory == null ||
                 DateTime.UtcNow.Ticks >= nextTimeToRefresh)
             {
                 // only load the files in current directory as needed
-                // the correct files to load will depend on the active buffer
-                filesInCurrentDirectory = Directory.GetFiles(
-                    currentFilePath,
-                    "*.*",
-                    searchInSubDirs ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
-                );
-                shouldReloadFilesInDirectory = false;
-                lastDirectoryReloadTimeTicks = DateTime.UtcNow.Ticks;
+                var searchOption = searchLevel >= DirectorySearchLevel.RecurseSubdirs
+                    ? SearchOption.AllDirectories
+                    : SearchOption.TopDirectoryOnly;
+                int fileCount = 0;
+                string filesInMessage = searchLevel == DirectorySearchLevel.RecurseSubdirs
+                    ? "directory tree"
+                    : "top directory";
+                DirectorySearchLevel newSearchLevel = searchLevel;
+                string[] currentFiles = Directory.EnumerateFiles(currentDirectory, "*.*", searchOption)
+                    .CheckWhen(
+                        x => ++fileCount >= minDirTreeSizeToWarn,
+                        () =>
+                        {
+                            if (searchLevel == DirectorySearchLevel.RecurseSubdirsAndDontAsk ||
+                                searchLevel == DirectorySearchLevel.TopDirOnlyAndDontAsk)
+                                return false;
+                            bool stopIteration = MessageBox.Show($"The {filesInMessage} under this file contains at least {fileCount} files " +
+                                $"so it could cause severe latency when searching. Do you still want to search the {filesInMessage}?",
+                                $"Very large {filesInMessage}",
+                                MessageBoxButtons.YesNo, MessageBoxIcon.Warning
+                            ) == DialogResult.No;
+                            if (stopIteration)
+                            {
+                                // drop down to lower search level
+                                if (searchLevel == DirectorySearchLevel.RecurseSubdirs)
+                                    newSearchLevel = DirectorySearchLevel.TopDirOnly;
+                                else
+                                    newSearchLevel = DirectorySearchLevel.None;
+                            }
+                            else
+                            {
+                                // now that we've checked what the user wants
+                                // and the user has confirmed their preferences, we don't need to ask again.
+                                if (searchLevel == DirectorySearchLevel.RecurseSubdirs)
+                                    newSearchLevel = DirectorySearchLevel.RecurseSubdirsAndDontAsk;
+                                else
+                                    newSearchLevel = DirectorySearchLevel.TopDirOnlyAndDontAsk;
+                            }
+                            return stopIteration;
+                        }
+                    )
+                    .ToArray();
+                subDirSearchAllowances[currentDirectory] = newSearchLevel;
+                if (newSearchLevel < searchLevel)
+                {
+                    // the user didn't want to search as many files as their previous option implied
+                    if (newSearchLevel == DirectorySearchLevel.TopDirOnly)
+                    {
+                        return SearchCurrentDirectory(newSearchLevel, nextTimeToRefresh, currentDirectory);
+                    }
+                    return new string[0];
+                }
+                return currentFiles;
             }
+            return filesInCurrentDirectory ?? new string[0];
+        }
+
+        void FilterCurrentDirectory(Func<string, bool> filterFunc)
+        {
+            string currentDirectory = notepad.GetCurrentFileDirectory();
+            if (string.IsNullOrWhiteSpace(currentDirectory))
+                return;
+            bool userWantsSearchSubdirs = FrmSettings.Settings.GetBoolSetting(Settings.searchInSubDirs);
+            long nextTimeToRefresh = lastDirectoryReloadTimeTicks +
+                10_000_000 * FrmSettings.Settings.GetIntSetting(Settings.secondsBetweenDirectoryScans); // 10 million ticks/sec
+            DirectorySearchLevel searchLevel = subDirSearchAllowances.TryGetValue(currentDirectory, out var oldAllowSearch)
+                ? oldAllowSearch
+                : userWantsSearchSubdirs
+                    ? DirectorySearchLevel.RecurseSubdirs
+                    : DirectorySearchLevel.None;
+            filesInCurrentDirectory = SearchCurrentDirectory(searchLevel, nextTimeToRefresh, currentDirectory);
+            searchLevel = subDirSearchAllowances[currentDirectory];
+            shouldReloadFilesInDirectory = false;
+            lastDirectoryReloadTimeTicks = DateTime.UtcNow.Ticks;
             foreach (var filePath in filesInCurrentDirectory
-                            .AsParallel().Where(fname => MatchesAllWordsInFilter(fname, words))
-                            .ToList())
+                        .AsParallel().Where(filterFunc)
+                        .ToList())
             {
                 if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath)))
                 {
                     FilteredFileList.Add(new FileModel(Path.GetFileName(filePath), filePath, -1, -1,
-                        searchInSubDirs ? FOLDER_SUB : FOLDER_TOP, 0));
+                        searchLevel >= DirectorySearchLevel.RecurseSubdirs ? FOLDER_SUB : FOLDER_TOP, 0));
                 }
             }
         }
@@ -116,12 +197,6 @@ namespace NavigateTo.Plugin.Namespace
             }
 
             IsFuzzyResult = false;
-
-            string searchPattern = "*";
-            if (filter != null && filter.Contains("*"))
-            {
-                searchPattern = filter;
-            }
 
             foreach (DataGridViewRow selectedRow in dataGridFileList.SelectedRows)
             {
@@ -147,16 +222,21 @@ namespace NavigateTo.Plugin.Namespace
             else
             {
                 var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+                Func<string, bool> filterFunc;
+                if (words.Length == 0)
+                    filterFunc = x => true;
+                else
+                    filterFunc = x => MatchesAllWordsInFilter(x, words);
                 searchInTabs(filter);
 
                 if (FrmSettings.Settings.GetBoolSetting(Settings.searchInCurrentFolder))
                 {
-                    SearchInCurrentDirectory(words);
+                    FilterCurrentDirectory(filterFunc);
                 }
 
                 if (FrmSettings.Settings.GetBoolSetting(Settings.searchMenuCommands))
                 {
-                    FilterMenuCommands(words);
+                    FilterMenuCommands(filterFunc);
                 }
 
                 FilteredFileList.ForEach(file =>
@@ -204,35 +284,31 @@ namespace NavigateTo.Plugin.Namespace
 
         private void searchInTabs(string filter)
         {
+            //Normal index of search
             var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
-            if (words.Length > 0)
+            Func<string, bool> filterFunc = x => MatchesAllWordsInFilter(x, words);
+            if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
             {
-                //Normal index of search
-                if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
-                {
-                    FilteredFileList = FileList.AsParallel()
-                        .Where(e => MatchesAllWordsInFilter(e.FileName, words))
-                        .ToList();
+                FilteredFileList = FileList.AsParallel()
+                    .Where(e => filterFunc(e.FileName))
+                    .ToList();
 
-                    FileList.AsParallel()
-                        .Where(e => MatchesAllWordsInFilter(e.FilePath, words))
-                        .ToList().ForEach(filePath =>
+                FileList.AsParallel()
+                    .Where(e => MatchesAllWordsInFilter(e.FilePath, words))
+                    .ToList().ForEach(filePath =>
+                        {
+                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
                             {
-                                if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
-                                {
-                                    FilteredFileList.Add(filePath);
-                                }
+                                FilteredFileList.Add(filePath);
                             }
-                        );
-                }
-                else
-                {
-                    FilteredFileList = FileList.AsParallel()
-                        .Where(e =>
-                            MatchesAllWordsInFilter(e.FilePath, words) ||
-                            MatchesAllWordsInFilter(e.FileName, words)
-                        ).ToList();
-                }
+                        }
+                    );
+            }
+            else
+            {
+                FilteredFileList = FileList.AsParallel()
+                    .Where(e => filterFunc(e.FileName) || filterFunc(e.FilePath))
+                    .ToList();
             }
 
             //run fuzzy search if there are no results from normal search and it is enabled
@@ -264,11 +340,11 @@ namespace NavigateTo.Plugin.Namespace
             }
         }
 
-        private void FilterMenuCommands(string[] filterWords)
+        private void FilterMenuCommands(Func<string, bool> filterFunc)
         {
-            foreach (var nppMenuCmd in notepad.MainMenuItems.AsParallel().Where(e => 
-                MatchesAllWordsInFilter(e.Value, filterWords)
-            ).ToList())
+            foreach (var nppMenuCmd in notepad.MainMenuItems.AsParallel()
+                .Where(e => filterFunc(e.Value))
+                .ToList())
             {
                 FilteredFileList.Add(new FileModel(
                     nppMenuCmd.Key.ToString(),

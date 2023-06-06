@@ -73,6 +73,7 @@
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
     <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />
+    <Compile Include="PluginInfrastructure\DarkMode.cs" />
     <Compile Include="PluginInfrastructure\DllExport\DllExportAttribute.cs">
       <Link>PluginInfrastructure\DllExport\DllExportAttribute.cs</Link>
     </Compile>
@@ -161,6 +162,7 @@
     </Compile>
     <Compile Include="SearchUtils.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="FormStyle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
