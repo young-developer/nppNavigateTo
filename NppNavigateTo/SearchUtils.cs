@@ -117,5 +117,86 @@ namespace NppPluginNET
 
             return indexes.ToArray();
         }
+
+        #region IEnumerable_Extensions
+        /// <summary>
+        /// Iterates through the enumerable itbl,
+        /// checking at each member to see if it is time to perform a more expensive check.<br></br>
+        /// When the predicate checkIf returns true, a check is performed (e.g., a messagebox asks the user if they want to keep going)
+        /// and a new checkIf and check are taken from the list of checks.<br></br>
+        /// If the check returns true, stop iterating through itbl immediately.<br></br>
+        /// If the check returns false, move to the next checkIf and check in the sequence of checks
+        /// and keep iterating through itbl.<br></br>
+        /// EXAMPLE:<br></br>
+        /// * we have a sequence of numbers. There are two (checkIf, check) tuples:<br></br>
+        ///     - checkIf 1 asks if a number is greater than 100. check 1 asks if the sum of a list that's being generated is greater than 100 thousand.<br></br>
+        ///     - checkIf 2 asks if a number is greater than 1000. check 2 asks if the sum of the running list is greater than 1 million.<br></br>
+        /// * we run this on a list that has a total sum over 1 million.
+        /// The first check happens when the sum is 99 thousand, and the counting continues.
+        /// The second check happens when the sum is over 1 million and the counting is halted prematurely.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="itbl"></param>
+        /// <param name="checks"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> CheckWhen<T>(this IEnumerable<T> itbl, IEnumerable<(Func<T, bool> checkIf, Func<bool> check)> checks)
+        {
+            IEnumerator<(Func<T, bool>, Func<bool>)> checkIterator = checks.GetEnumerator();
+            Func<bool> check = null;
+            Func<T, bool> checkIf = null;
+            bool noMoreChecks = false;
+            try
+            {
+                (checkIf, check) = checkIterator.Current;
+            }
+            catch
+            {
+                noMoreChecks = true;
+            }
+            foreach (T t in itbl)
+            {
+                if (!noMoreChecks && checkIf(t))
+                {
+                    if (check())
+                    {
+                        yield break;
+                    }
+                    (checkIf, check) = checkIterator.MoveNext()
+                        ? checkIterator.Current
+                        : (null, null);
+                    if (check == null)
+                        noMoreChecks = true;
+                }
+                yield return t;
+            }
+        }
+
+        /// <summary>
+        /// Iterate through elements t in itbl until checkIf returns true.<br></br>
+        /// When checkIf(t) is true, call check().<br></br>
+        /// If check() returns true, terminate iteration.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="itbl"></param>
+        /// <param name="checkIf">condition that must be true to trigger the first check</param>
+        /// <param name="check">the first check that determines whether to stop iteration</param>
+        /// <returns></returns>
+        public static IEnumerable<T> CheckWhen<T>(this IEnumerable<T> itbl, Func<T, bool> checkIf, Func<bool> check)
+        {
+            bool alreadyChecked = false;
+            foreach (T t in itbl)
+            {
+                if (!alreadyChecked && checkIf(t))
+                {
+                    if (check())
+                    {
+                        yield break;
+                    }
+                    alreadyChecked = true;
+                }
+                yield return t;
+            }
+        }
     }
+    #endregion
 }
