@@ -175,8 +175,11 @@ namespace NavigateTo.Plugin.Namespace
                 : DirectorySearchLevel.TopDirOnly;
             long nextTimeToRefresh = 0;
             if (!shouldReloadFiles &&
-                lastReloadTimes.TryGetValue(currentDirectory, out long nextRefresh))
-                nextTimeToRefresh = nextRefresh;
+                lastReloadTimes.TryGetValue(currentDirectory, out long lastReload))
+            {
+                long delayBetweenReloads = FrmSettings.Settings.GetIntSetting(Settings.secondsBetweenDirectoryScans) * 10_000_000L; // 10 million ticks per second
+                nextTimeToRefresh = lastReload + delayBetweenReloads;
+            }
             DirectorySearchLevel searchLevelOverride = searchLevel;
             if (searchLevelOverrides.TryGetValue(currentDirectory, out var searchOverride))
                 searchLevelOverride = searchOverride;
