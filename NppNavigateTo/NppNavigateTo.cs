@@ -65,13 +65,16 @@ namespace Kbg.NppPluginNET
                     // this makes the editor track the current instance.
                     NavigateTo.Plugin.Namespace.Main.editor = new ScintillaGateway(PluginBase.GetCurrentScintilla());
                     var frmNavigateTo = NavigateTo.Plugin.Namespace.Main.frmNavigateTo;
-                    if (frmNavigateTo == null || NavigateTo.Plugin.Namespace.Main.isShuttingDown)
-                        // a bunch of NPPN_BUFFERACTIVATED events fire when Notepad++ is shutting down
-                        // which will lead to this being called repeatedly
+                    if (frmNavigateTo == null || !frmNavigateTo.Visible
+                        || NavigateTo.Plugin.Namespace.Main.isShuttingDown)
+                        // DO NOT reload file list if:
+                        // 1. Notepad++ is shutting down
+                        // 2. NavigateTo form doesn't exist or is not visible
                         return;
-                    frmNavigateTo.shouldReloadFilesInDirectory = notification.Header.Code == (uint)NppMsg.NPPN_BUFFERACTIVATED;
-                    if (!frmNavigateTo.Visible)
-                        return;
+                    // reload the file list whenever you open a file in a different directory
+                    if (frmNavigateTo.currentDirectory == null ||
+                        frmNavigateTo.currentDirectory != NavigateTo.Plugin.Namespace.Main.notepad.GetCurrentFileDirectory())
+                        frmNavigateTo.shouldReloadFiles = true;
                     frmNavigateTo.ReloadFileList();
                     frmNavigateTo.FilterDataGrid("");
                     break;

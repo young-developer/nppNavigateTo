@@ -51,17 +51,19 @@ namespace NavigateTo.Plugin.Namespace
 
         public List<string> SelectedFiles { get; set; }
 
+        public string currentDirectory { get; set; }
+
         public string[] filesInCurrentDirectory { get; set; }
-
-        public bool shouldReloadFilesInDirectory { get; set; }
-
-        public long lastDirectoryReloadTimeTicks { get; set; }
 
         public bool isShuttingDown { get; set; }
 
         public bool IsFuzzyResult { get; set; }
 
-        private Dictionary<string, DirectorySearchLevel> subDirSearchAllowances { get; set; }
+        public bool shouldReloadFiles { get; set; }
+
+        private Dictionary<string, long> lastReloadTimes { get; set; }
+
+        private Dictionary<string, DirectorySearchLevel> searchLevelOverrides { get; set; }
 
         /// <summary>
         /// if there are a lot of files in the current directory, displaying rows for them
@@ -74,11 +76,12 @@ namespace NavigateTo.Plugin.Namespace
             this.editor = editor;
             this.notepad = notepad;
             this.SelectedFiles = new List<string>();
+            currentDirectory = null;
             filesInCurrentDirectory = null;
-            shouldReloadFilesInDirectory = true;
-            lastDirectoryReloadTimeTicks = 0;
+            shouldReloadFiles = true;
             IsFuzzyResult = false;
-            subDirSearchAllowances = new Dictionary<string, DirectorySearchLevel>();
+            lastReloadTimes = new Dictionary<string, long>();
+            searchLevelOverrides = new Dictionary<string, DirectorySearchLevel>();
             InitializeComponent();
             ReloadFileList();
             this.notepad.ReloadMenuItems();
@@ -94,10 +97,10 @@ namespace NavigateTo.Plugin.Namespace
 
         string[] SearchCurrentDirectory(DirectorySearchLevel searchLevel, long nextTimeToRefresh, string currentDirectory)
         {
-            if (searchLevel == DirectorySearchLevel.None)
+            if (searchLevel < DirectorySearchLevel.TopDirOnly)
                 return new string[0];
-            if (shouldReloadFilesInDirectory ||
-                filesInCurrentDirectory == null ||
+            string[] currentFiles = null;
+            if (filesInCurrentDirectory == null ||
                 DateTime.UtcNow.Ticks >= nextTimeToRefresh)
             {
                 // only load the files in current directory as needed
@@ -109,7 +112,7 @@ namespace NavigateTo.Plugin.Namespace
                     ? "directory tree"
                     : "top directory";
                 DirectorySearchLevel newSearchLevel = searchLevel;
-                string[] currentFiles = Directory.EnumerateFiles(currentDirectory, "*.*", searchOption)
+                currentFiles = Directory.EnumerateFiles(currentDirectory, "*.*", searchOption)
                     .CheckWhen(
                         x => ++fileCount >= minDirTreeSizeToWarn,
                         () =>
@@ -139,11 +142,13 @@ namespace NavigateTo.Plugin.Namespace
                                 else
                                     newSearchLevel = DirectorySearchLevel.TopDirOnlyAndDontAsk;
                             }
+                            searchLevelOverrides[currentDirectory] = newSearchLevel;
                             return stopIteration;
                         }
                     )
                     .ToArray();
-                subDirSearchAllowances[currentDirectory] = newSearchLevel;
+                shouldReloadFiles = false;
+                lastReloadTimes[currentDirectory] = DateTime.UtcNow.Ticks;
                 if (newSearchLevel < searchLevel)
                 {
                     // the user didn't want to search as many files as their previous option implied
@@ -155,6 +160,7 @@ namespace NavigateTo.Plugin.Namespace
                 }
                 return currentFiles;
             }
+            // no refresh, just use old files
             return filesInCurrentDirectory ?? new string[0];
         }
 
@@ -164,17 +170,27 @@ namespace NavigateTo.Plugin.Namespace
             if (string.IsNullOrWhiteSpace(currentDirectory))
                 return;
             bool userWantsSearchSubdirs = FrmSettings.Settings.GetBoolSetting(Settings.searchInSubDirs);
-            long nextTimeToRefresh = lastDirectoryReloadTimeTicks +
-                10_000_000 * FrmSettings.Settings.GetIntSetting(Settings.secondsBetweenDirectoryScans); // 10 million ticks/sec
-            DirectorySearchLevel searchLevel = subDirSearchAllowances.TryGetValue(currentDirectory, out var oldAllowSearch)
-                ? oldAllowSearch
-                : userWantsSearchSubdirs
-                    ? DirectorySearchLevel.RecurseSubdirs
-                    : DirectorySearchLevel.None;
+            DirectorySearchLevel searchLevel = userWantsSearchSubdirs
+                ? DirectorySearchLevel.RecurseSubdirs
+                : DirectorySearchLevel.TopDirOnly;
+            long nextTimeToRefresh = 0;
+            if (!shouldReloadFiles &&
+                lastReloadTimes.TryGetValue(currentDirectory, out long nextRefresh))
+                nextTimeToRefresh = nextRefresh;
+            DirectorySearchLevel searchLevelOverride = searchLevel;
+            if (searchLevelOverrides.TryGetValue(currentDirectory, out var searchOverride))
+                searchLevelOverride = searchOverride;
+            if (searchLevelOverride != searchLevel)
+            {
+                // if the user had previously chosen to do less searching in this directory
+                // than the global settings, follow that local override
+                if (searchLevel == DirectorySearchLevel.RecurseSubdirs
+                    || (searchLevelOverride <= DirectorySearchLevel.TopDirOnlyAndDontAsk))
+                {
+                    searchLevel = searchLevelOverride;
+                }
+            }
             filesInCurrentDirectory = SearchCurrentDirectory(searchLevel, nextTimeToRefresh, currentDirectory);
-            searchLevel = subDirSearchAllowances[currentDirectory];
-            shouldReloadFilesInDirectory = false;
-            lastDirectoryReloadTimeTicks = DateTime.UtcNow.Ticks;
             foreach (var filePath in filesInCurrentDirectory
                         .AsParallel().Where(filterFunc)
                         .ToList())
@@ -221,7 +237,7 @@ namespace NavigateTo.Plugin.Namespace
             }
             else
             {
-                var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+                var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToHashSet().ToArray();
                 Func<string, bool> filterFunc;
                 if (words.Length == 0)
                     filterFunc = x => true;
@@ -285,7 +301,7 @@ namespace NavigateTo.Plugin.Namespace
         private void searchInTabs(string filter)
         {
             //Normal index of search
-            var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToHashSet().ToArray();
             Func<string, bool> filterFunc = x => MatchesAllWordsInFilter(x, words);
             if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
             {

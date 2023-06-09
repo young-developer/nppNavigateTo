@@ -99,12 +99,22 @@ namespace NavigateTo.Plugin.Namespace
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
+            if (Main.frmNavigateTo != null)
+                Main.frmNavigateTo.shouldReloadFiles = true;
+            bool isChecked = checkBoxSearchInFolder.Checked;
+            if (!isChecked)
+                checkBoxSearchInSubDirs.Checked = false;
             Settings.SetBoolSetting(Settings.searchInCurrentFolder, checkBoxSearchInFolder.Checked);
         }
 
         private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
         {
-            Settings.SetBoolSetting(Settings.searchInSubDirs, checkBoxSearchInSubDirs.Checked);
+            if (Main.frmNavigateTo != null)
+                Main.frmNavigateTo.shouldReloadFiles = true;
+            bool isChecked = checkBoxSearchInSubDirs.Checked;
+            if (isChecked)
+                checkBoxSearchInFolder.Checked = true;
+            Settings.SetBoolSetting(Settings.searchInSubDirs, isChecked);
         }
 
         private void buttonHighlightColor_Click(object sender, EventArgs e)
