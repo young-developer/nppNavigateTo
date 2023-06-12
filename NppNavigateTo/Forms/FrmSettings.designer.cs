@@ -595,7 +595,6 @@
             this.Name = "FrmSettings";
             this.ShowIcon = false;
             this.Text = "Navigate To - Settings";
-            this.TopMost = true;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmSettings_FormClosing);
             this.Load += new System.EventHandler(this.frmSettings_Load);
             this.Shown += new System.EventHandler(this.frmSettings_Shown);

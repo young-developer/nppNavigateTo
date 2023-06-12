@@ -89,9 +89,12 @@ namespace NavigateTo.Plugin.Namespace
                         // when you first open the form in dark mode.
                         // The background is untouched by the current style until you change to another style and then back,
                         // at which point the background remembers what color it's supposed to be. Very odd.
+                        dgv.EnableHeadersVisualStyles = false;
                         dgv.BackgroundColor = InBetween;
                         dgv.ForeColor = NppDarkMode.BGRToColor(textTheme);
                         dgv.GridColor = NppDarkMode.BGRToColor(theme.HotBackground);
+                        dgv.ColumnHeadersDefaultCellStyle.ForeColor = NppDarkMode.BGRToColor(textTheme);
+                        dgv.ColumnHeadersDefaultCellStyle.BackColor = NppDarkMode.BGRToColor(theme.PureBackground);
                         dgv.RowHeadersDefaultCellStyle.ForeColor = NppDarkMode.BGRToColor(textTheme);
                         dgv.RowHeadersDefaultCellStyle.BackColor = NppDarkMode.BGRToColor(theme.PureBackground);
                         dgv.RowsDefaultCellStyle.ForeColor = NppDarkMode.BGRToColor(textTheme);
@@ -135,6 +138,7 @@ namespace NavigateTo.Plugin.Namespace
                     }
                     else if (child is DataGridView dgv)
                     {
+                        dgv.EnableHeadersVisualStyles = true;
                         dgv.BackgroundColor = SystemColors.ControlDark;
                         dgv.ForeColor = SystemColors.ControlText;
                         dgv.GridColor = SystemColors.ControlDarkDark;
@@ -166,9 +170,12 @@ namespace NavigateTo.Plugin.Namespace
                 }
                 else if (child is DataGridView dgv)
                 {
+                    dgv.EnableHeadersVisualStyles = false;
                     dgv.BackgroundColor = InBetween;
                     dgv.ForeColor = foreColor;
                     dgv.GridColor = foreColor;
+                    dgv.ColumnHeadersDefaultCellStyle.ForeColor = foreColor;
+                    dgv.ColumnHeadersDefaultCellStyle.BackColor = backColor;
                     dgv.RowHeadersDefaultCellStyle.ForeColor = foreColor;
                     dgv.RowHeadersDefaultCellStyle.BackColor = backColor;
                     dgv.RowsDefaultCellStyle.ForeColor = foreColor;
