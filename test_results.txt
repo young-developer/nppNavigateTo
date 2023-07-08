@@ -1,0 +1,6 @@
+Test results for NavigateTo v2.5.4
+=========================
+Testing Glob syntax
+=========================
+
+Ran 90 tests and failed 0

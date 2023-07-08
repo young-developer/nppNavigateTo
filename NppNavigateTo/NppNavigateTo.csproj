@@ -72,6 +72,7 @@
     <Compile Include="Forms\AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Glob.cs" />
     <Compile Include="PluginInfrastructure\ClikeStringArray.cs" />
     <Compile Include="PluginInfrastructure\DarkMode.cs" />
     <Compile Include="PluginInfrastructure\DllExport\DllExportAttribute.cs">
@@ -163,6 +164,9 @@
     <Compile Include="SearchUtils.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="FormStyle.cs" />
+    <Compile Include="Tests\GlobTester.cs" />
+    <Compile Include="MiscUtils.cs" />
+    <Compile Include="Tests\TestRunner.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
