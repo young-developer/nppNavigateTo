@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using NppPluginNET;
 
 namespace NavigateTo.Plugin.Namespace
 {
@@ -16,7 +17,7 @@ namespace NavigateTo.Plugin.Namespace
         public AboutForm()
         {
             InitializeComponent();
-            Title.Text = $"NavigateTo v{AssemblyVersionString()}";
+            Title.Text = $"NavigateTo v{MiscUtils.AssemblyVersionString()}";
             FormStyle.ApplyStyle(this, true, Main.notepad.IsDarkModeEnabled());
         }
 
@@ -42,14 +43,6 @@ namespace NavigateTo.Plugin.Namespace
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
-        }
-
-        public static string AssemblyVersionString()
-        {
-            string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            while (version.EndsWith(".0"))
-                version = version.Substring(0, version.Length - 2);
-            return version;
         }
 
         /// <summary>

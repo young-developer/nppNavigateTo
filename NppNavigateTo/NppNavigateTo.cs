@@ -11,6 +11,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using NavigateTo.Plugin.Namespace;
+using NavigateTo.Tests;
 using Kbg.NppPluginNET.PluginInfrastructure;
 using NppPluginNET;
 using static Kbg.NppPluginNET.PluginInfrastructure.Win32;
@@ -128,6 +129,7 @@ namespace NavigateTo.Plugin.Namespace
             PluginBase.SetCommand(2, "---", null);
             PluginBase.SetCommand(3, "A&bout", ShowAboutForm);
             PluginBase.SetCommand(4, "Check &updates", OpenReleasePage);
+            PluginBase.SetCommand(5, "Run &tests", TestRunner.RunAll);
         }
 
         static internal void SetToolBarIcon()

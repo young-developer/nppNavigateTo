@@ -6,9 +6,11 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Forms;
@@ -55,8 +57,6 @@ namespace NavigateTo.Plugin.Namespace
 
         public string[] filesInCurrentDirectory { get; set; }
 
-        public bool isShuttingDown { get; set; }
-
         public bool IsFuzzyResult { get; set; }
 
         public bool shouldReloadFiles { get; set; }
@@ -64,6 +64,18 @@ namespace NavigateTo.Plugin.Namespace
         private Dictionary<string, long> lastReloadTimes { get; set; }
 
         private Dictionary<string, DirectorySearchLevel> searchLevelOverrides { get; set; }
+
+        private Glob glob { get; set; }
+
+        /// <summary>
+        /// function used to filter filenames when not using fuzzy matchin
+        /// </summary>
+        private Func<string, bool> nonFuzzyFilterFunc;
+
+        ///// <summary>
+        ///// does filtering of files in the background
+        ///// </summary>
+        //private BackgroundWorker backgroundWorker;
 
         /// <summary>
         /// if there are a lot of files in the current directory, displaying rows for them
@@ -82,17 +94,223 @@ namespace NavigateTo.Plugin.Namespace
             IsFuzzyResult = false;
             lastReloadTimes = new Dictionary<string, long>();
             searchLevelOverrides = new Dictionary<string, DirectorySearchLevel>();
+            //backgroundWorker = new BackgroundWorker();
+            //backgroundWorker.WorkerSupportsCancellation = true;
+            //backgroundWorker.DoWork += BackgroundWorker_DoWork;
+            glob = new Glob();
+            nonFuzzyFilterFunc = null;
             InitializeComponent();
             ReloadFileList();
             this.notepad.ReloadMenuItems();
             FormStyle.ApplyStyle(this, true, notepad.IsDarkModeEnabled());
         }
 
-        private static bool MatchesAllWordsInFilter(string s, string[] words)
+        /// <summary>
+        /// reload the list of files that are currently open in Notepad++
+        /// </summary>
+        public void ReloadFileList()
         {
-            return words.All(word => 
-                s.IndexOf(word, StringComparison.CurrentCultureIgnoreCase) >= 0
-            );
+            if (FileList == null) FileList = new List<FileModel>();
+            FileList.Clear();
+            int firstViewCount =
+                (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 1);
+            var viewCount = firstViewCount;
+
+            int secondViewCount =
+                (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 2);
+            viewCount += secondViewCount;
+
+            if (viewCount > 0)
+            {
+                using (ClikeStringArray cStrArray =
+                       new ClikeStringArray(viewCount, Win32.MAX_PATH))
+                {
+                    if (Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETOPENFILENAMES,
+                            cStrArray.NativePointer, viewCount) != IntPtr.Zero)
+                    {
+                        for (int index = 0; index < viewCount; index++)
+                        {
+                            int view = (index >= firstViewCount) ? 1 : 0;
+                            int pos = (index < firstViewCount) ? index : index - (firstViewCount);
+                            IntPtr bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,
+                                (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS, pos, view);
+
+                            bool isPhantomFile = pos == 0
+                                                   && ((secondViewCount == 1 && view == 1) || (firstViewCount == 1 && view == 0))
+                                                   && cStrArray.ManagedStringsUnicode[index].Contains("new ");
+
+                            if (bufferId != IntPtr.Zero && !isPhantomFile)
+                            {
+                                FileList.Add(new FileModel(Path.GetFileName(cStrArray.ManagedStringsUnicode[index]),
+                                    cStrArray.ManagedStringsUnicode[index], pos, bufferId.ToInt64(), TABS, view));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// use the text of searchComboBox to filter all the things to be searched, which may include:<br></br>
+        /// * all files open in NPP<br></br>
+        /// * the directory of the currently open file<br></br>
+        /// * menu commands
+        /// </summary>
+        /// <param name="filter"></param>
+        public void FilterDataGrid(string filter)
+        {
+            if (!string.IsNullOrEmpty(searchComboBox.Text))
+                filter = searchComboBox.Text;
+            bool emptyFilter = string.IsNullOrWhiteSpace(filter);
+            if (!emptyFilter)
+            {
+                glob.Reset();
+                nonFuzzyFilterFunc = glob.Parse(filter);
+                emptyFilter = glob.globs.Count == 0; // can happen if the user is typing a glob that currently is an invalid regex
+            }
+
+            IsFuzzyResult = false;
+
+            foreach (DataGridViewRow selectedRow in dataGridFileList.SelectedRows)
+            {
+                SelectedFiles.Add(selectedRow.Cells[1].Value.ToString());
+            }
+
+            dataGridFileList.Rows.Clear();
+            if (emptyFilter)
+            {
+                FileList.ForEach(file =>
+                {
+                    DataGridViewRow newRow = new DataGridViewRow();
+
+                    newRow.CreateCells(dataGridFileList);
+
+                    newRow.Cells[0].Value = file.FileName;
+                    newRow.Cells[1].Value = file.FilePath;
+                    newRow.Cells[2].Value = file.Source;
+
+                    dataGridFileList.Rows.Add(newRow);
+                });
+            }
+            else
+            {
+                //backgroundWorker.CancelAsync(); // cancel the previous filtering
+                //backgroundWorker.RunWorkerAsync(); // filter the file list (run BackgroundWorker_DoWork)
+                FilterEverything(filter);
+
+                FilteredFileList.ForEach(file =>
+                {
+                    DataGridViewRow newRow = new DataGridViewRow();
+
+                    newRow.CreateCells(dataGridFileList);
+
+                    newRow.Cells[0].Value = file.FileName;
+                    newRow.Cells[1].Value = file.FilePath;
+                    newRow.Cells[2].Value = file.Source;
+
+                    dataGridFileList.Rows.Add(newRow);
+                });
+            }
+
+            //auto sort
+            if (FrmSettings.Settings.GetIntSetting(Settings.sortAfterFilterBy) != -1)
+            {
+                dataGridFileList.Sort(
+                    dataGridFileList.Columns[FrmSettings.Settings.GetIntSetting(Settings.sortAfterFilterBy)],
+                    FrmSettings.Settings.GetIntSetting(Settings.sortOrderAfterFilterBy) == 0
+                        ? ListSortDirection.Ascending
+                        : ListSortDirection.Descending);
+            }
+
+            //restore selection
+            if (SelectedFiles.Count != 0)
+            {
+                foreach (DataGridViewRow row in dataGridFileList.Rows)
+                {
+                    row.Selected = SelectedFiles.Contains(row.Cells[1].Value);
+                }
+            }
+
+            if (FilteredFileList != null && FilteredFileList.Count != 0 && dataGridFileList.SelectedRows.Count == 0)
+            {
+                SelectFirstRow();
+            }
+
+            SelectedFiles.Clear();
+
+            dataGridFileList.TopLeftHeaderCell.Value = dataGridFileList.Rows.Count.ToString();
+        }
+
+        /// <summary>
+        /// filter open files, current directory (if setting on), and menu commands (if setting on)
+        /// </summary>
+        public void FilterEverything(string filter)//BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            searchInTabs(filter, nonFuzzyFilterFunc/*, e*/);
+
+            if (FrmSettings.Settings.GetBoolSetting(Settings.searchInCurrentFolder))
+            {
+                FilterCurrentDirectory(nonFuzzyFilterFunc/*, e*/);
+            }
+
+            if (FrmSettings.Settings.GetBoolSetting(Settings.searchMenuCommands))
+            {
+                FilterMenuCommands(nonFuzzyFilterFunc/*, e*/);
+            }
+        }
+
+        private void searchInTabs(string filter, Func<string, bool> nonFuzzyFilterFunc/*, DoWorkEventArgs e*/)
+        {
+            //Normal index of search
+            if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
+            {
+                FilteredFileList = FileList.AsParallel()
+                    .Where(fm => nonFuzzyFilterFunc(fm.FileName))
+                    .ToList();
+
+                FileList.AsParallel()
+                    .Where(fm => nonFuzzyFilterFunc(fm.FilePath))
+                    .ToList().ForEach(filePath =>
+                        {
+                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
+                            {
+                                FilteredFileList.Add(filePath);
+                            }
+                        }
+                    );
+            }
+            else
+            {
+                FilteredFileList = FileList.AsParallel()
+                    .Where(fm => nonFuzzyFilterFunc(fm.FileName) || nonFuzzyFilterFunc(fm.FilePath))
+                    .ToList();
+            }
+
+            //run fuzzy search if there are no results from normal search and it is enabled
+            bool fuzzy = FrmSettings.Settings.GetBoolSetting(Settings.fuzzySearch);
+            if (FilteredFileList != null && FilteredFileList.Count == 0 && fuzzy)
+            {
+                int fuzzynessTolerance = FrmSettings.Settings.GetIntSetting(Settings.fuzzynessTolerance);
+                if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
+                {
+                    FilteredFileList = SearchUtils.FuzzySearchFileName(filter, FileList, fuzzynessTolerance);
+
+                    SearchUtils.FuzzySearchFilePath(filter, FileList, fuzzynessTolerance)
+                        .ForEach(filePath =>
+                        {
+                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
+                            {
+                                FilteredFileList.Add(filePath);
+                            }
+                        });
+                }
+                else
+                {
+                    FilteredFileList = SearchUtils.FuzzySearch(filter, FileList, fuzzynessTolerance);
+                }
+
+                IsFuzzyResult = true;
+            }
         }
 
         string[] SearchCurrentDirectory(DirectorySearchLevel searchLevel, long nextTimeToRefresh, string currentDirectory)
@@ -206,159 +424,6 @@ namespace NavigateTo.Plugin.Namespace
             }
         }
 
-        public void FilterDataGrid(string filter)
-        {
-            if (!string.IsNullOrEmpty(searchComboBox.Text)) filter = searchComboBox.Text;
-
-            if (!string.IsNullOrWhiteSpace(filter))
-            {
-                filter = filter.Trim();
-            }
-
-            IsFuzzyResult = false;
-
-            foreach (DataGridViewRow selectedRow in dataGridFileList.SelectedRows)
-            {
-                SelectedFiles.Add(selectedRow.Cells[1].Value.ToString());
-            }
-
-            dataGridFileList.Rows.Clear();
-            if (IsNullOrWhiteSpace(filter))
-            {
-                FileList.ForEach(file =>
-                {
-                    DataGridViewRow newRow = new DataGridViewRow();
-
-                    newRow.CreateCells(dataGridFileList);
-
-                    newRow.Cells[0].Value = file.FileName;
-                    newRow.Cells[1].Value = file.FilePath;
-                    newRow.Cells[2].Value = file.Source;
-
-                    dataGridFileList.Rows.Add(newRow);
-                });
-            }
-            else
-            {
-                var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToHashSet().ToArray();
-                Func<string, bool> filterFunc;
-                if (words.Length == 0)
-                    filterFunc = x => true;
-                else
-                    filterFunc = x => MatchesAllWordsInFilter(x, words);
-                searchInTabs(filter);
-
-                if (FrmSettings.Settings.GetBoolSetting(Settings.searchInCurrentFolder))
-                {
-                    FilterCurrentDirectory(filterFunc);
-                }
-
-                if (FrmSettings.Settings.GetBoolSetting(Settings.searchMenuCommands))
-                {
-                    FilterMenuCommands(filterFunc);
-                }
-
-                FilteredFileList.ForEach(file =>
-                {
-                    DataGridViewRow newRow = new DataGridViewRow();
-
-                    newRow.CreateCells(dataGridFileList);
-
-                    newRow.Cells[0].Value = file.FileName;
-                    newRow.Cells[1].Value = file.FilePath;
-                    newRow.Cells[2].Value = file.Source;
-
-                    dataGridFileList.Rows.Add(newRow);
-                });
-            }
-
-            //auto sort
-            if (FrmSettings.Settings.GetIntSetting(Settings.sortAfterFilterBy) != -1)
-            {
-                dataGridFileList.Sort(
-                    dataGridFileList.Columns[FrmSettings.Settings.GetIntSetting(Settings.sortAfterFilterBy)],
-                    FrmSettings.Settings.GetIntSetting(Settings.sortOrderAfterFilterBy) == 0
-                        ? ListSortDirection.Ascending
-                        : ListSortDirection.Descending);
-            }
-
-            //restore selection
-            if (SelectedFiles.Count != 0)
-            {
-                foreach (DataGridViewRow row in dataGridFileList.Rows)
-                {
-                    row.Selected = SelectedFiles.Contains(row.Cells[1].Value);
-                }
-            }
-
-            if (FilteredFileList != null && FilteredFileList.Count != 0 && dataGridFileList.SelectedRows.Count == 0)
-            {
-                SelectFirstRow();
-            }
-
-            SelectedFiles.Clear();
-
-            dataGridFileList.TopLeftHeaderCell.Value = dataGridFileList.Rows.Count.ToString();
-        }
-
-        private void searchInTabs(string filter)
-        {
-            //Normal index of search
-            var words = filter.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).ToHashSet().ToArray();
-            Func<string, bool> filterFunc = x => MatchesAllWordsInFilter(x, words);
-            if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
-            {
-                FilteredFileList = FileList.AsParallel()
-                    .Where(e => filterFunc(e.FileName))
-                    .ToList();
-
-                FileList.AsParallel()
-                    .Where(e => MatchesAllWordsInFilter(e.FilePath, words))
-                    .ToList().ForEach(filePath =>
-                        {
-                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
-                            {
-                                FilteredFileList.Add(filePath);
-                            }
-                        }
-                    );
-            }
-            else
-            {
-                FilteredFileList = FileList.AsParallel()
-                    .Where(e => filterFunc(e.FileName) || filterFunc(e.FilePath))
-                    .ToList();
-            }
-
-            //run fuzzy search if there are no results from normal search and it is enabled
-            if (FilteredFileList != null && FilteredFileList.Count == 0 &&
-                FrmSettings.Settings.GetBoolSetting(Settings.fuzzySearch))
-            {
-                if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
-                {
-                    FilteredFileList = SearchUtils.FuzzySearchFileName(filter, FileList,
-                        FrmSettings.Settings.GetIntSetting(Settings.fuzzynessTolerance));
-
-                    SearchUtils.FuzzySearchFilePath(filter, FileList,
-                        FrmSettings.Settings.GetIntSetting(Settings.fuzzynessTolerance)).ForEach(filePath =>
-                        {
-                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
-                            {
-                                FilteredFileList.Add(filePath);
-                            }
-                        }
-                    );
-                }
-                else
-                {
-                    FilteredFileList = SearchUtils.FuzzySearch(filter, FileList,
-                        FrmSettings.Settings.GetIntSetting(Settings.fuzzynessTolerance));
-                }
-
-                IsFuzzyResult = true;
-            }
-        }
-
         private void FilterMenuCommands(Func<string, bool> filterFunc)
         {
             foreach (var nppMenuCmd in notepad.MainMenuItems.AsParallel()
@@ -369,48 +434,6 @@ namespace NavigateTo.Plugin.Namespace
                     nppMenuCmd.Key.ToString(),
                     nppMenuCmd.Value, nppMenuCmd.GetHashCode(), (uint)nppMenuCmd.Key,
                     CMD, 0));
-            }
-        }
-
-        public void ReloadFileList()
-        {
-            if (FileList == null) FileList = new List<FileModel>();
-            FileList.Clear();
-            int firstViewCount =
-                (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 1);
-            var viewCount = firstViewCount;
-
-            int secondViewCount =
-                (int)Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETNBOPENFILES, 0, 2);
-            viewCount += secondViewCount;
-
-            if (viewCount > 0)
-            {
-                using (ClikeStringArray cStrArray =
-                       new ClikeStringArray(viewCount, Win32.MAX_PATH))
-                {
-                    if (Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETOPENFILENAMES,
-                            cStrArray.NativePointer, viewCount) != IntPtr.Zero)
-                    {
-                        for (int index = 0; index < viewCount; index++)
-                        {
-                            int view = (index >= firstViewCount) ? 1 : 0;
-                            int pos = (index < firstViewCount) ? index : index - (firstViewCount);
-                            IntPtr bufferId = Win32.SendMessage(PluginBase.nppData._nppHandle,
-                                (uint)NppMsg.NPPM_GETBUFFERIDFROMPOS, pos, view);
-
-                            bool isPhantomFile = pos == 0 
-                                                   && ((secondViewCount == 1 && view == 1) || (firstViewCount == 1 && view==0)) 
-                                                   && cStrArray.ManagedStringsUnicode[index].Contains("new ");
-
-                            if (bufferId != IntPtr.Zero && !isPhantomFile)
-                            {
-                                FileList.Add(new FileModel(Path.GetFileName(cStrArray.ManagedStringsUnicode[index]),
-                                    cStrArray.ManagedStringsUnicode[index], pos, bufferId.ToInt64(), TABS, view));
-                            }
-                        }
-                    }
-                }
             }
         }
 
@@ -490,11 +513,11 @@ namespace NavigateTo.Plugin.Namespace
             switch (e.KeyCode)
             {
                 case Keys.Down:
-                    e.Handled = NavigateGridDown((Control.ModifierKeys & Keys.Shift) == Keys.Shift);
+                    e.Handled = NavigateGridDown(e.Shift);
                     break;
 
                 case Keys.Up:
-                    e.Handled = NavigateGridUp((Control.ModifierKeys & Keys.Shift) == Keys.Shift);
+                    e.Handled = NavigateGridUp(e.Shift);
                     break;
 
                 case Keys.Tab:
@@ -593,15 +616,14 @@ namespace NavigateTo.Plugin.Namespace
 
         private void SearchComboBoxTextChanged(object sender, EventArgs e)
         {
-            if (searchComboBox.Text.Length != 0 &&
-                searchComboBox.Text.Length > FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit))
+            int textLength = searchComboBox.Text.Length;
+            int minLength = FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit);
+
+            if (textLength == 0)
+                ReloadFileList();
+            if (textLength > minLength)
             {
                 FilterDataGrid(searchComboBox.Text);
-            }
-            else if (searchComboBox.Text.Length == 0)
-            {
-                ReloadFileList();
-                FilterDataGrid("");
             }
 
             if (FrmSettings.Settings.GetBoolSetting(Settings.selectFirstRowOnFilter))
@@ -665,8 +687,8 @@ namespace NavigateTo.Plugin.Namespace
                 }
                 return;
             }
-
-            if (dataGridFileList.SelectedRows[0].Cells[2].Value.Equals(CMD))
+            object rowSource = dataGridFileList.SelectedRows[0].Cells[2].Value;
+            if (rowSource.Equals(CMD))
             {
                 NppMenuCmd cmd;
                 NppMenuCmd.TryParse(dataGridFileList.SelectedRows[0].Cells[0].Value.ToString(), true, out cmd);
@@ -674,8 +696,7 @@ namespace NavigateTo.Plugin.Namespace
             }
             else
             {
-                SwitchToFile(dataGridFileList.SelectedRows[0].Cells[1].Value.ToString(),
-                    dataGridFileList.SelectedRows[0].Cells[2].Value.Equals(TABS));
+                SwitchToFile(dataGridFileList.SelectedRows[0].Cells[1].Value.ToString(), rowSource.Equals(TABS));
             }
         }
 
@@ -699,8 +720,16 @@ namespace NavigateTo.Plugin.Namespace
             if (e.RowIndex > -1 && e.ColumnIndex > -1)
             {
                 String search = searchComboBox.Text.Trim();
-                var filterList = IsFuzzyResult ? search.ToCharArray().Select(c => c.ToString()) : search.Split(' ');
-                filterList = filterList.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+                List<string> filterList;
+                if (IsFuzzyResult)
+                    filterList = search.ToCharArray().Select(c => c.ToString()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                else
+                {
+                    var words = Regex.Matches(search, "[\\.\\w]+"); // don't paint based on * and other metacharacters
+                    filterList = new List<string>();
+                    foreach (Match match in words)
+                        filterList.Add(match.Value);
+                }
                 List<Rectangle> rectangleList = new List<Rectangle>();
 
                 if (!String.IsNullOrWhiteSpace(search))
