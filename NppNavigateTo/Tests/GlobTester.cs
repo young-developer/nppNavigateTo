@@ -62,22 +62,22 @@ namespace NavigateTo.Tests
                     ("baz.txt", true),
                     ("foo.baz", true),
                 }),
-                ("foo**[!c-p]uack*.{tx?,cpp} !fgh | <bar baz", new[]
+                ("foo**[!c-p]u\\u0434ck*.{tx?,cpp} !fgh | <ba\\x72 baz", new[]
                 {
-                    ("foo\\boo\\quacked.txt", true),
-                    ("foo\\boo\\quacked.cpp", true),
-                    ("foozuack.txb", true),
+                    ("foo\\boo\\quдcked.txt", true),
+                    ("foo\\boo\\quдcked.cpp", true),
+                    ("foozuдck.txb", true),
                     ("bar.baz", true),
                     ("baz.bar", true),
                     ("fgh\\bar.baz", true),
-                    ("foo\\boo\\duacked.txt", false),
-                    ("foo\\boo\\uacked.txt", false),
-                    ("foozuack.xml", false),
+                    ("foo\\boo\\duдcked.txt", false),
+                    ("foo\\boo\\uдcked.txt", false),
+                    ("foozuдck.xml", false),
                     ("foo.baz", false),
-                    ("foo\\boo\\quacked.txto", false),
-                    ("foo\\fgh\\quacked.txt", false),
-                    ("foo\\fgh\\quacked.cpp", false),
-                    ("foo\\boo\\quacked\\bad.txt", false),
+                    ("foo\\boo\\quдcked.txto", false),
+                    ("foo\\fgh\\quдcked.txt", false),
+                    ("foo\\fgh\\quдcked.cpp", false),
+                    ("foo\\boo\\quдcked\\bad.txt", false),
                 }),
                 ("foo[ !]*.*", new[]
                 {
