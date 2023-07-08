@@ -3,4 +3,4 @@ Test results for NavigateTo v2.6
 Testing Glob syntax
 =========================
 
-Ran 90 tests and failed 0
+Ran 94 tests and failed 0

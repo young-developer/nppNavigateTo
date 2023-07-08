@@ -160,6 +160,13 @@ namespace NavigateTo.Tests
                     ("aд.txt", false),
                     ("д.md", false),
                 }),
+                ("**.txt | *.json", new[]
+                {
+                    ("Z:\\foo.json", true),
+                    ("c:\\goon\\guk.txt", true),
+                    ("foo.jsonl", false),
+                    ("c:\\bar.txto", false),
+                }),
             };
             var glob = new Glob();
             foreach ((string query, var examples) in testcases)
