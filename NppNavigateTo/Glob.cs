@@ -105,6 +105,7 @@ namespace NavigateTo.Plugin.Namespace
                         sb.Append("\\\\");
                     break;
                 case '*':
+                    uses_metacharacters = true;
                     if (is_char_class)
                     {
                         sb.Append("\\*"); // "[*]" matches literal * character
@@ -114,7 +115,6 @@ namespace NavigateTo.Plugin.Namespace
                         break; // since globs are only anchored at the end,
                                // leading * in globs should not influence the matching behavior.
                                // For example, the globs "*foo.txt" and "foo.txt" should match the same things.
-                    uses_metacharacters = true;
                     next_c = Peek(inp);
                     if (next_c == '*')
                     {
