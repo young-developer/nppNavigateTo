@@ -103,6 +103,7 @@ namespace NavigateTo.Plugin.Namespace
             ReloadFileList();
             this.notepad.ReloadMenuItems();
             FormStyle.ApplyStyle(this, true, notepad.IsDarkModeEnabled());
+            FilterDataGrid("");
         }
 
         /// <summary>
@@ -617,11 +618,12 @@ namespace NavigateTo.Plugin.Namespace
         private void SearchComboBoxTextChanged(object sender, EventArgs e)
         {
             int textLength = searchComboBox.Text.Length;
+            bool emptyText = string.IsNullOrWhiteSpace(searchComboBox.Text);
             int minLength = FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit);
 
-            if (textLength == 0)
+            if (emptyText)
                 ReloadFileList();
-            if (textLength > minLength)
+            if (textLength > minLength || emptyText)
             {
                 FilterDataGrid(searchComboBox.Text);
             }
@@ -884,6 +886,12 @@ namespace NavigateTo.Plugin.Namespace
             {
                 searchComboBox.Select(searchComboBox.Text.Length, 1);
             }
+        }
+
+        public void GrabFocus()
+        {
+            searchComboBox.Select();
+            FilterDataGrid(searchComboBox.Text);
         }
 
         private void dataGridFileList_KeyPress(object sender, KeyPressEventArgs e)

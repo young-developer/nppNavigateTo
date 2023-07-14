@@ -197,7 +197,7 @@ namespace NavigateTo.Plugin.Namespace
                 ii++;
             }
             endOfLoop:
-            if (uses_metacharacters) // anything without "*" or "?" or "[]" or 
+            if (uses_metacharacters) // anything without any chars in "*?[]{}" will just be treated as a normal string
                 sb.Append('$'); // globs are anchored at the end; that is "*foo" does not match "foo/bar.txt" but "*foo.tx?" does
             string pat = sb.ToString();
             try

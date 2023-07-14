@@ -204,6 +204,7 @@ namespace NavigateTo.Plugin.Namespace
                         frmNavigateTo.Handle);
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
                         PluginBase._funcItems.Items[idFormNavigateAll]._cmdID, 1);
+                    frmNavigateTo.GrabFocus();
                 }
                 else
                 {
@@ -211,6 +212,7 @@ namespace NavigateTo.Plugin.Namespace
                         frmNavigateTo.Handle);
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
                         PluginBase._funcItems.Items[idFormNavigateAll]._cmdID, 0);
+                    editor.GrabFocus();
                 }
             }
         }
