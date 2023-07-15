@@ -167,6 +167,17 @@ namespace NavigateTo.Tests
                     ("foo.jsonl", false),
                     ("c:\\bar.txto", false),
                 }),
+                ("*.p* !< __ | \\j", new[]
+                {
+                    ("bep.po", true),
+                    ("joo.po", true),
+                    ("boo\\joo.po", false),
+                    ("bbq.go", false),
+                    ("__bzz.po", false),
+                    ("boo\\j__.po", false),
+                    ("boo__\\eorpwn\\reiren.po", false),
+                    ("Z:\\jnq\\eorpwn\\reiren.po", false),
+                }),
             };
             var glob = new Glob();
             foreach ((string query, var examples) in testcases)
