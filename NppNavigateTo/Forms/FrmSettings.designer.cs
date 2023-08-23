@@ -51,6 +51,8 @@
             this.checkBoxFileNameResults = new System.Windows.Forms.CheckBox();
             this.checkBoxSearchMenu = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.maxResultsHighlightingEnabledLabel = new System.Windows.Forms.Label();
+            this.maxResultsHighlightingEnabledUpDown = new System.Windows.Forms.NumericUpDown();
             this.buttonRowBackgroud = new System.Windows.Forms.Button();
             this.gridBackground = new System.Windows.Forms.Button();
             this.buttonResetStyle = new System.Windows.Forms.Button();
@@ -74,6 +76,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numUpDownSecsBetweenDirectoryScans)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFuzzyness)).BeginInit();
             this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.maxResultsHighlightingEnabledUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridFileListPreview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -330,9 +333,9 @@
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(7, 77);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(241, 17);
+            this.label7.Size = new System.Drawing.Size(273, 17);
             this.label7.TabIndex = 12;
-            this.label7.Text = "Refresh file list how often? (seconds)";
+            this.label7.Text = "Re-search directory how often? (seconds)";
             // 
             // numericUpDownFuzzyness
             // 
@@ -391,6 +394,8 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.maxResultsHighlightingEnabledLabel);
+            this.groupBox4.Controls.Add(this.maxResultsHighlightingEnabledUpDown);
             this.groupBox4.Controls.Add(this.buttonRowBackgroud);
             this.groupBox4.Controls.Add(this.gridBackground);
             this.groupBox4.Controls.Add(this.buttonResetStyle);
@@ -404,14 +409,36 @@
             this.groupBox4.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox4.Size = new System.Drawing.Size(341, 184);
+            this.groupBox4.Size = new System.Drawing.Size(341, 213);
             this.groupBox4.TabIndex = 8;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Appearance";
             // 
+            // maxResultsHighlightingEnabledLabel
+            // 
+            this.maxResultsHighlightingEnabledLabel.AutoSize = true;
+            this.maxResultsHighlightingEnabledLabel.Location = new System.Drawing.Point(7, 179);
+            this.maxResultsHighlightingEnabledLabel.Name = "maxResultsHighlightingEnabledLabel";
+            this.maxResultsHighlightingEnabledLabel.Size = new System.Drawing.Size(251, 16);
+            this.maxResultsHighlightingEnabledLabel.TabIndex = 11;
+            this.maxResultsHighlightingEnabledLabel.Text = "Disable highlighting if >= this many results";
+            // 
+            // maxResultsHighlightingEnabledUpDown
+            // 
+            this.maxResultsHighlightingEnabledUpDown.Location = new System.Drawing.Point(266, 177);
+            this.maxResultsHighlightingEnabledUpDown.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.maxResultsHighlightingEnabledUpDown.Name = "maxResultsHighlightingEnabledUpDown";
+            this.maxResultsHighlightingEnabledUpDown.Size = new System.Drawing.Size(63, 22);
+            this.maxResultsHighlightingEnabledUpDown.TabIndex = 10;
+            this.maxResultsHighlightingEnabledUpDown.ValueChanged += new System.EventHandler(this.maxResultsHighlightingEnabled_ValueChanged);
+            // 
             // buttonRowBackgroud
             // 
-            this.buttonRowBackgroud.Location = new System.Drawing.Point(16, 135);
+            this.buttonRowBackgroud.Location = new System.Drawing.Point(11, 136);
             this.buttonRowBackgroud.Margin = new System.Windows.Forms.Padding(4);
             this.buttonRowBackgroud.Name = "buttonRowBackgroud";
             this.buttonRowBackgroud.Size = new System.Drawing.Size(152, 28);
@@ -422,7 +449,7 @@
             // 
             // gridBackground
             // 
-            this.gridBackground.Location = new System.Drawing.Point(16, 102);
+            this.gridBackground.Location = new System.Drawing.Point(11, 103);
             this.gridBackground.Margin = new System.Windows.Forms.Padding(4);
             this.gridBackground.Name = "gridBackground";
             this.gridBackground.Size = new System.Drawing.Size(152, 28);
@@ -433,7 +460,7 @@
             // 
             // buttonResetStyle
             // 
-            this.buttonResetStyle.Location = new System.Drawing.Point(271, 116);
+            this.buttonResetStyle.Location = new System.Drawing.Point(266, 117);
             this.buttonResetStyle.Margin = new System.Windows.Forms.Padding(4);
             this.buttonResetStyle.Name = "buttonResetStyle";
             this.buttonResetStyle.Size = new System.Drawing.Size(63, 28);
@@ -444,7 +471,7 @@
             // 
             // buttonSelectedRowText
             // 
-            this.buttonSelectedRowText.Location = new System.Drawing.Point(239, 65);
+            this.buttonSelectedRowText.Location = new System.Drawing.Point(234, 66);
             this.buttonSelectedRowText.Margin = new System.Windows.Forms.Padding(4);
             this.buttonSelectedRowText.Name = "buttonSelectedRowText";
             this.buttonSelectedRowText.Size = new System.Drawing.Size(53, 28);
@@ -455,7 +482,7 @@
             // 
             // buttonSelectedRowBack
             // 
-            this.buttonSelectedRowBack.Location = new System.Drawing.Point(132, 65);
+            this.buttonSelectedRowBack.Location = new System.Drawing.Point(127, 66);
             this.buttonSelectedRowBack.Margin = new System.Windows.Forms.Padding(4);
             this.buttonSelectedRowBack.Name = "buttonSelectedRowBack";
             this.buttonSelectedRowBack.Size = new System.Drawing.Size(99, 28);
@@ -467,7 +494,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 71);
+            this.label4.Location = new System.Drawing.Point(7, 72);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(91, 16);
@@ -477,7 +504,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 30);
+            this.label3.Location = new System.Drawing.Point(7, 31);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(59, 16);
@@ -486,7 +513,7 @@
             // 
             // buttonGridTextColor
             // 
-            this.buttonGridTextColor.Location = new System.Drawing.Point(239, 23);
+            this.buttonGridTextColor.Location = new System.Drawing.Point(234, 24);
             this.buttonGridTextColor.Margin = new System.Windows.Forms.Padding(4);
             this.buttonGridTextColor.Name = "buttonGridTextColor";
             this.buttonGridTextColor.Size = new System.Drawing.Size(53, 28);
@@ -497,7 +524,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(132, 23);
+            this.button1.Location = new System.Drawing.Point(127, 24);
             this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(99, 28);
@@ -530,7 +557,7 @@
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataGridFileListPreview.DefaultCellStyle = dataGridViewCellStyle1;
-            this.dataGridFileListPreview.Location = new System.Drawing.Point(16, 378);
+            this.dataGridFileListPreview.Location = new System.Drawing.Point(16, 418);
             this.dataGridFileListPreview.Margin = new System.Windows.Forms.Padding(4);
             this.dataGridFileListPreview.Name = "dataGridFileListPreview";
             this.dataGridFileListPreview.ReadOnly = true;
@@ -573,7 +600,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(20, 353);
+            this.label2.Location = new System.Drawing.Point(20, 393);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(58, 16);
@@ -584,7 +611,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(772, 583);
+            this.ClientSize = new System.Drawing.Size(772, 623);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.dataGridFileListPreview);
             this.Controls.Add(this.groupBox4);
@@ -610,6 +637,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFuzzyness)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.maxResultsHighlightingEnabledUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridFileListPreview)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -654,5 +682,7 @@
         private System.Windows.Forms.Button buttonRowBackgroud;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.NumericUpDown numUpDownSecsBetweenDirectoryScans;
+        private System.Windows.Forms.Label maxResultsHighlightingEnabledLabel;
+        private System.Windows.Forms.NumericUpDown maxResultsHighlightingEnabledUpDown;
     }
 }

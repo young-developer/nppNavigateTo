@@ -75,6 +75,7 @@ namespace NavigateTo.Plugin.Namespace
             comboBoxSortOrder.SelectedIndex = Settings.GetIntSetting(Settings.sortOrderAfterFilterBy);
             checkBoxFuzzySearch.Checked = Settings.GetBoolSetting(Settings.fuzzySearch);
             numericUpDownFuzzyness.Value = Settings.GetIntSetting(Settings.fuzzynessTolerance);
+            maxResultsHighlightingEnabledUpDown.Value = Settings.GetIntSetting(Settings.maxResultsHighlightingEnabled);
 
             DataGridViewRow newRow = new DataGridViewRow();
             newRow.CreateCells(dataGridFileListPreview);
@@ -164,6 +165,7 @@ namespace NavigateTo.Plugin.Namespace
             dataGridViewCellStyle1.BackColor = Settings.GetColorSetting(Settings.rowBackgroundColor);
             dataGridViewCellStyle1.SelectionBackColor = Settings.GetColorSetting(Settings.gridSelectedRowBackground);
             dataGridViewCellStyle1.SelectionForeColor = Settings.GetColorSetting(Settings.gridSelectedRowForeground);
+            // TODO: Add ability to change font
             dataGridFileListPreview.DefaultCellStyle = dataGridViewCellStyle1;
             dataGridFileListPreview.BackgroundColor = Settings.GetColorSetting(Settings.gridBackgroundColor);
             dataGridFileListPreview.BackColor = Settings.GetColorSetting(Settings.rowBackgroundColor);
@@ -263,6 +265,7 @@ namespace NavigateTo.Plugin.Namespace
             Settings.SetColorSetting(Settings.gridBackgroundColor, System.Drawing.SystemColors.AppWorkspace);
             Settings.SetColorSetting(Settings.highlightColorBackground, Color.Orange);
             Settings.SetColorSetting(Settings.rowBackgroundColor, Color.White);
+            //Settings.SetIntSetting(Settings.fontSize, 8); // Only once we figure out how to properly change font size
             RefreshDataGridStyles();
         }
 
@@ -349,6 +352,11 @@ namespace NavigateTo.Plugin.Namespace
         private void secondsBetweenDirectoryScans_ValueChanged(object sender, EventArgs e)
         {
             Settings.SetIntSetting(Settings.secondsBetweenDirectoryScans, (int)numUpDownSecsBetweenDirectoryScans.Value);
+        }
+
+        private void maxResultsHighlightingEnabled_ValueChanged(object sender, EventArgs e)
+        {
+            Settings.SetIntSetting(Settings.maxResultsHighlightingEnabled, (int)maxResultsHighlightingEnabledUpDown.Value);
         }
     }
 }

@@ -23,6 +23,7 @@ namespace NppPluginNET
         public static string gridSelectedRowForeground = "gridSelectedRowForeground";
         public static string gridTextColor = "gridTextColor";
         public static string gridBackgroundColor = "gridBackgroundColor";
+        //public static string fontSize = "fontSize";
         public static string rowBackgroundColor = "rowBackgroundColor";
         public static string searchMenuCommands = "searchMenuCommands";
         public static string minTypeCharLimit = "minTypeCharLimit";
@@ -34,6 +35,7 @@ namespace NppPluginNET
         public static string fuzzySearch = "fuzzySearch";
         public static string fuzzynessTolerance = "fuzzynessTolerance";
         public static string secondsBetweenDirectoryScans = "secondsBetweenDirectoryScans";
+        public static string maxResultsHighlightingEnabled = "maxResultsHighlightingEnabled";
 
         static string iniFilePath;
         static string lpAppName = "NavigateTo";
@@ -147,7 +149,14 @@ namespace NppPluginNET
                 Win32.GetPrivateProfileInt(lpAppName, fuzzynessTolerance, 1, iniFilePath));
             LoadIntSetting(rowBackgroundColor,
                 Win32.GetPrivateProfileInt(lpAppName, rowBackgroundColor, -1, iniFilePath));
-            LoadIntSetting(secondsBetweenDirectoryScans, Win32.GetPrivateProfileInt(lpAppName, secondsBetweenDirectoryScans, 5, iniFilePath));
+            LoadIntSetting(secondsBetweenDirectoryScans,
+                Win32.GetPrivateProfileInt(lpAppName, secondsBetweenDirectoryScans, 5, iniFilePath));
+            LoadIntSetting(maxResultsHighlightingEnabled,
+                Win32.GetPrivateProfileInt(lpAppName, maxResultsHighlightingEnabled, 5000, iniFilePath));
+            // TODO: add customizable font size; changing font is tricky, so am not doing yet
+            //LoadIntSetting(fontSize,
+            //    Win32.GetPrivateProfileInt(lpAppName, fontSize, 8, iniFilePath));
+
         }
 
         public void SetColorSetting(String name, Color color)

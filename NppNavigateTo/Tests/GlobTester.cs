@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NavigateTo.Plugin.Namespace;
 using NppPluginNET;
 
@@ -194,28 +190,235 @@ namespace NavigateTo.Tests
                     failed++;
                     continue;
                 }
+                string failMessage = $"While executing query \"{query}\" on filename";
                 foreach ((string filename, bool desiredResult) in examples)
                 {
                     ii++;
-                    bool result;
-                    try
-                    {
-                        result = resultFunc(filename);
-                    }
-                    catch (Exception ex)
-                    {
-                        MiscUtils.AddLine($"While executing query \"{query}\" on filename \"{filename}\", got exception\r\n{ex}");
-                        failed++;
-                        continue;
-                    }
-                    if (result != desiredResult)
-                    {
-                        MiscUtils.AddLine($"Running query \"{query}\" on filename \"{filename}\", EXPECTED {desiredResult}, GOT {result}");
-                        failed++;
-                        continue;
-                    }
+                    failed += TestGlobFuncOnFilename(resultFunc, failMessage, filename, desiredResult);
                 }
             }
+            MiscUtils.AddLine($"Ran {ii} tests and failed {failed}");
+        }
+
+        /// <summary>
+        /// returns 0 and outputs nothing if test passes<br></br>
+        /// returns 1 and outputs something beginning with failMessage if test fails or an exception is raised.
+        /// </summary>
+        private static int TestGlobFuncOnFilename(Func<string, bool> resultFunc, string failMessage, string filename, bool desiredResult)
+        {
+            bool result;
+            try
+            {
+                result = resultFunc(filename);
+            }
+            catch (Exception ex)
+            {
+                MiscUtils.AddLine($"{failMessage} \"{filename}\", got exception\r\n{ex}");
+                return 1;
+            }
+            if (result != desiredResult)
+            {
+                MiscUtils.AddLine($"{failMessage} \"{filename}\", EXPECTED {desiredResult}, GOT {result}");
+                return 1;
+            }
+            return 0;
+        }
+
+        public static void TestCachedTopDirectory()
+        {
+            int ii = 0;
+            int failed = 0;
+            var testcases = new (string query, string topDir, (string input, bool desiredResult)[])[]
+            {
+                ("foo;bar;*.txt", "Z:\\foo", new[]
+                {
+                    ("Z:\\foo\\bar.txt", true),
+                    ("Z:\\foo\\gozo\\barono.txt", true),
+                    ("Z:\\foo\\hund\\goog.txt", false),
+                    ("Z:\\foo\\hund\\gut\\foo.txt", false),
+                    ("Z:\\foo\\hund\\gut\\txt.bar", false),
+                    ("Z:\\foo\\hund\\gut\\bar.txt", true),
+                }),
+                ("foo;bar;*.txt", "Cj\\bar", new[]
+                {
+                    ("Cj\\bar\\foo.txt", true),
+                    ("Cj\\bar\\gozo\\fooono.txt", true),
+                    ("Cj\\bar\\hund\\goog.txt", false),
+                    ("Cj\\bar\\hund\\gut\\bar.txt", false),
+                    ("Cj\\bar\\hund\\gut\\txt.foo", false),
+                    ("Cj\\bar\\hund\\gut\\foo.txt", true),
+                }),
+                ("foo | bar*", "YOLO\\bar", new[]
+                {
+                    ("YOLO\\bar\\bar.txt", true),
+                    ("YOLO\\bar\\foo.md", true),
+                    ("YOLO\\bar\\vingo.cs", false),
+                    ("YOLO\\bar\\foo\\ghi.igh", true),
+                }),
+                ("!bar", "bar", new[]
+                {
+                    ("bar\\foo.txt", false),
+                    ("bar\\bar.txt", false),
+                }),
+                ("!bar", "foo", new[]
+                {
+                    ("foo\\foo.txt", true),
+                    ("foo\\bar.txt", false),
+                }),
+                ("foo !bar", "bar", new[]
+                {
+                    ("bar\\foobar.txt", false),
+                    ("bar\\foo.txt", false),
+                    ("bar\\ghi.txt", false),
+                }),
+                ("foo !bar", "foo", new[]
+                {
+                    ("bar\\foobar.txt", false),
+                    ("bar\\foo.txt", false),
+                    ("bar\\ghi.txt", false),
+                }),
+                ("foo | < !bar baz", "bazel", new[]
+                {
+                    ("bazel\\foo.c", true),
+                    ("bazel\\bar.z", false),
+                    ("bazel\\bar\\e.txt", false),
+                    ("bazel\\bar\\foo.txt", true),
+                }),
+                ("foo[ !]*.*", "G:\\foo jou.m", new[]
+                {
+                    ("G:\\foo jou.m\\foo!man.txt", true),
+                    ("G:\\foo jou.m\\foo man.txt", true),
+                    ("G:\\foo jou.m\\footman.txt", false),
+                    ("G:\\foo jou.m\\C\\reoreno\\84303\\foo .eorn", true),
+                    ("G:\\foo jou.m\\foo!.zzy", true),
+                }),
+                ("!**bar", "baz\\bar", new[]
+                {
+                    ("baz\\bar\\o.bar", false),
+                    ("baz\\bar\\g\\j.k", true),
+                }),
+                ("**bar txt", "baz\\bar", new[]
+                {
+                    ("baz\\bar\\o.bar", false),
+                    ("baz\\bar\\txt\\o.quz", false),
+                    ("baz\\bar\\g\\txt.bar", true),
+                }),
+                ("{foo,bar}{txt,md}*", "footxt", new[]
+                {
+                    ("footxt\\foo.txt", false),
+                    ("footxt\\foo.md", false),
+                    ("footxt\\bartxt.c", true),
+                    ("footxt\\barmd\\z.y", false),
+                    ("footxt\\barmd.go", true),
+                }),
+                ("foo bar 2", "foo\\bar", new[]
+                {
+                    ("foo\\bar\\2.txt", true),
+                    ("foo\\bar\\1.c", false),
+                    ("foo\\bar\\blah2\\1.h", true),
+                }),
+                ("2 foo *c", "foo\\bar", new[]
+                {
+                    ("foo\\bar\\2.txt", false),
+                    ("foo\\bar\\2.c", true),
+                    ("foo\\bar\\1.c", false),
+                    ("foo\\bar\\blah2\\1.pyc", true),
+                }),
+            };
+            var glob = new Glob();
+            foreach ((string query, string topDir, var examples) in testcases)
+            {
+                Func<string, bool> resultFunc;
+                try
+                {
+                    resultFunc = glob.Parse(query);
+                }
+                catch (Exception ex)
+                {
+                    ii++;
+                    MiscUtils.AddLine($"While parsing query \"{query}\", got exception\r\n{ex}");
+                    failed++;
+                    continue;
+                }
+                Func<string, bool> resultFuncWithCachedTopDir;
+                try
+                {
+                    resultFuncWithCachedTopDir = Glob.CacheGlobFuncResultsForTopDirectory(topDir, glob.globFunctions);
+                }
+                catch (Exception ex)
+                {
+                    ii++;
+                    MiscUtils.AddLine($"While parsing query \"{query}\" (with cached top directory \"{topDir}\"), got exception\r\n{ex}");
+                    failed++;
+                    continue;
+                }
+                foreach ((string filename, bool desiredResult) in examples)
+                {
+                    ii += 2;
+                    string failMessage = $"While executing query \"{query}\" on filename";
+                    failed += TestGlobFuncOnFilename(resultFunc, failMessage, filename, desiredResult);
+                    failMessage = $"Running query \"{query}\" (with cached top directory \"{topDir}\") on filename";
+                    failed += TestGlobFuncOnFilename(resultFuncWithCachedTopDir, failMessage, filename, desiredResult);
+                }
+            }
+
+            // now we test that the caching will cause a result different from the result without caching
+            // if the cached top directory is different from the true top directory
+            var testcasesWithWrongTopDir = new (string query, string topDir, (string input, bool desiredResult, bool desiredResultWithCaching)[])[]
+            {
+                ("2 bar *c", "bar", new[]
+                {
+                    ("foo\\2.txt", false, false),
+                    ("foo\\2.c", false, true), 
+                    ("foo\\1.c", false, false),
+                    ("foo\\blah2\\1.pyc", false, true),
+                    ("foo\\2bar\\1.pyc", true, true),
+                }),
+                ("2 !bar", "bar", new[]
+                {
+                    ("foo\\2.c", true, false),
+                    ("foo\\1.c", false, false),
+                    ("foo\\blah2\\1.pyc", true, false),
+                    ("foo\\2bar\\1.pyc", false, false),
+                    ("foo\\2\\1.pyc", true, false),
+                }),
+            };
+            foreach ((string query, string topDir, var examples) in testcasesWithWrongTopDir)
+            {
+                Func<string, bool> resultFunc;
+                try
+                {
+                    resultFunc = glob.Parse(query);
+                }
+                catch (Exception ex)
+                {
+                    ii++;
+                    MiscUtils.AddLine($"While parsing query \"{query}\", got exception\r\n{ex}");
+                    failed++;
+                    continue;
+                }
+                Func<string, bool> resultFuncWithCachedTopDir;
+                try
+                {
+                    resultFuncWithCachedTopDir = Glob.CacheGlobFuncResultsForTopDirectory(topDir, glob.globFunctions);
+                }
+                catch (Exception ex)
+                {
+                    ii++;
+                    MiscUtils.AddLine($"While parsing query \"{query}\" (with cached top directory \"{topDir}\"), got exception\r\n{ex}");
+                    failed++;
+                    continue;
+                }
+                foreach ((string filename, bool desiredResult, bool desiredResultWithCaching) in examples)
+                {
+                    ii += 2;
+                    string failMessage = $"While executing query \"{query}\" on filename";
+                    failed += TestGlobFuncOnFilename(resultFunc, failMessage, filename, desiredResult);
+                    failMessage = $"Running query \"{query}\" (with cached top directory \"{topDir}\") on filename";
+                    failed += TestGlobFuncOnFilename(resultFuncWithCachedTopDir, failMessage, filename, desiredResultWithCaching);
+                }
+            }
+
             MiscUtils.AddLine($"Ran {ii} tests and failed {failed}");
         }
     }

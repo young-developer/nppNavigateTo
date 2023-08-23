@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using NppPluginNET;
 
 namespace NavigateTo.Plugin.Namespace
 {
@@ -25,8 +26,7 @@ namespace NavigateTo.Plugin.Namespace
         public static void ApplyStyle(Control ctrl, bool use_npp_style, bool isDark = false)
         {
             if (ctrl == null || ctrl.IsDisposed) return;
-            int[] version = Main.notepad.GetNppVersion();
-            if (version[0] < 8)
+            if (!MiscUtils.nppVersionAtLeast8)
                 use_npp_style = false; // trying to follow editor style looks weird for Notepad++ 7.3.3
             if (ctrl is Form form)
             {
