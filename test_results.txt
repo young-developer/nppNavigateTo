@@ -1,6 +1,11 @@
-Test results for NavigateTo v2.6
+Test results for NavigateTo v2.6.5 on Notepad++ 8.5.6 64bit
 =========================
 Testing Glob syntax
 =========================
 
 Ran 102 tests and failed 0
+=========================
+Testing Glob syntax with cached top directories
+=========================
+
+Ran 124 tests and failed 0

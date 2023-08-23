@@ -21,6 +21,12 @@ namespace NppPluginNET
         /// </summary>
         public static INotepadPPGateway notepad = NavigateTo.Plugin.Namespace.Main.notepad;
 
+        public static readonly int[] nppVersion = notepad.GetNppVersion();
+
+        public static readonly string nppVersionStr = NppVersionString(true);
+
+        public static readonly bool nppVersionAtLeast8 = nppVersion[0] >= 8;
+
         /// <summary>
         /// append text to current doc, then append newline and move cursor
         /// </summary>
@@ -80,7 +86,17 @@ namespace NppPluginNET
             string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             while (version.EndsWith(".0"))
                 version = version.Substring(0, version.Length - 2);
+#if DEBUG
+            return $"{version} Debug";
+#else
             return version;
+#endif // DEBUG
+        }
+
+        private static string NppVersionString(bool include32bitVs64bit)
+        {
+            string nppVerStr = $"{nppVersion[0]}.{nppVersion[1]}.{nppVersion[2]}";
+            return include32bitVs64bit ? $"{nppVerStr} {IntPtr.Size * 8}bit" : nppVerStr;
         }
     }
 }

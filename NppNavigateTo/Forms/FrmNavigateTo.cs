@@ -83,6 +83,10 @@ namespace NavigateTo.Plugin.Namespace
         /// </summary>
         public int minDirTreeSizeToWarn { get; set; } = 5000;
 
+        private bool tooManyResultsToHighlight { get; set; } = false;
+
+        private bool lastCharCannotChangeResults { get; set; } = false;
+
         public FrmNavigateTo(IScintillaGateway editor, INotepadPPGateway notepad)
         {
             this.editor = editor;
@@ -180,6 +184,7 @@ namespace NavigateTo.Plugin.Namespace
             dataGridFileList.Rows.Clear();
             if (emptyFilter)
             {
+                tooManyResultsToHighlight = FileList.Count >= FrmSettings.Settings.GetIntSetting(Settings.maxResultsHighlightingEnabled);
                 FileList.ForEach(file =>
                 {
                     DataGridViewRow newRow = new DataGridViewRow();
@@ -198,6 +203,7 @@ namespace NavigateTo.Plugin.Namespace
                 //backgroundWorker.CancelAsync(); // cancel the previous filtering
                 //backgroundWorker.RunWorkerAsync(); // filter the file list (run BackgroundWorker_DoWork)
                 FilterEverything(filter);
+                tooManyResultsToHighlight = FilteredFileList.Count >= FrmSettings.Settings.GetIntSetting(Settings.maxResultsHighlightingEnabled);
 
                 FilteredFileList.ForEach(file =>
                 {
@@ -251,7 +257,7 @@ namespace NavigateTo.Plugin.Namespace
 
             if (FrmSettings.Settings.GetBoolSetting(Settings.searchInCurrentFolder))
             {
-                FilterCurrentDirectory(nonFuzzyFilterFunc/*, e*/);
+                FilterCurrentDirectory();
             }
 
             if (FrmSettings.Settings.GetBoolSetting(Settings.searchMenuCommands))
@@ -383,11 +389,12 @@ namespace NavigateTo.Plugin.Namespace
             return filesInCurrentDirectory ?? new string[0];
         }
 
-        void FilterCurrentDirectory(Func<string, bool> filterFunc)
+        void FilterCurrentDirectory()
         {
             string currentDirectory = notepad.GetCurrentFileDirectory();
             if (string.IsNullOrWhiteSpace(currentDirectory))
                 return;
+            Func<string, bool> filterFunc = Glob.CacheGlobFuncResultsForTopDirectory(currentDirectory, glob.globFunctions);
             bool userWantsSearchSubdirs = FrmSettings.Settings.GetBoolSetting(Settings.searchInSubDirs);
             DirectorySearchLevel searchLevel = userWantsSearchSubdirs
                 ? DirectorySearchLevel.RecurseSubdirs
@@ -511,8 +518,34 @@ namespace NavigateTo.Plugin.Namespace
 
         private void SearchComboBoxKeyDown(object sender, KeyEventArgs e)
         {
+            lastCharCannotChangeResults = false;
             switch (e.KeyCode)
             {
+                case Keys.Back:
+                    if (!e.Control)
+                        return;
+                    // Ctrl+Backspace: delete the word (sequence of non-whitespace, non-punctuation chars)
+                    // ending at the current cursor position.
+                    var text = searchComboBox.Text;
+                    int currentWordEnd = searchComboBox.SelectionStart;
+                    int currentWordStart = currentWordEnd - 1;
+                    for (; currentWordStart >= 0; currentWordStart--)
+                    {
+                        char c = text[currentWordStart];
+                        if (Char.IsPunctuation(c) || Char.IsWhiteSpace(c))
+                            break;
+                    }
+                    if (currentWordStart < currentWordEnd - 1)
+                        currentWordStart++;
+                    string textWithoutCurrentWord = currentWordStart > 0 ? text.Substring(0, currentWordStart) : "";
+                    textWithoutCurrentWord += currentWordEnd < text.Length ? text.Substring(currentWordEnd) : "";
+                    searchComboBox.Text = textWithoutCurrentWord;
+                    searchComboBox.SelectionStart = currentWordStart;
+                    searchComboBox.SelectionLength = 0;
+                    e.SuppressKeyPress = true;
+                    e.Handled = true;
+                    break;
+
                 case Keys.Down:
                     e.Handled = NavigateGridDown(e.Shift);
                     break;
@@ -540,6 +573,12 @@ namespace NavigateTo.Plugin.Namespace
                     editor.GrabFocus();
                     e.Handled = true;
                     e.SuppressKeyPress = true;
+                    break;
+
+                case Keys.Space:
+                    // adding space can't change the results
+                    // unless the space is part of a character class in a glob (e.g. "[ ]" matches literal whitespace)
+                    lastCharCannotChangeResults = searchComboBox.Text.IndexOf('[') == -1;
                     break;
             }
         }
@@ -617,6 +656,8 @@ namespace NavigateTo.Plugin.Namespace
 
         private void SearchComboBoxTextChanged(object sender, EventArgs e)
         {
+            if (lastCharCannotChangeResults)
+                return;
             int textLength = searchComboBox.Text.Length;
             bool emptyText = string.IsNullOrWhiteSpace(searchComboBox.Text);
             int minLength = FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit);
@@ -716,8 +757,10 @@ namespace NavigateTo.Plugin.Namespace
 
         private void dataGridFileList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (e.Value == null) return;
-            if (searchComboBox.Text.Length == 0) return;
+            if (e.Value == null
+                || searchComboBox.Text.Length == 0
+                || tooManyResultsToHighlight)
+                return;
 
             if (e.RowIndex > -1 && e.ColumnIndex > -1)
             {
