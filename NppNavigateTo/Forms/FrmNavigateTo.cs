@@ -93,8 +93,6 @@ namespace NavigateTo.Plugin.Namespace
 
         private bool tooManyResultsToHighlight { get; set; } = false;
 
-        private bool lastCharCannotChangeResults { get; set; } = false;
-
         public FrmNavigateTo(IScintillaGateway editor, INotepadPPGateway notepad)
         {
             this.editor = editor;
@@ -531,7 +529,6 @@ namespace NavigateTo.Plugin.Namespace
 
         private void SearchComboBoxKeyDown(object sender, KeyEventArgs e)
         {
-            lastCharCannotChangeResults = false;
             switch (e.KeyCode)
             {
                 case Keys.Back:
@@ -586,14 +583,6 @@ namespace NavigateTo.Plugin.Namespace
                     editor.GrabFocus();
                     e.Handled = true;
                     e.SuppressKeyPress = true;
-                    break;
-
-                case Keys.Space:
-                    // adding space can't change the results unless:
-                    // - the space is part of a character class in a glob (e.g. "[ ]" matches literal whitespace)
-                    // - the space would push the number of chars in the search box over the min char limit
-                    int minLength = FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit);
-                    lastCharCannotChangeResults = searchComboBox.Text.Length != minLength && searchComboBox.Text.IndexOf('[') == -1;
                     break;
             }
         }
@@ -671,8 +660,6 @@ namespace NavigateTo.Plugin.Namespace
 
         private void SearchComboBoxTextChanged(object sender, EventArgs e)
         {
-            if (lastCharCannotChangeResults)
-                return;
             lastKeyPressTimer.Start();
             lastKeypressTicks = System.DateTime.UtcNow.Ticks;
         }
@@ -682,7 +669,7 @@ namespace NavigateTo.Plugin.Namespace
             Invoke(new Action(() =>
             {
                 // allow keypresses more recent than the interval, because we can't rely on precise timing of this event firing
-                if (System.DateTime.UtcNow.Ticks <= lastKeypressTicks + System.TimeSpan.TicksPerMillisecond * lastKeyPressTimerInterval / 4)
+                if (System.DateTime.UtcNow.Ticks <= lastKeypressTicks + System.TimeSpan.TicksPerMillisecond * lastKeyPressTimerInterval / 10)
                     return;
                 int textLength = searchComboBox.Text.Length;
                 bool emptyText = string.IsNullOrWhiteSpace(searchComboBox.Text);
