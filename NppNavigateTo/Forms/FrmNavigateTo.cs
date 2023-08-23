@@ -9,8 +9,10 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Forms;
@@ -67,6 +69,12 @@ namespace NavigateTo.Plugin.Namespace
 
         private Glob glob { get; set; }
 
+        const int lastKeyPressTimerInterval = 250;
+
+        private System.Timers.Timer lastKeyPressTimer;
+
+        private long lastKeypressTicks;
+
         /// <summary>
         /// function used to filter filenames when not using fuzzy matchin
         /// </summary>
@@ -102,6 +110,11 @@ namespace NavigateTo.Plugin.Namespace
             //backgroundWorker.WorkerSupportsCancellation = true;
             //backgroundWorker.DoWork += BackgroundWorker_DoWork;
             glob = new Glob();
+            lastKeyPressTimer = new System.Timers.Timer();
+            lastKeyPressTimer.AutoReset = false;
+            lastKeyPressTimer.Interval = lastKeyPressTimerInterval;
+            lastKeyPressTimer.Elapsed += LastKeyPressTimer_Elapsed;
+            lastKeypressTicks = 0;
             nonFuzzyFilterFunc = null;
             InitializeComponent();
             ReloadFileList();
@@ -576,9 +589,11 @@ namespace NavigateTo.Plugin.Namespace
                     break;
 
                 case Keys.Space:
-                    // adding space can't change the results
-                    // unless the space is part of a character class in a glob (e.g. "[ ]" matches literal whitespace)
-                    lastCharCannotChangeResults = searchComboBox.Text.IndexOf('[') == -1;
+                    // adding space can't change the results unless:
+                    // - the space is part of a character class in a glob (e.g. "[ ]" matches literal whitespace)
+                    // - the space would push the number of chars in the search box over the min char limit
+                    int minLength = FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit);
+                    lastCharCannotChangeResults = searchComboBox.Text.Length != minLength && searchComboBox.Text.IndexOf('[') == -1;
                     break;
             }
         }
@@ -658,21 +673,33 @@ namespace NavigateTo.Plugin.Namespace
         {
             if (lastCharCannotChangeResults)
                 return;
-            int textLength = searchComboBox.Text.Length;
-            bool emptyText = string.IsNullOrWhiteSpace(searchComboBox.Text);
-            int minLength = FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit);
+            lastKeyPressTimer.Start();
+            lastKeypressTicks = System.DateTime.UtcNow.Ticks;
+        }
 
-            if (emptyText)
-                ReloadFileList();
-            if (textLength > minLength || emptyText)
+        private void LastKeyPressTimer_Elapsed(object sender, EventArgs e)
+        {
+            Invoke(new Action(() =>
             {
-                FilterDataGrid(searchComboBox.Text);
-            }
+                // allow keypresses more recent than the interval, because we can't rely on precise timing of this event firing
+                if (System.DateTime.UtcNow.Ticks <= lastKeypressTicks + System.TimeSpan.TicksPerMillisecond * lastKeyPressTimerInterval / 4)
+                    return;
+                int textLength = searchComboBox.Text.Length;
+                bool emptyText = string.IsNullOrWhiteSpace(searchComboBox.Text);
+                int minLength = FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit);
 
-            if (FrmSettings.Settings.GetBoolSetting(Settings.selectFirstRowOnFilter))
-            {
-                SelectFirstRow();
-            }
+                if (emptyText)
+                    ReloadFileList();
+                if (textLength > minLength || emptyText)
+                {
+                    FilterDataGrid(searchComboBox.Text);
+                }
+
+                if (FrmSettings.Settings.GetBoolSetting(Settings.selectFirstRowOnFilter))
+                {
+                    SelectFirstRow();
+                }
+            }));
         }
 
         private void SelectFirstRow()
