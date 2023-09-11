@@ -1,22 +1,12 @@
 ﻿// NPP plugin platform for .Net v0.91.57 by Kasper B. Graversen etc.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Drawing;
-using System.Threading;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using NavigateTo.Plugin.Namespace;
 using NavigateTo.Tests;
 using Kbg.NppPluginNET.PluginInfrastructure;
-using NppPluginNET;
-using static Kbg.NppPluginNET.PluginInfrastructure.Win32;
-using System.Diagnostics;
-using System.Runtime;
 
 namespace Kbg.NppPluginNET
 {

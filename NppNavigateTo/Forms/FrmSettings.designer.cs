@@ -44,6 +44,9 @@
             this.label5 = new System.Windows.Forms.Label();
             this.numericUpDownCharSearchLimit = new System.Windows.Forms.NumericUpDown();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.numericUpDownSearchDelay = new System.Windows.Forms.NumericUpDown();
             this.numUpDownSecsBetweenDirectoryScans = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
             this.numericUpDownFuzzyness = new System.Windows.Forms.NumericUpDown();
@@ -73,6 +76,7 @@
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownCharSearchLimit)).BeginInit();
             this.groupBox3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSearchDelay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numUpDownSecsBetweenDirectoryScans)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFuzzyness)).BeginInit();
             this.groupBox4.SuspendLayout();
@@ -83,10 +87,9 @@
             // keepOpenDlgCheckBox
             // 
             this.keepOpenDlgCheckBox.AutoSize = true;
-            this.keepOpenDlgCheckBox.Location = new System.Drawing.Point(8, 34);
-            this.keepOpenDlgCheckBox.Margin = new System.Windows.Forms.Padding(4);
+            this.keepOpenDlgCheckBox.Location = new System.Drawing.Point(6, 28);
             this.keepOpenDlgCheckBox.Name = "keepOpenDlgCheckBox";
-            this.keepOpenDlgCheckBox.Size = new System.Drawing.Size(144, 20);
+            this.keepOpenDlgCheckBox.Size = new System.Drawing.Size(114, 17);
             this.keepOpenDlgCheckBox.TabIndex = 2;
             this.keepOpenDlgCheckBox.Text = "Keep dialog visible";
             this.keepOpenDlgCheckBox.UseVisualStyleBackColor = true;
@@ -97,11 +100,9 @@
             this.groupBox1.Controls.Add(this.checkBoxKeepSelected);
             this.groupBox1.Controls.Add(this.checkBoxCleanSearch);
             this.groupBox1.Controls.Add(this.keepOpenDlgCheckBox);
-            this.groupBox1.Location = new System.Drawing.Point(16, 15);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
+            this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox1.Size = new System.Drawing.Size(377, 137);
+            this.groupBox1.Size = new System.Drawing.Size(283, 111);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "General";
@@ -109,10 +110,9 @@
             // checkBoxKeepSelected
             // 
             this.checkBoxKeepSelected.AutoSize = true;
-            this.checkBoxKeepSelected.Location = new System.Drawing.Point(8, 91);
-            this.checkBoxKeepSelected.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBoxKeepSelected.Location = new System.Drawing.Point(6, 74);
             this.checkBoxKeepSelected.Name = "checkBoxKeepSelected";
-            this.checkBoxKeepSelected.Size = new System.Drawing.Size(176, 20);
+            this.checkBoxKeepSelected.Size = new System.Drawing.Size(143, 17);
             this.checkBoxKeepSelected.TabIndex = 4;
             this.checkBoxKeepSelected.Text = "Keep First Row Selected";
             this.checkBoxKeepSelected.UseVisualStyleBackColor = true;
@@ -121,10 +121,9 @@
             // checkBoxCleanSearch
             // 
             this.checkBoxCleanSearch.AutoSize = true;
-            this.checkBoxCleanSearch.Location = new System.Drawing.Point(8, 63);
-            this.checkBoxCleanSearch.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBoxCleanSearch.Location = new System.Drawing.Point(6, 51);
             this.checkBoxCleanSearch.Name = "checkBoxCleanSearch";
-            this.checkBoxCleanSearch.Size = new System.Drawing.Size(136, 20);
+            this.checkBoxCleanSearch.Size = new System.Drawing.Size(111, 17);
             this.checkBoxCleanSearch.TabIndex = 3;
             this.checkBoxCleanSearch.Text = "Clear search input";
             this.checkBoxCleanSearch.UseVisualStyleBackColor = true;
@@ -133,10 +132,9 @@
             // checkBoxSearchInFolder
             // 
             this.checkBoxSearchInFolder.AutoSize = true;
-            this.checkBoxSearchInFolder.Location = new System.Drawing.Point(8, 23);
-            this.checkBoxSearchInFolder.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBoxSearchInFolder.Location = new System.Drawing.Point(6, 19);
             this.checkBoxSearchInFolder.Name = "checkBoxSearchInFolder";
-            this.checkBoxSearchInFolder.Size = new System.Drawing.Size(337, 21);
+            this.checkBoxSearchInFolder.Size = new System.Drawing.Size(251, 17);
             this.checkBoxSearchInFolder.TabIndex = 5;
             this.checkBoxSearchInFolder.Text = "Search in current file folder ( Top directory only )";
             this.checkBoxSearchInFolder.UseVisualStyleBackColor = true;
@@ -145,10 +143,9 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(89, 36);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(67, 29);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(93, 16);
+            this.label1.Size = new System.Drawing.Size(77, 13);
             this.label1.TabIndex = 5;
             this.label1.Text = "Min Grid Width";
             // 
@@ -159,8 +156,7 @@
             0,
             0,
             0});
-            this.numericUpDownMinGridWidth.Location = new System.Drawing.Point(16, 31);
-            this.numericUpDownMinGridWidth.Margin = new System.Windows.Forms.Padding(4);
+            this.numericUpDownMinGridWidth.Location = new System.Drawing.Point(12, 25);
             this.numericUpDownMinGridWidth.Maximum = new decimal(new int[] {
             5000,
             0,
@@ -172,7 +168,7 @@
             0,
             0});
             this.numericUpDownMinGridWidth.Name = "numericUpDownMinGridWidth";
-            this.numericUpDownMinGridWidth.Size = new System.Drawing.Size(65, 22);
+            this.numericUpDownMinGridWidth.Size = new System.Drawing.Size(49, 20);
             this.numericUpDownMinGridWidth.TabIndex = 4;
             this.numericUpDownMinGridWidth.Value = new decimal(new int[] {
             250,
@@ -184,10 +180,9 @@
             // checkBoxSearchInSubDirs
             // 
             this.checkBoxSearchInSubDirs.AutoSize = true;
-            this.checkBoxSearchInSubDirs.Location = new System.Drawing.Point(35, 52);
-            this.checkBoxSearchInSubDirs.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBoxSearchInSubDirs.Location = new System.Drawing.Point(26, 42);
             this.checkBoxSearchInSubDirs.Name = "checkBoxSearchInSubDirs";
-            this.checkBoxSearchInSubDirs.Size = new System.Drawing.Size(211, 21);
+            this.checkBoxSearchInSubDirs.Size = new System.Drawing.Size(160, 17);
             this.checkBoxSearchInSubDirs.TabIndex = 5;
             this.checkBoxSearchInSubDirs.Text = "Search in sub directories too";
             this.checkBoxSearchInSubDirs.UseVisualStyleBackColor = true;
@@ -202,11 +197,9 @@
             this.groupBox2.Controls.Add(this.numericUpDownCharSearchLimit);
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.numericUpDownMinGridWidth);
-            this.groupBox2.Location = new System.Drawing.Point(415, 15);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(4);
+            this.groupBox2.Location = new System.Drawing.Point(311, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox2.Size = new System.Drawing.Size(341, 137);
+            this.groupBox2.Size = new System.Drawing.Size(256, 111);
             this.groupBox2.TabIndex = 6;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "File List";
@@ -218,10 +211,9 @@
             this.comboBoxSortOrder.Items.AddRange(new object[] {
             "ASC",
             "DESC"});
-            this.comboBoxSortOrder.Location = new System.Drawing.Point(239, 98);
-            this.comboBoxSortOrder.Margin = new System.Windows.Forms.Padding(4);
+            this.comboBoxSortOrder.Location = new System.Drawing.Point(179, 80);
             this.comboBoxSortOrder.Name = "comboBoxSortOrder";
-            this.comboBoxSortOrder.Size = new System.Drawing.Size(69, 24);
+            this.comboBoxSortOrder.Size = new System.Drawing.Size(53, 21);
             this.comboBoxSortOrder.TabIndex = 10;
             this.comboBoxSortOrder.SelectedIndexChanged += new System.EventHandler(this.comboBoxSortOrder_SelectedIndexChanged);
             // 
@@ -233,37 +225,33 @@
             "-",
             "Name",
             "Path"});
-            this.comboBoxSortedByAfterFilter.Location = new System.Drawing.Point(160, 98);
-            this.comboBoxSortedByAfterFilter.Margin = new System.Windows.Forms.Padding(4);
+            this.comboBoxSortedByAfterFilter.Location = new System.Drawing.Point(120, 80);
             this.comboBoxSortedByAfterFilter.Name = "comboBoxSortedByAfterFilter";
-            this.comboBoxSortedByAfterFilter.Size = new System.Drawing.Size(69, 24);
+            this.comboBoxSortedByAfterFilter.Size = new System.Drawing.Size(53, 21);
             this.comboBoxSortedByAfterFilter.TabIndex = 9;
             this.comboBoxSortedByAfterFilter.SelectedIndexChanged += new System.EventHandler(this.comboBoxSortedByAfterFilter_SelectedIndexChanged);
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(16, 102);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label6.Location = new System.Drawing.Point(12, 83);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(125, 16);
+            this.label6.Size = new System.Drawing.Size(102, 13);
             this.label6.TabIndex = 8;
             this.label6.Text = "Sort after search by:";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(89, 71);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label5.Location = new System.Drawing.Point(67, 58);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(105, 16);
+            this.label5.Size = new System.Drawing.Size(86, 13);
             this.label5.TabIndex = 7;
             this.label5.Text = "Min Char Search";
             // 
             // numericUpDownCharSearchLimit
             // 
-            this.numericUpDownCharSearchLimit.Location = new System.Drawing.Point(16, 69);
-            this.numericUpDownCharSearchLimit.Margin = new System.Windows.Forms.Padding(4);
+            this.numericUpDownCharSearchLimit.Location = new System.Drawing.Point(12, 56);
             this.numericUpDownCharSearchLimit.Maximum = new decimal(new int[] {
             10,
             0,
@@ -275,7 +263,7 @@
             0,
             0});
             this.numericUpDownCharSearchLimit.Name = "numericUpDownCharSearchLimit";
-            this.numericUpDownCharSearchLimit.Size = new System.Drawing.Size(65, 22);
+            this.numericUpDownCharSearchLimit.Size = new System.Drawing.Size(49, 20);
             this.numericUpDownCharSearchLimit.TabIndex = 6;
             this.numericUpDownCharSearchLimit.Value = new decimal(new int[] {
             2,
@@ -286,6 +274,9 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.label9);
+            this.groupBox3.Controls.Add(this.label8);
+            this.groupBox3.Controls.Add(this.numericUpDownSearchDelay);
             this.groupBox3.Controls.Add(this.numUpDownSecsBetweenDirectoryScans);
             this.groupBox3.Controls.Add(this.label7);
             this.groupBox3.Controls.Add(this.numericUpDownFuzzyness);
@@ -295,19 +286,62 @@
             this.groupBox3.Controls.Add(this.checkBoxSearchInFolder);
             this.groupBox3.Controls.Add(this.checkBoxSearchInSubDirs);
             this.groupBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox3.Location = new System.Drawing.Point(16, 159);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(4);
+            this.groupBox3.Location = new System.Drawing.Point(12, 129);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox3.Size = new System.Drawing.Size(377, 185);
+            this.groupBox3.Size = new System.Drawing.Size(283, 186);
             this.groupBox3.TabIndex = 7;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Search behavior";
             // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(6, 160);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(69, 13);
+            this.label9.TabIndex = 15;
+            this.label9.Text = "Search delay";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(155, 162);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(20, 13);
+            this.label8.TabIndex = 11;
+            this.label8.Text = "ms";
+            // 
+            // numericUpDownSearchDelay
+            // 
+            this.numericUpDownSearchDelay.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericUpDownSearchDelay.Location = new System.Drawing.Point(83, 158);
+            this.numericUpDownSearchDelay.Maximum = new decimal(new int[] {
+            2000,
+            0,
+            0,
+            0});
+            this.numericUpDownSearchDelay.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericUpDownSearchDelay.Name = "numericUpDownSearchDelay";
+            this.numericUpDownSearchDelay.Size = new System.Drawing.Size(69, 20);
+            this.numericUpDownSearchDelay.TabIndex = 14;
+            this.numericUpDownSearchDelay.Value = new decimal(new int[] {
+            300,
+            0,
+            0,
+            0});
+            this.numericUpDownSearchDelay.ValueChanged += new System.EventHandler(this.numericUpDownSearchDelay_ValueChanged);
+            // 
             // numUpDownSecsBetweenDirectoryScans
             // 
-            this.numUpDownSecsBetweenDirectoryScans.Location = new System.Drawing.Point(288, 75);
-            this.numUpDownSecsBetweenDirectoryScans.Margin = new System.Windows.Forms.Padding(4);
+            this.numUpDownSecsBetweenDirectoryScans.Location = new System.Drawing.Point(216, 61);
             this.numUpDownSecsBetweenDirectoryScans.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -319,7 +353,7 @@
             0,
             0});
             this.numUpDownSecsBetweenDirectoryScans.Name = "numUpDownSecsBetweenDirectoryScans";
-            this.numUpDownSecsBetweenDirectoryScans.Size = new System.Drawing.Size(53, 23);
+            this.numUpDownSecsBetweenDirectoryScans.Size = new System.Drawing.Size(40, 20);
             this.numUpDownSecsBetweenDirectoryScans.TabIndex = 13;
             this.numUpDownSecsBetweenDirectoryScans.Value = new decimal(new int[] {
             5,
@@ -331,23 +365,23 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(7, 77);
+            this.label7.Location = new System.Drawing.Point(5, 63);
+            this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(273, 17);
+            this.label7.Size = new System.Drawing.Size(204, 13);
             this.label7.TabIndex = 12;
             this.label7.Text = "Re-search directory how often? (seconds)";
             // 
             // numericUpDownFuzzyness
             // 
-            this.numericUpDownFuzzyness.Location = new System.Drawing.Point(288, 153);
-            this.numericUpDownFuzzyness.Margin = new System.Windows.Forms.Padding(4);
+            this.numericUpDownFuzzyness.Location = new System.Drawing.Point(216, 124);
             this.numericUpDownFuzzyness.Maximum = new decimal(new int[] {
             10,
             0,
             0,
             0});
             this.numericUpDownFuzzyness.Name = "numericUpDownFuzzyness";
-            this.numericUpDownFuzzyness.Size = new System.Drawing.Size(53, 23);
+            this.numericUpDownFuzzyness.Size = new System.Drawing.Size(40, 20);
             this.numericUpDownFuzzyness.TabIndex = 11;
             this.numericUpDownFuzzyness.Value = new decimal(new int[] {
             1,
@@ -359,10 +393,9 @@
             // checkBoxFuzzySearch
             // 
             this.checkBoxFuzzySearch.AutoSize = true;
-            this.checkBoxFuzzySearch.Location = new System.Drawing.Point(7, 156);
-            this.checkBoxFuzzySearch.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBoxFuzzySearch.Location = new System.Drawing.Point(5, 127);
             this.checkBoxFuzzySearch.Name = "checkBoxFuzzySearch";
-            this.checkBoxFuzzySearch.Size = new System.Drawing.Size(274, 21);
+            this.checkBoxFuzzySearch.Size = new System.Drawing.Size(205, 17);
             this.checkBoxFuzzySearch.TabIndex = 8;
             this.checkBoxFuzzySearch.Text = "Fuzzy search (Tabs Only) - Tolerance:";
             this.checkBoxFuzzySearch.UseVisualStyleBackColor = true;
@@ -371,10 +404,9 @@
             // checkBoxFileNameResults
             // 
             this.checkBoxFileNameResults.AutoSize = true;
-            this.checkBoxFileNameResults.Location = new System.Drawing.Point(7, 128);
-            this.checkBoxFileNameResults.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBoxFileNameResults.Location = new System.Drawing.Point(5, 104);
             this.checkBoxFileNameResults.Name = "checkBoxFileNameResults";
-            this.checkBoxFileNameResults.Size = new System.Drawing.Size(190, 21);
+            this.checkBoxFileNameResults.Size = new System.Drawing.Size(144, 17);
             this.checkBoxFileNameResults.TabIndex = 7;
             this.checkBoxFileNameResults.Text = "Prefer filename over path";
             this.checkBoxFileNameResults.UseVisualStyleBackColor = true;
@@ -383,10 +415,9 @@
             // checkBoxSearchMenu
             // 
             this.checkBoxSearchMenu.AutoSize = true;
-            this.checkBoxSearchMenu.Location = new System.Drawing.Point(7, 101);
-            this.checkBoxSearchMenu.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBoxSearchMenu.Location = new System.Drawing.Point(5, 82);
             this.checkBoxSearchMenu.Name = "checkBoxSearchMenu";
-            this.checkBoxSearchMenu.Size = new System.Drawing.Size(280, 21);
+            this.checkBoxSearchMenu.Size = new System.Drawing.Size(211, 17);
             this.checkBoxSearchMenu.TabIndex = 6;
             this.checkBoxSearchMenu.Text = "Search menu commands (experimental)";
             this.checkBoxSearchMenu.UseVisualStyleBackColor = true;
@@ -405,11 +436,9 @@
             this.groupBox4.Controls.Add(this.label3);
             this.groupBox4.Controls.Add(this.buttonGridTextColor);
             this.groupBox4.Controls.Add(this.button1);
-            this.groupBox4.Location = new System.Drawing.Point(415, 159);
-            this.groupBox4.Margin = new System.Windows.Forms.Padding(4);
+            this.groupBox4.Location = new System.Drawing.Point(311, 129);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox4.Size = new System.Drawing.Size(341, 213);
+            this.groupBox4.Size = new System.Drawing.Size(256, 191);
             this.groupBox4.TabIndex = 8;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Appearance";
@@ -417,31 +446,32 @@
             // maxResultsHighlightingEnabledLabel
             // 
             this.maxResultsHighlightingEnabledLabel.AutoSize = true;
-            this.maxResultsHighlightingEnabledLabel.Location = new System.Drawing.Point(7, 179);
+            this.maxResultsHighlightingEnabledLabel.Location = new System.Drawing.Point(5, 145);
+            this.maxResultsHighlightingEnabledLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.maxResultsHighlightingEnabledLabel.Name = "maxResultsHighlightingEnabledLabel";
-            this.maxResultsHighlightingEnabledLabel.Size = new System.Drawing.Size(251, 16);
+            this.maxResultsHighlightingEnabledLabel.Size = new System.Drawing.Size(201, 13);
             this.maxResultsHighlightingEnabledLabel.TabIndex = 11;
             this.maxResultsHighlightingEnabledLabel.Text = "Disable highlighting if >= this many results";
             // 
             // maxResultsHighlightingEnabledUpDown
             // 
-            this.maxResultsHighlightingEnabledUpDown.Location = new System.Drawing.Point(266, 177);
+            this.maxResultsHighlightingEnabledUpDown.Location = new System.Drawing.Point(8, 166);
+            this.maxResultsHighlightingEnabledUpDown.Margin = new System.Windows.Forms.Padding(2);
             this.maxResultsHighlightingEnabledUpDown.Maximum = new decimal(new int[] {
             1000000,
             0,
             0,
             0});
             this.maxResultsHighlightingEnabledUpDown.Name = "maxResultsHighlightingEnabledUpDown";
-            this.maxResultsHighlightingEnabledUpDown.Size = new System.Drawing.Size(63, 22);
+            this.maxResultsHighlightingEnabledUpDown.Size = new System.Drawing.Size(198, 20);
             this.maxResultsHighlightingEnabledUpDown.TabIndex = 10;
             this.maxResultsHighlightingEnabledUpDown.ValueChanged += new System.EventHandler(this.maxResultsHighlightingEnabled_ValueChanged);
             // 
             // buttonRowBackgroud
             // 
-            this.buttonRowBackgroud.Location = new System.Drawing.Point(11, 136);
-            this.buttonRowBackgroud.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonRowBackgroud.Location = new System.Drawing.Point(8, 110);
             this.buttonRowBackgroud.Name = "buttonRowBackgroud";
-            this.buttonRowBackgroud.Size = new System.Drawing.Size(152, 28);
+            this.buttonRowBackgroud.Size = new System.Drawing.Size(114, 23);
             this.buttonRowBackgroud.TabIndex = 9;
             this.buttonRowBackgroud.Text = "Row Background";
             this.buttonRowBackgroud.UseVisualStyleBackColor = true;
@@ -449,10 +479,9 @@
             // 
             // gridBackground
             // 
-            this.gridBackground.Location = new System.Drawing.Point(11, 103);
-            this.gridBackground.Margin = new System.Windows.Forms.Padding(4);
+            this.gridBackground.Location = new System.Drawing.Point(8, 84);
             this.gridBackground.Name = "gridBackground";
-            this.gridBackground.Size = new System.Drawing.Size(152, 28);
+            this.gridBackground.Size = new System.Drawing.Size(114, 23);
             this.gridBackground.TabIndex = 8;
             this.gridBackground.Text = "Grid Background";
             this.gridBackground.UseVisualStyleBackColor = true;
@@ -460,10 +489,9 @@
             // 
             // buttonResetStyle
             // 
-            this.buttonResetStyle.Location = new System.Drawing.Point(266, 117);
-            this.buttonResetStyle.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonResetStyle.Location = new System.Drawing.Point(200, 95);
             this.buttonResetStyle.Name = "buttonResetStyle";
-            this.buttonResetStyle.Size = new System.Drawing.Size(63, 28);
+            this.buttonResetStyle.Size = new System.Drawing.Size(47, 23);
             this.buttonResetStyle.TabIndex = 7;
             this.buttonResetStyle.Text = "Reset";
             this.buttonResetStyle.UseVisualStyleBackColor = true;
@@ -471,10 +499,9 @@
             // 
             // buttonSelectedRowText
             // 
-            this.buttonSelectedRowText.Location = new System.Drawing.Point(234, 66);
-            this.buttonSelectedRowText.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonSelectedRowText.Location = new System.Drawing.Point(176, 54);
             this.buttonSelectedRowText.Name = "buttonSelectedRowText";
-            this.buttonSelectedRowText.Size = new System.Drawing.Size(53, 28);
+            this.buttonSelectedRowText.Size = new System.Drawing.Size(40, 23);
             this.buttonSelectedRowText.TabIndex = 6;
             this.buttonSelectedRowText.Text = "Text";
             this.buttonSelectedRowText.UseVisualStyleBackColor = true;
@@ -482,10 +509,9 @@
             // 
             // buttonSelectedRowBack
             // 
-            this.buttonSelectedRowBack.Location = new System.Drawing.Point(127, 66);
-            this.buttonSelectedRowBack.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonSelectedRowBack.Location = new System.Drawing.Point(95, 54);
             this.buttonSelectedRowBack.Name = "buttonSelectedRowBack";
-            this.buttonSelectedRowBack.Size = new System.Drawing.Size(99, 28);
+            this.buttonSelectedRowBack.Size = new System.Drawing.Size(74, 23);
             this.buttonSelectedRowBack.TabIndex = 5;
             this.buttonSelectedRowBack.Text = "Background";
             this.buttonSelectedRowBack.UseVisualStyleBackColor = true;
@@ -494,29 +520,26 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(7, 72);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Location = new System.Drawing.Point(5, 58);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(91, 16);
+            this.label4.Size = new System.Drawing.Size(74, 13);
             this.label4.TabIndex = 4;
             this.label4.Text = "Selected Row";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(7, 31);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label3.Location = new System.Drawing.Point(5, 25);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(59, 16);
+            this.label3.Size = new System.Drawing.Size(48, 13);
             this.label3.TabIndex = 3;
             this.label3.Text = "Highlight";
             // 
             // buttonGridTextColor
             // 
-            this.buttonGridTextColor.Location = new System.Drawing.Point(234, 24);
-            this.buttonGridTextColor.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonGridTextColor.Location = new System.Drawing.Point(176, 20);
             this.buttonGridTextColor.Name = "buttonGridTextColor";
-            this.buttonGridTextColor.Size = new System.Drawing.Size(53, 28);
+            this.buttonGridTextColor.Size = new System.Drawing.Size(40, 23);
             this.buttonGridTextColor.TabIndex = 2;
             this.buttonGridTextColor.Text = "Text";
             this.buttonGridTextColor.UseVisualStyleBackColor = true;
@@ -524,10 +547,9 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(127, 24);
-            this.button1.Margin = new System.Windows.Forms.Padding(4);
+            this.button1.Location = new System.Drawing.Point(95, 20);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(99, 28);
+            this.button1.Size = new System.Drawing.Size(74, 23);
             this.button1.TabIndex = 1;
             this.button1.Text = "Background";
             this.button1.UseVisualStyleBackColor = true;
@@ -557,15 +579,14 @@
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataGridFileListPreview.DefaultCellStyle = dataGridViewCellStyle1;
-            this.dataGridFileListPreview.Location = new System.Drawing.Point(16, 418);
-            this.dataGridFileListPreview.Margin = new System.Windows.Forms.Padding(4);
+            this.dataGridFileListPreview.Location = new System.Drawing.Point(12, 340);
             this.dataGridFileListPreview.Name = "dataGridFileListPreview";
             this.dataGridFileListPreview.ReadOnly = true;
             this.dataGridFileListPreview.RowHeadersVisible = false;
             this.dataGridFileListPreview.RowHeadersWidth = 51;
             this.dataGridFileListPreview.RowTemplate.ReadOnly = true;
             this.dataGridFileListPreview.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridFileListPreview.Size = new System.Drawing.Size(740, 195);
+            this.dataGridFileListPreview.Size = new System.Drawing.Size(555, 158);
             this.dataGridFileListPreview.TabIndex = 9;
             this.dataGridFileListPreview.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dataGridFileListPreview_CellPainting);
             this.dataGridFileListPreview.ColumnWidthChanged += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dataGridFileListPreview_ColumnWidthChanged);
@@ -600,25 +621,23 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(20, 393);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Location = new System.Drawing.Point(15, 319);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(58, 16);
+            this.label2.Size = new System.Drawing.Size(48, 13);
             this.label2.TabIndex = 10;
             this.label2.Text = "Preview:";
             // 
             // FrmSettings
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(772, 623);
+            this.ClientSize = new System.Drawing.Size(579, 506);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.dataGridFileListPreview);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
-            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "FrmSettings";
             this.ShowIcon = false;
             this.Text = "Navigate To - Settings";
@@ -633,6 +652,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownCharSearchLimit)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSearchDelay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numUpDownSecsBetweenDirectoryScans)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFuzzyness)).EndInit();
             this.groupBox4.ResumeLayout(false);
@@ -684,5 +704,8 @@
         private System.Windows.Forms.NumericUpDown numUpDownSecsBetweenDirectoryScans;
         private System.Windows.Forms.Label maxResultsHighlightingEnabledLabel;
         private System.Windows.Forms.NumericUpDown maxResultsHighlightingEnabledUpDown;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.NumericUpDown numericUpDownSearchDelay;
     }
 }

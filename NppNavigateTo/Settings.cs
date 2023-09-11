@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Kbg.NppPluginNET.PluginInfrastructure;
 using NavigateTo.Plugin.Namespace;
@@ -36,6 +35,7 @@ namespace NppPluginNET
         public static string fuzzynessTolerance = "fuzzynessTolerance";
         public static string secondsBetweenDirectoryScans = "secondsBetweenDirectoryScans";
         public static string maxResultsHighlightingEnabled = "maxResultsHighlightingEnabled";
+        public static string searchDelayMs = "searchDelayMs";
 
         static string iniFilePath;
         static string lpAppName = "NavigateTo";
@@ -153,6 +153,8 @@ namespace NppPluginNET
                 Win32.GetPrivateProfileInt(lpAppName, secondsBetweenDirectoryScans, 5, iniFilePath));
             LoadIntSetting(maxResultsHighlightingEnabled,
                 Win32.GetPrivateProfileInt(lpAppName, maxResultsHighlightingEnabled, 5000, iniFilePath));
+            LoadIntSetting(searchDelayMs,
+                Win32.GetPrivateProfileInt(lpAppName, searchDelayMs, 300, iniFilePath));
             // TODO: add customizable font size; changing font is tricky, so am not doing yet
             //LoadIntSetting(fontSize,
             //    Win32.GetPrivateProfileInt(lpAppName, fontSize, 8, iniFilePath));

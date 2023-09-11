@@ -3,12 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Controls;
-using System.Windows.Forms;
-using NppPluginNET;
 using NppPluginNET.PluginInfrastructure;
 
 namespace Kbg.NppPluginNET.PluginInfrastructure

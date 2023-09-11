@@ -1,7 +1,7 @@
 ﻿/*
 A test runner for all of this package.
 */
-using System.Threading.Tasks;
+
 using NppPluginNET;
 
 namespace NavigateTo.Tests

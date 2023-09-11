@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Windows.Forms;
-using Kbg.NppPluginNET;
 using Kbg.NppPluginNET.PluginInfrastructure;
 using NppPluginNET;
 
@@ -76,6 +73,7 @@ namespace NavigateTo.Plugin.Namespace
             checkBoxFuzzySearch.Checked = Settings.GetBoolSetting(Settings.fuzzySearch);
             numericUpDownFuzzyness.Value = Settings.GetIntSetting(Settings.fuzzynessTolerance);
             maxResultsHighlightingEnabledUpDown.Value = Settings.GetIntSetting(Settings.maxResultsHighlightingEnabled);
+            numericUpDownSearchDelay.Value = Settings.GetIntSetting(Settings.searchDelayMs);
 
             DataGridViewRow newRow = new DataGridViewRow();
             newRow.CreateCells(dataGridFileListPreview);
@@ -357,6 +355,11 @@ namespace NavigateTo.Plugin.Namespace
         private void maxResultsHighlightingEnabled_ValueChanged(object sender, EventArgs e)
         {
             Settings.SetIntSetting(Settings.maxResultsHighlightingEnabled, (int)maxResultsHighlightingEnabledUpDown.Value);
+        }
+
+        private void numericUpDownSearchDelay_ValueChanged(object sender, EventArgs e)
+        {
+            Settings.SetIntSetting(Settings.searchDelayMs, (int)numericUpDownSearchDelay.Value);
         }
     }
 }

@@ -1,28 +1,15 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Windows.Controls;
-using System.Windows.Documents;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Shapes;
-using Kbg.NppPluginNET;
+using System.Windows.Threading;
 using Kbg.NppPluginNET.PluginInfrastructure;
 using NppPluginNET;
-using static System.String;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using Control = System.Windows.Forms.Control;
 using KeyEventArgs = System.Windows.Forms.KeyEventArgs;
 using MouseEventArgs = System.Windows.Forms.MouseEventArgs;
@@ -56,6 +43,7 @@ namespace NavigateTo.Plugin.Namespace
         public List<string> SelectedFiles { get; set; }
 
         public string currentDirectory { get; set; }
+        public SolidBrush hlBrush { get; set; }
 
         public string[] filesInCurrentDirectory { get; set; }
 
@@ -69,11 +57,8 @@ namespace NavigateTo.Plugin.Namespace
 
         private Glob glob { get; set; }
 
-        const int lastKeyPressTimerInterval = 250;
+        private DispatcherTimer lastKeyPressTimer;
 
-        private System.Timers.Timer lastKeyPressTimer;
-
-        private long lastKeypressTicks;
 
         /// <summary>
         /// function used to filter filenames when not using fuzzy matchin
@@ -103,16 +88,17 @@ namespace NavigateTo.Plugin.Namespace
             shouldReloadFiles = true;
             IsFuzzyResult = false;
             lastReloadTimes = new Dictionary<string, long>();
+            hlBrush =
+                new SolidBrush(
+                    Color.FromArgb(FrmSettings.Settings.GetIntSetting(Settings.highlightColorBackground)));
             searchLevelOverrides = new Dictionary<string, DirectorySearchLevel>();
             //backgroundWorker = new BackgroundWorker();
             //backgroundWorker.WorkerSupportsCancellation = true;
             //backgroundWorker.DoWork += BackgroundWorker_DoWork;
             glob = new Glob();
-            lastKeyPressTimer = new System.Timers.Timer();
-            lastKeyPressTimer.AutoReset = false;
-            lastKeyPressTimer.Interval = lastKeyPressTimerInterval;
-            lastKeyPressTimer.Elapsed += LastKeyPressTimer_Elapsed;
-            lastKeypressTicks = 0;
+            lastKeyPressTimer = new DispatcherTimer();
+            lastKeyPressTimer.Interval = TimeSpan.FromMilliseconds(FrmSettings.Settings.GetIntSetting(Settings.searchDelayMs));
+            lastKeyPressTimer.Tick += OnSearchTimerTick;
             nonFuzzyFilterFunc = null;
             InitializeComponent();
             ReloadFileList();
@@ -189,14 +175,17 @@ namespace NavigateTo.Plugin.Namespace
 
             foreach (DataGridViewRow selectedRow in dataGridFileList.SelectedRows)
             {
-                SelectedFiles.Add(selectedRow.Cells[1].Value.ToString());
+                if (selectedRow.Cells[1].Value != null)
+                {
+                    SelectedFiles.Add(selectedRow.Cells[1].Value.ToString());
+                }
             }
 
             dataGridFileList.Rows.Clear();
             if (emptyFilter)
             {
                 tooManyResultsToHighlight = FileList.Count >= FrmSettings.Settings.GetIntSetting(Settings.maxResultsHighlightingEnabled);
-                FileList.ForEach(file =>
+                dataGridFileList.Rows.AddRange(FileList.ConvertAll<DataGridViewRow>(file =>
                 {
                     DataGridViewRow newRow = new DataGridViewRow();
 
@@ -205,9 +194,8 @@ namespace NavigateTo.Plugin.Namespace
                     newRow.Cells[0].Value = file.FileName;
                     newRow.Cells[1].Value = file.FilePath;
                     newRow.Cells[2].Value = file.Source;
-
-                    dataGridFileList.Rows.Add(newRow);
-                });
+                    return newRow;
+                }).ToArray());
             }
             else
             {
@@ -216,7 +204,7 @@ namespace NavigateTo.Plugin.Namespace
                 FilterEverything(filter);
                 tooManyResultsToHighlight = FilteredFileList.Count >= FrmSettings.Settings.GetIntSetting(Settings.maxResultsHighlightingEnabled);
 
-                FilteredFileList.ForEach(file =>
+                dataGridFileList.Rows.AddRange(FilteredFileList.ConvertAll<DataGridViewRow>(file =>
                 {
                     DataGridViewRow newRow = new DataGridViewRow();
 
@@ -225,9 +213,8 @@ namespace NavigateTo.Plugin.Namespace
                     newRow.Cells[0].Value = file.FileName;
                     newRow.Cells[1].Value = file.FilePath;
                     newRow.Cells[2].Value = file.Source;
-
-                    dataGridFileList.Rows.Add(newRow);
-                });
+                    return newRow;
+                }).ToArray());
             }
 
             //auto sort
@@ -303,7 +290,6 @@ namespace NavigateTo.Plugin.Namespace
                     .Where(fm => nonFuzzyFilterFunc(fm.FileName) || nonFuzzyFilterFunc(fm.FilePath))
                     .ToList();
             }
-
             //run fuzzy search if there are no results from normal search and it is enabled
             bool fuzzy = FrmSettings.Settings.GetBoolSetting(Settings.fuzzySearch);
             if (FilteredFileList != null && FilteredFileList.Count == 0 && fuzzy)
@@ -475,6 +461,8 @@ namespace NavigateTo.Plugin.Namespace
         {
             if (Visible)
             {
+                hlBrush = new SolidBrush(
+                    Color.FromArgb(FrmSettings.Settings.GetIntSetting(Settings.highlightColorBackground)));
                 SetColumnsWidth();
                 RefreshDataGridStyles();
             }
@@ -487,6 +475,7 @@ namespace NavigateTo.Plugin.Namespace
 
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
                     PluginBase._funcItems.Items[Main.idFormNavigateAll]._cmdID, 0);
+                hlBrush.Dispose();
             }
         }
 
@@ -660,33 +649,43 @@ namespace NavigateTo.Plugin.Namespace
 
         private void SearchComboBoxTextChanged(object sender, EventArgs e)
         {
+            lastKeyPressTimer.Stop();
             lastKeyPressTimer.Start();
-            lastKeypressTicks = System.DateTime.UtcNow.Ticks;
         }
 
-        private void LastKeyPressTimer_Elapsed(object sender, EventArgs e)
+        private void OnSearchTimerTick(object sender, EventArgs e)
         {
-            Invoke(new Action(() =>
+            lastKeyPressTimer.Stop();
+            Search(searchComboBox.Text);
+        }
+
+        private void Search(string text)
+        {
+            Task.Run(() =>
             {
-                // allow keypresses more recent than the interval, because we can't rely on precise timing of this event firing
-                if (System.DateTime.UtcNow.Ticks <= lastKeypressTicks + System.TimeSpan.TicksPerMillisecond * lastKeyPressTimerInterval / 10)
-                    return;
-                int textLength = searchComboBox.Text.Length;
-                bool emptyText = string.IsNullOrWhiteSpace(searchComboBox.Text);
-                int minLength = FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit);
-
-                if (emptyText)
-                    ReloadFileList();
-                if (textLength > minLength || emptyText)
+                lastKeyPressTimer.Dispatcher.Invoke(() =>
                 {
-                    FilterDataGrid(searchComboBox.Text);
-                }
+                    if (searchComboBox.Text == text)
+                    {
+                        int textLength = searchComboBox.Text.Length;
+                        bool emptyText = string.IsNullOrWhiteSpace(searchComboBox.Text);
+                        int minLength = FrmSettings.Settings.GetIntSetting(Settings.minTypeCharLimit);
 
-                if (FrmSettings.Settings.GetBoolSetting(Settings.selectFirstRowOnFilter))
-                {
-                    SelectFirstRow();
-                }
-            }));
+                        if (emptyText)
+                            ReloadFileList();
+                        if (textLength > minLength || emptyText)
+                        {
+                            FilterDataGrid(searchComboBox.Text);
+                        }
+
+                        if (FrmSettings.Settings.GetBoolSetting(Settings.selectFirstRowOnFilter))
+                        {
+                            SelectFirstRow();
+                        }
+                    }
+                });
+            });
+            
         }
 
         private void SelectFirstRow()
@@ -773,7 +772,9 @@ namespace NavigateTo.Plugin.Namespace
         {
             if (e.Value == null
                 || searchComboBox.Text.Length == 0
-                || tooManyResultsToHighlight)
+                || tooManyResultsToHighlight
+                || IsFuzzyResult && (e.ColumnIndex != 0)
+                )
                 return;
 
             if (e.RowIndex > -1 && e.ColumnIndex > -1)
@@ -790,6 +791,8 @@ namespace NavigateTo.Plugin.Namespace
                         filterList.Add(match.Value);
                 }
                 List<Rectangle> rectangleList = new List<Rectangle>();
+
+                
 
                 if (!String.IsNullOrWhiteSpace(search))
                 {
@@ -855,16 +858,11 @@ namespace NavigateTo.Plugin.Namespace
                     }
                 }
 
-                SolidBrush hlBrush =
-                    new SolidBrush(
-                        Color.FromArgb(FrmSettings.Settings.GetIntSetting(Settings.highlightColorBackground)));
-
                 foreach (var recto in rectangleList)
                 {
                     e.Graphics.FillRectangle(hlBrush, recto);
                 }
 
-                hlBrush.Dispose();
                 e.PaintContent(e.CellBounds);
             }
         }
@@ -980,7 +978,7 @@ namespace NavigateTo.Plugin.Namespace
         {
             foreach (DataGridViewRow selectedRow in dataGridFileList.SelectedRows)
             {
-                if (selectedRow.Cells[2].Value.Equals(TABS))
+                if (selectedRow.Cells[1].Value != null && TABS.Equals(selectedRow.Cells[2].Value))
                 {
                     notepad.SwitchToFile(selectedRow.Cells[1].Value.ToString(), true);
                     Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_MENUCOMMAND, 0,
