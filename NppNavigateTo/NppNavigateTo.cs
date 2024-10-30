@@ -7,6 +7,8 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using NavigateTo.Tests;
 using Kbg.NppPluginNET.PluginInfrastructure;
+using NavigateTo.Plugin.Namespace;
+using NppPluginNET;
 
 namespace Kbg.NppPluginNET
 {
@@ -24,7 +26,7 @@ namespace Kbg.NppPluginNET
                 NavigateTo.Plugin.Namespace.Main.frmNavigateTo.Close();
             }
 
-            if (NavigateTo.Plugin.Namespace.Main.frmNavigateTo != null)
+            if (NavigateTo.Plugin.Namespace.Main.frmSettings != null)
             {
                 NavigateTo.Plugin.Namespace.Main.frmSettings.Close();
             }
@@ -41,6 +43,9 @@ namespace Kbg.NppPluginNET
         {
             switch (notification.Header.Code)
             {
+                case (uint)NppMsg.NPPN_READY:
+                    NavigateTo.Plugin.Namespace.Main.NavigateToDlg();
+                    break;
                 case (uint)NppMsg.NPPN_BEFORESHUTDOWN:
                     NavigateTo.Plugin.Namespace.Main.isShuttingDown = true;
                     break;
@@ -153,7 +158,7 @@ namespace NavigateTo.Plugin.Namespace
 
         #region " Menu functions "
 
-        static void NavigateToDlg()
+        public static void NavigateToDlg()
         {
             if (frmNavigateTo == null)
             {
@@ -182,9 +187,23 @@ namespace NavigateTo.Plugin.Namespace
                 IntPtr _ptrNppTbData = Marshal.AllocHGlobal(Marshal.SizeOf(_nppTbData));
                 Marshal.StructureToPtr(_nppTbData, _ptrNppTbData, false);
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMREGASDCKDLG, 0, _ptrNppTbData);
-                // Following message will toogle both menu item state and toolbar button
-                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
-                    PluginBase._funcItems.Items[idFormNavigateAll]._cmdID, 1);
+
+                if (FrmSettings.Settings.GetBoolSetting(Settings.keepDlgOpen))
+                {
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMSHOW, 0,
+                        frmNavigateTo.Handle);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
+                        PluginBase._funcItems.Items[idFormNavigateAll]._cmdID, 1);
+                    frmNavigateTo.GrabFocus();
+                }
+                else
+                {
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMHIDE, 0,
+                        frmNavigateTo.Handle);
+                    Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_SETMENUITEMCHECK,
+                        PluginBase._funcItems.Items[idFormNavigateAll]._cmdID, 0);
+                    editor.GrabFocus();
+                }
             }
             else
             {
