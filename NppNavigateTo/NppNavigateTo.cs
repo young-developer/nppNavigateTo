@@ -47,6 +47,7 @@ namespace Kbg.NppPluginNET
                     NavigateTo.Plugin.Namespace.Main.NavigateToDlg();
                     break;
                 case (uint)NppMsg.NPPN_BEFORESHUTDOWN:
+                    NavigateTo.Plugin.Namespace.Main.frmNavigateTo.SaveSearchHistory();
                     NavigateTo.Plugin.Namespace.Main.isShuttingDown = true;
                     break;
                 case (uint)NppMsg.NPPN_FILEOPENED:

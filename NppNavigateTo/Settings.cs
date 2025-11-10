@@ -36,6 +36,8 @@ namespace NppPluginNET
         public static string secondsBetweenDirectoryScans = "secondsBetweenDirectoryScans";
         public static string maxResultsHighlightingEnabled = "maxResultsHighlightingEnabled";
         public static string searchDelayMs = "searchDelayMs";
+        public static string searchHistory = "searchHistory";
+        public static string searchHistoryLength = "searchHistoryLength";
 
         static string iniFilePath;
         static string lpAppName = "NavigateTo";
@@ -155,6 +157,20 @@ namespace NppPluginNET
                 Win32.GetPrivateProfileInt(lpAppName, maxResultsHighlightingEnabled, 5000, iniFilePath));
             LoadIntSetting(searchDelayMs,
                 Win32.GetPrivateProfileInt(lpAppName, searchDelayMs, 300, iniFilePath));
+            try
+            {
+                LoadIntSetting(searchHistoryLength,
+                    Win32.GetPrivateProfileInt(lpAppName, searchHistoryLength, 5000, iniFilePath));
+                int size = GetIntSetting(searchHistoryLength) + 1;
+                StringBuilder shStringBuilder = new StringBuilder(size);
+                Win32.GetPrivateProfileString(lpAppName, searchHistory, "", shStringBuilder, size, iniFilePath);
+                LoadSetting(searchHistory, shStringBuilder.ToString());
+            }
+            catch(Exception ex)
+            {
+                SetIntSetting(searchHistoryLength, 5000);
+                SetSetting(searchHistory, "");
+            }
             // TODO: add customizable font size; changing font is tricky, so am not doing yet
             //LoadIntSetting(fontSize,
             //    Win32.GetPrivateProfileInt(lpAppName, fontSize, 8, iniFilePath));

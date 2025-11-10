@@ -101,11 +101,68 @@ namespace NavigateTo.Plugin.Namespace
             lastKeyPressTimer.Tick += OnSearchTimerTick;
             nonFuzzyFilterFunc = null;
             InitializeComponent();
+            LoadSearchHistory();
             ReloadFileList();
             this.notepad.ReloadMenuItems();
             FormStyle.ApplyStyle(this, true, notepad.IsDarkModeEnabled());
             FilterDataGrid("");
         }
+
+        private void LoadSearchHistory()
+        {
+            try
+            {
+                string hist = FrmSettings.Settings.GetSetting(Settings.searchHistory);
+                if (!string.IsNullOrEmpty(hist))
+                {
+                    // items are stored as a pipe-separated list
+                    var items = hist.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries);
+                    // insert in order so most recent is first
+                    foreach (var it in items)
+                    {
+                        if (!searchComboBox.Items.Contains(it))
+                            searchComboBox.Items.Add(it);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.ToString(),
+                    @"Could not load search history",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        public void SaveSearchHistory()
+        {
+            try
+            {
+                // store up to 20 entries to keep INI small
+                int max = 20;
+                var list = new List<string>();
+                foreach (var o in searchComboBox.Items)
+                {
+                    if (o == null) continue;
+                    string s = o.ToString();
+                    if (string.IsNullOrWhiteSpace(s)) continue;
+                    if (!list.Contains(s)) list.Add(s);
+                    if (list.Count >= max) break;
+                }
+                // serialize as pipe-separated
+                string serial = string.Join("|", list);
+                FrmSettings.Settings.SetSetting(Settings.searchHistory, serial);
+                FrmSettings.Settings.SetIntSetting(Settings.searchHistoryLength, serial.Length);
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.ToString(),
+                    @"Could not save search history",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
 
         /// <summary>
         /// reload the list of files that are currently open in Notepad++
@@ -710,11 +767,19 @@ namespace NavigateTo.Plugin.Namespace
 
         private void SwitchToFile(string path, bool isTab = true)
         {
-            notepad.SwitchToFile(path, isTab);
-            HideWindow(!FrmSettings.Settings.GetBoolSetting(Settings.keepDlgOpen));
             string fileName = Path.GetFileName(notepad.GetCurrentFilePath());
             searchComboBox.Items.Remove(fileName);
             searchComboBox.Items.Insert(0, fileName);
+            string currentSearchString = searchComboBox.Text;
+            // save also search string
+            if (!String.IsNullOrEmpty(currentSearchString))
+            {
+                searchComboBox.Items.Remove(currentSearchString);
+                searchComboBox.Items.Insert(0, currentSearchString);
+            }
+
+            notepad.SwitchToFile(path, isTab);
+            HideWindow(!FrmSettings.Settings.GetBoolSetting(Settings.keepDlgOpen));
         }
 
         private void HideWindow(bool disabled = true)
