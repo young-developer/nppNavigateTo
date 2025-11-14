@@ -116,7 +116,7 @@ namespace NavigateTo.Plugin.Namespace
                 if (!string.IsNullOrEmpty(hist))
                 {
                     // items are stored as a pipe-separated list
-                    var items = hist.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries);
+                    var items = hist.Split(new [] {"<|SEP|>"}, StringSplitOptions.RemoveEmptyEntries);
                     // insert in order so most recent is first
                     foreach (var it in items)
                     {
@@ -150,7 +150,7 @@ namespace NavigateTo.Plugin.Namespace
                     if (list.Count >= max) break;
                 }
                 // serialize as pipe-separated
-                string serial = string.Join("|", list);
+                string serial = string.Join("<|SEP|>", list);
                 FrmSettings.Settings.SetSetting(Settings.searchHistory, serial);
                 FrmSettings.Settings.SetIntSetting(Settings.searchHistoryLength, serial.Length);
             }
