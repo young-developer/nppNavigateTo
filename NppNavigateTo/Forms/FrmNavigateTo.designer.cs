@@ -1,4 +1,4 @@
-﻿using NppPluginNET;
+using NppPluginNET;
 
 namespace NavigateTo.Plugin.Namespace
 {
@@ -19,6 +19,8 @@ namespace NavigateTo.Plugin.Namespace
 			{
 				components.Dispose();
 			}
+			reloadTimer?.Stop();
+			lastKeyPressTimer?.Stop();
 			base.Dispose(disposing);
 		}
 
@@ -68,9 +70,9 @@ namespace NavigateTo.Plugin.Namespace
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridFileList.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dataGridFileList.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
             this.dataGridFileList.BackgroundColor = System.Drawing.SystemColors.ButtonShadow;
             this.dataGridFileList.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleVertical;
+            this.dataGridFileList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridFileList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.ColumnName,
             this.ColumnPath,
@@ -98,8 +100,6 @@ namespace NavigateTo.Plugin.Namespace
             this.dataGridFileList.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridFileList.RowHeadersWidth = 30;
             this.dataGridFileList.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            this.dataGridFileList.ColumnHeadersHeight = 25;
-            this.dataGridFileList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridFileList.RowTemplate.ReadOnly = true;
             this.dataGridFileList.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.dataGridFileList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -161,8 +161,8 @@ namespace NavigateTo.Plugin.Namespace
             // 
             // FrmNavigateTo
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(603, 440);
             this.Controls.Add(this.dataGridFileList);
             this.Controls.Add(this.searchComboBox);
@@ -171,6 +171,7 @@ namespace NavigateTo.Plugin.Namespace
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.Text = "NavigateTo";
+            this.TopMost = true;
             this.Load += new System.EventHandler(this.frmNavigateAll_Load);
             this.VisibleChanged += new System.EventHandler(this.frmNavigateAll_VisibleChanged);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FrmNavigateAll_KeyDown);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -36,6 +36,7 @@ namespace NppPluginNET
         public static string secondsBetweenDirectoryScans = "secondsBetweenDirectoryScans";
         public static string maxResultsHighlightingEnabled = "maxResultsHighlightingEnabled";
         public static string searchDelayMs = "searchDelayMs";
+        public static string reloadDelayMs = "reloadDelayMs";
         public static string searchHistory = "searchHistory";
         public static string searchHistoryLength = "searchHistoryLength";
 
@@ -157,6 +158,8 @@ namespace NppPluginNET
                 Win32.GetPrivateProfileInt(lpAppName, maxResultsHighlightingEnabled, 5000, iniFilePath));
             LoadIntSetting(searchDelayMs,
                 Win32.GetPrivateProfileInt(lpAppName, searchDelayMs, 300, iniFilePath));
+            LoadIntSetting(reloadDelayMs,
+                Win32.GetPrivateProfileInt(lpAppName, reloadDelayMs, 300, iniFilePath));
             try
             {
                 LoadIntSetting(searchHistoryLength,

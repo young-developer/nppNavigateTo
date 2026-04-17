@@ -1,4 +1,4 @@
-﻿namespace NavigateTo.Plugin.Namespace
+namespace NavigateTo.Plugin.Namespace
 {
     partial class FrmSettings
     {
@@ -47,6 +47,9 @@
             this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.numericUpDownSearchDelay = new System.Windows.Forms.NumericUpDown();
+            this.label10 = new System.Windows.Forms.Label();
+            this.numericUpDownReloadDelay = new System.Windows.Forms.NumericUpDown();
+            this.label11 = new System.Windows.Forms.Label();
             this.numUpDownSecsBetweenDirectoryScans = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
             this.numericUpDownFuzzyness = new System.Windows.Forms.NumericUpDown();
@@ -277,6 +280,9 @@
             this.groupBox3.Controls.Add(this.label9);
             this.groupBox3.Controls.Add(this.label8);
             this.groupBox3.Controls.Add(this.numericUpDownSearchDelay);
+            this.groupBox3.Controls.Add(this.label10);
+            this.groupBox3.Controls.Add(this.numericUpDownReloadDelay);
+            this.groupBox3.Controls.Add(this.label11);
             this.groupBox3.Controls.Add(this.numUpDownSecsBetweenDirectoryScans);
             this.groupBox3.Controls.Add(this.label7);
             this.groupBox3.Controls.Add(this.numericUpDownFuzzyness);
@@ -338,6 +344,52 @@
             0,
             0});
             this.numericUpDownSearchDelay.ValueChanged += new System.EventHandler(this.numericUpDownSearchDelay_ValueChanged);
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(6, 183);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(71, 13);
+            this.label10.TabIndex = 16;
+            this.label10.Text = "Reload delay";
+            // 
+            // numericUpDownReloadDelay
+            // 
+            this.numericUpDownReloadDelay.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericUpDownReloadDelay.Location = new System.Drawing.Point(83, 180);
+            this.numericUpDownReloadDelay.Maximum = new decimal(new int[] {
+            2000,
+            0,
+            0,
+            0});
+            this.numericUpDownReloadDelay.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericUpDownReloadDelay.Name = "numericUpDownReloadDelay";
+            this.numericUpDownReloadDelay.Size = new System.Drawing.Size(69, 20);
+            this.numericUpDownReloadDelay.TabIndex = 17;
+            this.numericUpDownReloadDelay.Value = new decimal(new int[] {
+            300,
+            0,
+            0,
+            0});
+            this.numericUpDownReloadDelay.ValueChanged += new System.EventHandler(this.numericUpDownReloadDelay_ValueChanged);
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(155, 183);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(20, 13);
+            this.label11.TabIndex = 18;
+            this.label11.Text = "ms";
             // 
             // numUpDownSecsBetweenDirectoryScans
             // 
@@ -707,5 +759,8 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown numericUpDownSearchDelay;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.NumericUpDown numericUpDownReloadDelay;
+        private System.Windows.Forms.Label label11;
     }
 }

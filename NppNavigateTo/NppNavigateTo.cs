@@ -1,4 +1,4 @@
-﻿// NPP plugin platform for .Net v0.91.57 by Kasper B. Graversen etc.
+// NPP plugin platform for .Net v0.91.57 by Kasper B. Graversen etc.
 
 using System;
 using System.Drawing;
@@ -50,7 +50,7 @@ namespace Kbg.NppPluginNET
                     NavigateTo.Plugin.Namespace.Main.frmNavigateTo.SaveSearchHistory();
                     NavigateTo.Plugin.Namespace.Main.isShuttingDown = true;
                     break;
-                case (uint)NppMsg.NPPN_FILEOPENED:
+                 case (uint)NppMsg.NPPN_FILEOPENED:
                 case (uint)NppMsg.NPPN_FILECLOSED:
                 case (uint)NppMsg.NPPN_FILERENAMED:
                 case (uint)NppMsg.NPPN_FILELOADFAILED:
@@ -72,8 +72,8 @@ namespace Kbg.NppPluginNET
                     if (frmNavigateTo.currentDirectory == null ||
                         frmNavigateTo.currentDirectory != NavigateTo.Plugin.Namespace.Main.notepad.GetCurrentFileDirectory())
                         frmNavigateTo.shouldReloadFiles = true;
-                    frmNavigateTo.ReloadFileList();
-                    frmNavigateTo.FilterDataGrid("");
+                    frmNavigateTo.StopReloadTimer();
+                    frmNavigateTo.reloadTimer.Start();
                     break;
                 // the editor color scheme changed, so update form colors
                 case (uint)NppMsg.NPPN_WORDSTYLESUPDATED:

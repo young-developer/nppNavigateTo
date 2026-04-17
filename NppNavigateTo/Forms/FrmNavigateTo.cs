@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -58,6 +58,7 @@ namespace NavigateTo.Plugin.Namespace
         private Glob glob { get; set; }
 
         private DispatcherTimer lastKeyPressTimer;
+        internal DispatcherTimer reloadTimer;
 
 
         /// <summary>
@@ -99,6 +100,9 @@ namespace NavigateTo.Plugin.Namespace
             lastKeyPressTimer = new DispatcherTimer();
             lastKeyPressTimer.Interval = TimeSpan.FromMilliseconds(FrmSettings.Settings.GetIntSetting(Settings.searchDelayMs));
             lastKeyPressTimer.Tick += OnSearchTimerTick;
+            reloadTimer = new DispatcherTimer();
+            reloadTimer.Interval = TimeSpan.FromMilliseconds(FrmSettings.Settings.GetIntSetting(Settings.reloadDelayMs));
+            reloadTimer.Tick += OnReloadTimerTick;
             nonFuzzyFilterFunc = null;
             InitializeComponent();
             LoadSearchHistory();
@@ -714,6 +718,27 @@ namespace NavigateTo.Plugin.Namespace
         {
             lastKeyPressTimer.Stop();
             Search(searchComboBox.Text);
+        }
+
+        private void OnReloadTimerTick(object sender, EventArgs e)
+        {
+            reloadTimer.Stop();
+            if (Main.isShuttingDown)
+                return;
+            if (!Visible)
+                return;
+            if (shouldReloadFiles)
+            {
+                shouldReloadFiles = false;
+                currentDirectory = Main.notepad.GetCurrentFileDirectory();
+            }
+            ReloadFileList();
+            FilterDataGrid("");
+        }
+
+        public void StopReloadTimer()
+        {
+            reloadTimer.Stop();
         }
 
         private void Search(string text)

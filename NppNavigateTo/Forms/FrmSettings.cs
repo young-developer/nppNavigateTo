@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
@@ -74,6 +74,7 @@ namespace NavigateTo.Plugin.Namespace
             numericUpDownFuzzyness.Value = Settings.GetIntSetting(Settings.fuzzynessTolerance);
             maxResultsHighlightingEnabledUpDown.Value = Settings.GetIntSetting(Settings.maxResultsHighlightingEnabled);
             numericUpDownSearchDelay.Value = Settings.GetIntSetting(Settings.searchDelayMs);
+            numericUpDownReloadDelay.Value = Settings.GetIntSetting(Settings.reloadDelayMs);
 
             DataGridViewRow newRow = new DataGridViewRow();
             newRow.CreateCells(dataGridFileListPreview);
@@ -357,9 +358,14 @@ namespace NavigateTo.Plugin.Namespace
             Settings.SetIntSetting(Settings.maxResultsHighlightingEnabled, (int)maxResultsHighlightingEnabledUpDown.Value);
         }
 
-        private void numericUpDownSearchDelay_ValueChanged(object sender, EventArgs e)
+    private void numericUpDownSearchDelay_ValueChanged(object sender, EventArgs e)
         {
             Settings.SetIntSetting(Settings.searchDelayMs, (int)numericUpDownSearchDelay.Value);
+        }
+
+        private void numericUpDownReloadDelay_ValueChanged(object sender, EventArgs e)
+        {
+            Settings.SetIntSetting(Settings.reloadDelayMs, (int)numericUpDownReloadDelay.Value);
         }
     }
 }
