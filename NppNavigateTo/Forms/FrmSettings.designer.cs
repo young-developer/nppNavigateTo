@@ -80,6 +80,7 @@ namespace NavigateTo.Plugin.Namespace
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownCharSearchLimit)).BeginInit();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSearchDelay)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownReloadDelay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numUpDownSecsBetweenDirectoryScans)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFuzzyness)).BeginInit();
             this.groupBox4.SuspendLayout();
@@ -294,7 +295,7 @@ namespace NavigateTo.Plugin.Namespace
             this.groupBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox3.Location = new System.Drawing.Point(12, 129);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(283, 186);
+            this.groupBox3.Size = new System.Drawing.Size(283, 207);
             this.groupBox3.TabIndex = 7;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Search behavior";
@@ -350,7 +351,7 @@ namespace NavigateTo.Plugin.Namespace
             this.label10.AutoSize = true;
             this.label10.Location = new System.Drawing.Point(6, 183);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(71, 13);
+            this.label10.Size = new System.Drawing.Size(69, 13);
             this.label10.TabIndex = 16;
             this.label10.Text = "Reload delay";
             // 
@@ -631,14 +632,14 @@ namespace NavigateTo.Plugin.Namespace
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.ControlText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataGridFileListPreview.DefaultCellStyle = dataGridViewCellStyle1;
-            this.dataGridFileListPreview.Location = new System.Drawing.Point(12, 340);
+            this.dataGridFileListPreview.Location = new System.Drawing.Point(12, 356);
             this.dataGridFileListPreview.Name = "dataGridFileListPreview";
             this.dataGridFileListPreview.ReadOnly = true;
             this.dataGridFileListPreview.RowHeadersVisible = false;
             this.dataGridFileListPreview.RowHeadersWidth = 51;
             this.dataGridFileListPreview.RowTemplate.ReadOnly = true;
             this.dataGridFileListPreview.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridFileListPreview.Size = new System.Drawing.Size(555, 158);
+            this.dataGridFileListPreview.Size = new System.Drawing.Size(555, 142);
             this.dataGridFileListPreview.TabIndex = 9;
             this.dataGridFileListPreview.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dataGridFileListPreview_CellPainting);
             this.dataGridFileListPreview.ColumnWidthChanged += new System.Windows.Forms.DataGridViewColumnEventHandler(this.dataGridFileListPreview_ColumnWidthChanged);
@@ -673,7 +674,7 @@ namespace NavigateTo.Plugin.Namespace
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(15, 319);
+            this.label2.Location = new System.Drawing.Point(12, 340);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(48, 13);
             this.label2.TabIndex = 10;
@@ -705,6 +706,7 @@ namespace NavigateTo.Plugin.Namespace
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSearchDelay)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownReloadDelay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numUpDownSecsBetweenDirectoryScans)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFuzzyness)).EndInit();
             this.groupBox4.ResumeLayout(false);
