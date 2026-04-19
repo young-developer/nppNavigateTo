@@ -17,7 +17,7 @@ namespace NppPluginNET
                 from s in fileList
                 let lcs = s.FilePath.ToLower().LcsLength(lowerFilter)
                 where lcs >= filter.Length - tolerance
-                orderby lcs
+                orderby lcs descending
                 select s
             ).ToList();
 
@@ -35,7 +35,7 @@ namespace NppPluginNET
                 from s in fileList
                 let lcs = s.FileName.ToLower().LcsLength(lowerFilter)
                 where lcs >= filter.Length - tolerance
-                orderby lcs
+                orderby lcs descending
                 select s
             ).ToList();
 
@@ -53,7 +53,7 @@ namespace NppPluginNET
                 let subsequenceTolerated = nameLCS >= filter.Length - tolerance ||
                                            pathLCS >= filter.Length - tolerance
                 where subsequenceTolerated
-                orderby nameLCS, pathLCS
+                orderby nameLCS descending, pathLCS descending
                 select s
             ).ToList();
             return foundFiles;
