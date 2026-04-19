@@ -174,6 +174,7 @@ namespace NavigateTo.Plugin.Namespace
             this.TopMost = true;
             this.Load += new System.EventHandler(this.frmNavigateAll_Load);
             this.VisibleChanged += new System.EventHandler(this.frmNavigateAll_VisibleChanged);
+            this.Enter += new System.EventHandler(this.FrmNavigateTo_Enter);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FrmNavigateAll_KeyDown);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.FrmNavigateAll_KeyPress);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridFileList)).EndInit();

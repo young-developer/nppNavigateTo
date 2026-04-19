@@ -59,6 +59,7 @@ namespace NavigateTo.Plugin.Namespace
 
         private DispatcherTimer lastKeyPressTimer;
         internal DispatcherTimer reloadTimer;
+        private bool _fileListDirty;
 
 
         /// <summary>
@@ -733,7 +734,24 @@ namespace NavigateTo.Plugin.Namespace
                 currentDirectory = Main.notepad.GetCurrentFileDirectory();
             }
             ReloadFileList();
-            FilterDataGrid("");
+            // if dialog visible rerendering on each change is expensive operation 
+            if (FrmSettings.Settings.GetBoolSetting(Settings.keepDlgOpen))
+            {
+                _fileListDirty = true;
+            }
+            else
+            {
+                FilterDataGrid("");
+            }
+        }
+
+        private void FrmNavigateTo_Enter(object sender, EventArgs e)
+        {
+            if (_fileListDirty)
+            {
+                FilterDataGrid("");
+                _fileListDirty = false;
+            }
         }
 
         public void StopReloadTimer()
