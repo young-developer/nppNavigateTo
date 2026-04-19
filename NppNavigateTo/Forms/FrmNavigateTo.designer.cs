@@ -60,6 +60,7 @@ namespace NavigateTo.Plugin.Namespace
             this.searchComboBox.TabIndex = 1;
             this.searchComboBox.TextChanged += new System.EventHandler(this.SearchComboBoxTextChanged);
             this.searchComboBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SearchComboBoxKeyDown);
+            this.searchComboBox.Enter += new System.EventHandler(this.searchComboBox_Enter);
             // 
             // dataGridFileList
             // 
