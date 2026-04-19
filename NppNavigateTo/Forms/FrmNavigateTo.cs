@@ -292,9 +292,10 @@ namespace NavigateTo.Plugin.Namespace
             //restore selection
             if (SelectedFiles.Count != 0)
             {
+                var selectedSet = new HashSet<string>(SelectedFiles, StringComparer.OrdinalIgnoreCase);
                 foreach (DataGridViewRow row in dataGridFileList.Rows)
                 {
-                    row.Selected = SelectedFiles.Contains(row.Cells[1].Value);
+                    row.Selected = selectedSet.Contains(row.Cells[1].Value?.ToString());
                 }
             }
 
@@ -326,7 +327,7 @@ namespace NavigateTo.Plugin.Namespace
             }
         }
 
-        private void searchInTabs(string filter, Func<string, bool> nonFuzzyFilterFunc/*, DoWorkEventArgs e*/)
+       private void searchInTabs(string filter, Func<string, bool> nonFuzzyFilterFunc/*, DoWorkEventArgs e*/)
         {
             //Normal index of search
             if (FrmSettings.Settings.GetBoolSetting(Settings.preferFilenameResults))
@@ -335,16 +336,15 @@ namespace NavigateTo.Plugin.Namespace
                     .Where(fm => nonFuzzyFilterFunc(fm.FileName))
                     .ToList();
 
-                FileList.AsParallel()
-                    .Where(fm => nonFuzzyFilterFunc(fm.FilePath))
-                    .ToList().ForEach(filePath =>
-                        {
-                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
-                            {
-                                FilteredFileList.Add(filePath);
-                            }
-                        }
-                    );
+                var existingPaths = new HashSet<string>(FilteredFileList.Select(f => f.FilePath), StringComparer.OrdinalIgnoreCase);
+                foreach (var filePath in FileList.AsParallel()
+                    .Where(fm => nonFuzzyFilterFunc(fm.FilePath)))
+                {
+                    if (existingPaths.Add(filePath.FilePath))
+                    {
+                        FilteredFileList.Add(filePath);
+                    }
+                }
             }
             else
             {
@@ -361,14 +361,15 @@ namespace NavigateTo.Plugin.Namespace
                 {
                     FilteredFileList = SearchUtils.FuzzySearchFileName(filter, FileList, fuzzynessTolerance);
 
-                    SearchUtils.FuzzySearchFilePath(filter, FileList, fuzzynessTolerance)
-                        .ForEach(filePath =>
+                    var fuzzyPathList = SearchUtils.FuzzySearchFilePath(filter, FileList, fuzzynessTolerance);
+                    var existingPaths = new HashSet<string>(FilteredFileList.Select(f => f.FilePath), StringComparer.OrdinalIgnoreCase);
+                    foreach (var filePath in fuzzyPathList)
+                    {
+                        if (existingPaths.Add(filePath.FilePath))
                         {
-                            if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath.FilePath)))
-                            {
-                                FilteredFileList.Add(filePath);
-                            }
-                        });
+                            FilteredFileList.Add(filePath);
+                        }
+                    }
                 }
                 else
                 {
@@ -479,11 +480,12 @@ namespace NavigateTo.Plugin.Namespace
                 }
             }
             filesInCurrentDirectory = SearchCurrentDirectory(searchLevel, nextTimeToRefresh, currentDirectory);
+            var existingPaths = new HashSet<string>(FilteredFileList.Select(f => f.FilePath), StringComparer.OrdinalIgnoreCase);
             foreach (var filePath in filesInCurrentDirectory
                         .AsParallel().Where(filterFunc)
                         .ToList())
             {
-                if (!FilteredFileList.Exists(file => file.FilePath.Equals(filePath)))
+                if (existingPaths.Add(filePath))
                 {
                     FilteredFileList.Add(new FileModel(Path.GetFileName(filePath), filePath, -1, -1,
                         searchLevel >= DirectorySearchLevel.RecurseSubdirs ? FOLDER_SUB : FOLDER_TOP, 0));
@@ -493,14 +495,19 @@ namespace NavigateTo.Plugin.Namespace
 
         private void FilterMenuCommands(Func<string, bool> filterFunc)
         {
+            var existingPaths = new HashSet<string>(FilteredFileList.Select(f => f.FilePath), StringComparer.OrdinalIgnoreCase);
             foreach (var nppMenuCmd in notepad.MainMenuItems.AsParallel()
                 .Where(e => filterFunc(e.Value))
                 .ToList())
             {
-                FilteredFileList.Add(new FileModel(
-                    nppMenuCmd.Key.ToString(),
-                    nppMenuCmd.Value, nppMenuCmd.GetHashCode(), (uint)nppMenuCmd.Key,
-                    CMD, 0));
+                var path = nppMenuCmd.Value;
+                if (existingPaths.Add(path))
+                {
+                    FilteredFileList.Add(new FileModel(
+                        nppMenuCmd.Key.ToString(),
+                        path, nppMenuCmd.GetHashCode(), (uint)nppMenuCmd.Key,
+                        CMD, 0));
+                }
             }
         }
 
@@ -879,7 +886,7 @@ namespace NavigateTo.Plugin.Namespace
         private void dataGridFileList_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
             if (e.Value == null
-                || searchComboBox.Text.Length == 0
+                || string.IsNullOrWhiteSpace(searchComboBox.Text)
                 || tooManyResultsToHighlight
                 || IsFuzzyResult && (e.ColumnIndex != 0)
                 )
@@ -888,80 +895,88 @@ namespace NavigateTo.Plugin.Namespace
             if (e.RowIndex > -1 && e.ColumnIndex > -1)
             {
                 String search = searchComboBox.Text.Trim();
+                if (string.IsNullOrWhiteSpace(search))
+                    return;
+
                 List<string> filterList;
                 if (IsFuzzyResult)
                     filterList = search.ToCharArray().Select(c => c.ToString()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
                 else
                 {
-                    var words = Regex.Matches(search, "[\\.\\w]+"); // don't paint based on * and other metacharacters
+                    var words = Regex.Matches(search, "[\\.\\w]+");
                     filterList = new List<string>();
                     foreach (Match match in words)
                         filterList.Add(match.Value);
                 }
+
+                if (filterList.Count == 0)
+                    return;
+
+                String gridCellValue = e.FormattedValue.ToString();
                 List<Rectangle> rectangleList = new List<Rectangle>();
 
-                
-
-                if (!String.IsNullOrWhiteSpace(search))
+                foreach (var word in filterList)
                 {
-                    foreach (var word in filterList)
+                    string trimmedWord = word.Trim();
+                    if (string.IsNullOrEmpty(trimmedWord))
+                        continue;
+
+                    var startIndexes = gridCellValue.AllIndexesOf(trimmedWord, true);
+
+                    foreach (var startIndexInCellValue in startIndexes)
                     {
-                        String gridCellValue = e.FormattedValue.ToString();
-                        var startIndexes = gridCellValue.AllIndexesOf(word.Trim(), true);
+                        if (startIndexInCellValue < 0)
+                            continue;
 
-                        foreach (var startIndexInCellValue in startIndexes)
+                        e.Handled = true;
+                        e.PaintBackground(e.CellBounds, true);
+
+                        int indexOfN = gridCellValue.IndexOf("\n", StringComparison.CurrentCultureIgnoreCase);
+                        Rectangle hlRect = new Rectangle();
+                        hlRect.Y = e.CellBounds.Y + 2;
+
+                        String sBeforeSearchword = gridCellValue.Substring(0, startIndexInCellValue);
+                        Size s1 = TextRenderer.MeasureText(e.Graphics, sBeforeSearchword, e.CellStyle.Font,
+                            e.CellBounds.Size, TextFormatFlags.TextBoxControl);
+
+                        if (s1.Width > 5)
                         {
-                            if (startIndexInCellValue >= 0)
+                            hlRect.X = e.CellBounds.X + s1.Width - 5;
+                        }
+                        else
+                        {
+                            hlRect.X = e.CellBounds.X + 2;
+                        }
+
+                        if (indexOfN != -1 && startIndexInCellValue > indexOfN)
+                        {
+                            int cellRow2Index = startIndexInCellValue - indexOfN;
+                            String breakWord = gridCellValue.Substring(indexOfN, cellRow2Index);
+                            Size s3 = TextRenderer.MeasureText(e.Graphics, breakWord, e.CellStyle.Font,
+                                e.CellBounds.Size, TextFormatFlags.TextBoxControl);
+                            hlRect.X = e.CellBounds.X + 2 + s3.Width - 7;
+                            hlRect.Y = e.CellBounds.Y + 2;
+                        }
+
+                        if (indexOfN == -1)
+                        {
+                            Size s4 = TextRenderer.MeasureText(e.Graphics, gridCellValue, e.CellStyle.Font,
+                                e.CellBounds.Size, TextFormatFlags.TextBoxControl);
+                            if (s4.Width < e.CellBounds.Width)
                             {
-                                e.Handled = true;
-                                e.PaintBackground(e.CellBounds, true);
-                                int indexOfN = gridCellValue.IndexOf("\n", StringComparison.CurrentCultureIgnoreCase);
-                                Rectangle hlRect = new Rectangle();
-                                hlRect.Y = e.CellBounds.Y + 2;
-
-                                String sBeforeSearchword = gridCellValue.Substring(0, startIndexInCellValue);
-                                String sSearchWord = gridCellValue.Substring(startIndexInCellValue, word.Trim().Length);
-                                Size s1 = TextRenderer.MeasureText(e.Graphics, sBeforeSearchword, e.CellStyle.Font,
-                                    e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                                Size s2 = TextRenderer.MeasureText(e.Graphics, sSearchWord, e.CellStyle.Font,
-                                    e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                                if (s1.Width > 5)
-                                {
-                                    hlRect.X = e.CellBounds.X + s1.Width - 5;
-                                    hlRect.Width = s2.Width - 6;
-
-                                    if (indexOfN != -1)
-                                    {
-                                        if (startIndexInCellValue > indexOfN)
-                                        {
-                                            int cellRow2Index = startIndexInCellValue - indexOfN;
-                                            String breakWord = gridCellValue.Substring(indexOfN, cellRow2Index);
-                                            Size s3 = TextRenderer.MeasureText(e.Graphics, breakWord, e.CellStyle.Font,
-                                                e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                                            hlRect.X = e.CellBounds.X + 2 + s3.Width - 7;
-                                            hlRect.Y = e.CellBounds.Y + s2.Height + 2;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    hlRect.X = e.CellBounds.X + 2;
-                                    hlRect.Width = s2.Width - 6;
-                                }
-
-                                if (indexOfN == -1)
-                                {
-                                    Size s4 = TextRenderer.MeasureText(e.Graphics, gridCellValue, e.CellStyle.Font,
-                                        e.CellBounds.Size, TextFormatFlags.TextBoxControl);
-                                    if (s4.Width < e.CellBounds.Width)
-                                    {
-                                        hlRect.Y = e.CellBounds.Y + ((e.CellBounds.Height - s4.Height) / 2);
-                                    }
-                                }
-
-                                hlRect.Height = s2.Height;
-                                rectangleList.Add(hlRect);
+                                hlRect.Y = e.CellBounds.Y + ((e.CellBounds.Height - s4.Height) / 2);
                             }
+                        }
+
+                        String sSearchWord = trimmedWord;
+                        Size s2 = TextRenderer.MeasureText(e.Graphics, sSearchWord, e.CellStyle.Font,
+                            e.CellBounds.Size, TextFormatFlags.TextBoxControl);
+                        hlRect.Width = s2.Width - 6;
+                        hlRect.Height = s2.Height;
+
+                        if (hlRect.Width > 0 && hlRect.Height > 0)
+                        {
+                            rectangleList.Add(hlRect);
                         }
                     }
                 }
